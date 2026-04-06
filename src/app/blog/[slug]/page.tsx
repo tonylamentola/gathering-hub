@@ -33,6 +33,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
+      <Nav />
       <section style={{ paddingTop: 130, background: "var(--cream)", minHeight: "70vh" }}>
         <div className="container" style={{ maxWidth: 760 }}>
           <a href="/blog" style={{ color: "var(--navy)", fontWeight: 600, fontSize: 14, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 32 }}>

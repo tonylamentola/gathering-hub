@@ -13,6 +13,7 @@ export default function BlogPage() {
 
   return (
     <>
+      <Nav />
       <section style={{ paddingTop: 130, background: "var(--cream)", minHeight: "70vh" }}>
         <div className="container">
           <div className="section-label">Latest Posts</div>

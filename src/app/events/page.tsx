@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 export default function EventsPage() {
   return (
     <>
+      <Nav />
       {/* Hero */}
       <section style={{ paddingTop: 130, background: "linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 100%)", textAlign: "center", paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
         <div className="container">

@@ -30,6 +30,7 @@ export default function MenuPage() {
 
   return (
     <>
+      <Nav />
       <style>{`
         :root {
           --navy: #243175;
@@ -42,22 +43,6 @@ export default function MenuPage() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #fff; }
-
-        nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          background: rgba(26,36,89,0.97); backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          padding: 0 40px; height: 72px;
-          display: flex; align-items: center; justify-content: space-between;
-          padding-top: env(safe-area-inset-top);
-        }
-        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .nav-logo-text .name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: white; }
-        .nav-logo-text .sub { font-size: 10px; color: var(--gold-light); letter-spacing: 0.12em; text-transform: uppercase; }
-        .nav-links { display: flex; align-items: center; gap: 30px; list-style: none; }
-        .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; font-weight: 500; }
-        .nav-links a:hover { color: white; }
-        .nav-cta { background: var(--gold) !important; color: var(--navy-dark) !important; padding: 9px 20px; border-radius: 6px; font-weight: 700 !important; }
 
         .page-header {
           background: linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);

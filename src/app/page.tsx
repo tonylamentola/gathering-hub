@@ -1,14 +1,11 @@
 "use client";
 import Nav from "@/components/Nav";
-import { useState } from "react";
 import content from "../../data/content.json";
 
 export default function HomePage() {
-  const [navOpen, setNavOpen] = useState(false);
-
   return (
     <>
-      {/* NAV */}
+      <Nav />
       {/* HERO */}
       <section className="hero">
         <div className="hero-content">
