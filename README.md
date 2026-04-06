@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gathering Hub CMS
 
-## Getting Started
+Customer-facing website and lightweight admin portal for The Gathering Hub in Ithaca, Michigan.
 
-First, run the development server:
+## Quick Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Local app:
+- `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Important routes:
+- `/` public landing page
+- `/menu` menu and gallery
+- `/events` events page
+- `/blog` blog index
+- `/admin` customer portal / content admin
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Live Source Of Truth
 
-## Learn More
+Read these first before deploying or onboarding:
+- [DEPLOY.md](/tmp/gathering-hub/DEPLOY.md)
+- [CUSTOMER_ONBOARDING.md](/tmp/gathering-hub/CUSTOMER_ONBOARDING.md)
 
-To learn more about Next.js, take a look at the following resources:
+## How Content Works
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Primary content source: Vercel KV via [src/app/api/content/route.ts](/tmp/gathering-hub/src/app/api/content/route.ts)
+- Fallback content source: [data/content.json](/tmp/gathering-hub/data/content.json)
+- Admin writes update KV, not the local filesystem
+- Build-time JSON is a backup/default, not the normal live editing path
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How Uploads Work
 
-## Deploy on Vercel
+- Upload endpoint: [src/app/api/upload/route.ts](/tmp/gathering-hub/src/app/api/upload/route.ts)
+- Uploaded files are written to [public/uploads](/tmp/gathering-hub/public/uploads)
+- Uploaded image URLs are served from `/uploads/...`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Important:
+- If photos disappear, check the upload flow and deployment target before changing page code
+- If content looks stale, check KV/envs before editing `data/content.json`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy
+
+This repo should stay linked to the live Vercel project named `gathering-hub-cms`.
+
+Typical flow:
+
+```bash
+npm run build
+npx vercel deploy --prod
+```
+
+After deploy:
+- open homepage
+- open `/menu`
+- open `/admin`
+- verify one known `/uploads/...` image loads
+- verify content edits still save and reload
