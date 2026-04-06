@@ -2,6 +2,28 @@ import Nav from "@/components/Nav";
 import content from "../../../data/content.json";
 import type { Metadata } from "next";
 
+type EventItem = {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+};
+
+type AmenityItem = {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+};
+
+type SiteSettings = {
+  facebook?: string;
+};
+
+const events = (content.events ?? []) as EventItem[];
+const amenities = (content.amenities ?? []) as AmenityItem[];
+const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+
 export const metadata: Metadata = {
   title: "Events | The Gathering Hub - Ithaca, MI",
   description: "Book The Gathering Hub for birthdays, baby showers, bridal showers, corporate events, and more in Ithaca, Michigan.",
@@ -29,7 +51,7 @@ export default function EventsPage() {
       <section className="events-section" style={{ background: "var(--cream)" }}>
         <div className="container">
           <div className="events-grid">
-            {content.events.map((ev) => (
+            {events.map((ev) => (
               <div key={ev.id} className="event-card">
                 <div className="event-card-icon">{ev.emoji}</div>
                 <div className="event-card-body">
@@ -49,7 +71,7 @@ export default function EventsPage() {
           <h2 className="section-title">Everything You Need</h2>
           <p className="section-sub">Every rental includes the essentials so you can focus on your event.</p>
           <div className="amenities-grid">
-            {content.amenities.map((am) => (
+            {amenities.map((am) => (
               <div key={am.id} className="amenity-card">
                 <div className="amenity-icon">{am.icon}</div>
                 <h4>{am.title}</h4>
@@ -74,7 +96,7 @@ export default function EventsPage() {
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:9894002175">(989) 400-2175</a>
           <a href="mailto:thegatheringhub2025@outlook.com">Email</a>
-          <a href={content.settings.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href={settings.facebook || "#"} target="_blank" rel="noopener noreferrer">Facebook</a>
         </div>
       </footer>
     </>

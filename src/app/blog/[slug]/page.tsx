@@ -4,10 +4,27 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
+type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  seoTitle: string;
+  seoDescription: string;
+  publishedAt: string;
+};
+
+type SiteSettings = {
+  facebook?: string;
+};
+
+const blogPosts = (content.blogPosts ?? []) as BlogPost[];
+const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = content.blogPosts.find((p) => p.slug === slug);
+  const post = blogPosts.find((p) => p.slug === slug);
   if (!post) return { title: "Post Not Found | The Gathering Hub" };
   return {
     title: post.seoTitle || `${post.title} | The Gathering Hub`,
@@ -21,12 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  return content.blogPosts.map((post) => ({ slug: post.slug }));
+  return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = content.blogPosts.find((p) => p.slug === slug);
+  const post = blogPosts.find((p) => p.slug === slug);
   if (!post) notFound();
 
   const paragraphs = post.body.split("\n\n").filter(Boolean);
@@ -66,7 +83,7 @@ export default async function BlogPostPage({ params }: Props) {
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:9894002175">(989) 400-2175</a>
           <a href="mailto:thegatheringhub2025@outlook.com">Email</a>
-          <a href={content.settings.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href={settings.facebook || "#"} target="_blank" rel="noopener noreferrer">Facebook</a>
         </div>
       </footer>
     </>

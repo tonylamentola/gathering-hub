@@ -2,6 +2,43 @@
 import Nav from "@/components/Nav";
 import content from "../../data/content.json";
 
+type EventItem = {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+};
+
+type AmenityItem = {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+};
+
+type ReviewItem = {
+  id: string;
+  stars: number;
+  text: string;
+  author: string;
+};
+
+type SiteSettings = {
+  phone?: string;
+  email?: string;
+  facebook?: string;
+  mapsUrl?: string;
+};
+
+const events = (content.events ?? []) as EventItem[];
+const amenities = (content.amenities ?? []) as AmenityItem[];
+const reviews = (content.reviews ?? []) as ReviewItem[];
+const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+const safePhone = settings.phone || "(989) 400-2175";
+const safeEmail = settings.email || "thegatheringhub2025@outlook.com";
+const safeFacebook = settings.facebook || "#";
+const safeMapsUrl = settings.mapsUrl || "#";
+
 export default function HomePage() {
   return (
     <>
@@ -61,7 +98,7 @@ export default function HomePage() {
           <h2 className="section-title">Any Occasion, Perfectly Hosted</h2>
           <p className="section-sub">From intimate gatherings to larger celebrations, we have the space and amenities to make every event shine.</p>
           <div className="events-grid">
-            {content.events.map((ev) => (
+            {events.map((ev) => (
               <div key={ev.id} className="event-card">
                 <div className="event-card-icon">{ev.emoji}</div>
                 <div className="event-card-body">
@@ -152,7 +189,7 @@ export default function HomePage() {
           <h2 className="section-title">Everything You Need</h2>
           <p className="section-sub">Your rental includes the essentials so you can focus on enjoying the moment.</p>
           <div className="amenities-grid">
-            {content.amenities.map((am) => (
+            {amenities.map((am) => (
               <div key={am.id} className="amenity-card">
                 <div className="amenity-icon">{am.icon}</div>
                 <h4>{am.title}</h4>
@@ -170,7 +207,7 @@ export default function HomePage() {
           <h2 className="section-title">100% Recommended</h2>
           <p className="section-sub">Every guest. Every event. We take pride in making your experience exceptional.</p>
           <div className="reviews-grid">
-            {content.reviews.map((rv) => (
+            {reviews.map((rv) => (
               <div key={rv.id} className="review-card">
                 <div className="review-stars">{"★".repeat(rv.stars)}</div>
                 <p className="review-text">&ldquo;{rv.text}&rdquo;</p>
@@ -188,28 +225,28 @@ export default function HomePage() {
           <h2 className="section-title">Ready to Book?</h2>
           <p className="section-sub">Reach out to check availability and plan your perfect event.</p>
           <div className="contact-cards">
-            <a href={`tel:${content.settings.phone.replace(/\D/g,"")}`} className="contact-card">
+            <a href={`tel:${safePhone.replace(/\D/g,"")}`} className="contact-card">
               <div className="icon">📞</div>
               <div className="label">Call Us</div>
-              <div className="value">{content.settings.phone}</div>
+              <div className="value">{safePhone}</div>
             </a>
-            <a href={`mailto:${content.settings.email}`} className="contact-card">
+            <a href={`mailto:${safeEmail}`} className="contact-card">
               <div className="icon">✉️</div>
               <div className="label">Email Us</div>
-              <div className="value" style={{ fontSize: 13 }}>{content.settings.email}</div>
+              <div className="value" style={{ fontSize: 13 }}>{safeEmail}</div>
             </a>
-            <a href={content.settings.facebook} target="_blank" rel="noopener noreferrer" className="contact-card">
+            <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="contact-card">
               <div className="icon">👥</div>
               <div className="label">Follow Us</div>
               <div className="value">Facebook Page</div>
             </a>
-            <a href={content.settings.mapsUrl} target="_blank" rel="noopener noreferrer" className="contact-card">
+            <a href={safeMapsUrl} target="_blank" rel="noopener noreferrer" className="contact-card">
               <div className="icon">📍</div>
               <div className="label">Find Us</div>
               <div className="value" style={{ fontSize: 13 }}>121 S Pine River St<br />Ithaca, MI 48847</div>
             </a>
           </div>
-          <a href={`mailto:${content.settings.email}?subject=Event Booking Inquiry`} className="btn-primary" style={{ fontSize: 16, padding: "16px 40px" }}>
+          <a href={`mailto:${safeEmail}?subject=Event Booking Inquiry`} className="btn-primary" style={{ fontSize: 16, padding: "16px 40px" }}>
             📅 Send a Booking Inquiry
           </a>
         </div>
@@ -219,13 +256,13 @@ export default function HomePage() {
       <footer>
         <div>© 2025 The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847</div>
         <div style={{ display: "flex", gap: 20 }}>
-          <a href={`tel:${content.settings.phone.replace(/\D/g,"")}`}>{content.settings.phone}</a>
-          <a href={`mailto:${content.settings.email}`}>Email</a>
-          <a href={content.settings.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href={`tel:${safePhone.replace(/\D/g,"")}`}>{safePhone}</a>
+          <a href={`mailto:${safeEmail}`}>Email</a>
+          <a href={safeFacebook} target="_blank" rel="noopener noreferrer">Facebook</a>
         </div>
       </footer>
 
-      <a href={`tel:${content.settings.phone.replace(/\D/g,"")}`} className="float-cta">📞 Call to Book</a>
+      <a href={`tel:${safePhone.replace(/\D/g,"")}`} className="float-cta">📞 Call to Book</a>
 
       <script dangerouslySetInnerHTML={{ __html: `
         document.querySelectorAll('a[href^="#"]').forEach(a => {

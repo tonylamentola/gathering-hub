@@ -3,13 +3,26 @@ import content from "../../../data/content.json";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  publishedAt: string;
+};
+
+type SiteSettings = {
+  facebook?: string;
+};
+
 export const metadata: Metadata = {
   title: "Blog | The Gathering Hub",
   description: "Event planning tips, venue news, and inspiration from The Gathering Hub in Ithaca, MI.",
 };
 
 export default function BlogPage() {
-  const posts = content.blogPosts;
+  const posts = (content.blogPosts ?? []) as BlogPost[];
+  const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
 
   return (
     <>
@@ -46,7 +59,7 @@ export default function BlogPage() {
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:9894002175">(989) 400-2175</a>
           <a href="mailto:thegatheringhub2025@outlook.com">Email</a>
-          <a href={content.settings.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href={settings.facebook || "#"} target="_blank" rel="noopener noreferrer">Facebook</a>
         </div>
       </footer>
     </>
