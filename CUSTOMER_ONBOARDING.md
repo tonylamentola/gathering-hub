@@ -49,6 +49,56 @@ When bringing on a similar customer, collect:
 - blog/news expectations
 - who will update content
 
+## AI Content Guardrails
+
+Before enabling AI help for a customer portal, collect or confirm:
+- the real services they offer
+- the event types or offerings they actually want promoted
+- any amenities or features that are safe to mention publicly
+- what they do not want promised on the site
+- seasonal priorities for the current quarter
+- preferred tone: warm, premium, family-friendly, formal, playful, etc.
+- the character the site should sound like in plain English
+  - example: calm local owner, polished service professional, upbeat family business, practical shop owner
+- what the writing should do
+  - example: reassure, explain simply, help people plan, sound local
+- what the writing should avoid
+  - example: sounding like an ad, hype, trendy slang, overpromising
+
+After conversion, create the site voice profile before relying on AI generation:
+- open the customer portal
+- go to `Overview`
+- click `Build Voice From Site`
+- review and save:
+  - tone
+  - audience
+  - approved facts
+  - avoid claims
+  - seasonal focus
+  - voice character
+  - writing should do
+  - writing should avoid
+
+Use these rules in the portal and future prompts:
+- never invent pricing
+- never invent availability
+- never invent packages, capacities, timelines, or service commitments
+- never imply catering, staffing, rentals, or features unless confirmed
+- use seasonal ideas only when they fit the real business
+- prefer helpful local topics over generic SEO filler
+- do not make every blog post sound like a commercial
+- one gentle call to action is enough
+- helpful first, promotion second
+
+For blog and announcement suggestions, the safest inputs are:
+- current month/season
+- confirmed event types
+- confirmed amenities
+- active announcements already on the site
+- real customer questions the business gets often
+
+If those facts are missing, onboarding should capture them first instead of letting AI guess.
+
 ## Portal Setup Checklist
 
 - confirm admin login path
@@ -56,6 +106,8 @@ When bringing on a similar customer, collect:
 - confirm uploads work
 - confirm uploaded photos render on public pages
 - confirm one edit round with the customer before handoff
+- confirm AI suggestion buttons only use verified business facts
+- confirm one generated topic and one generated update read as believable and on-brand
 
 ## Billing / Support Questions To Clarify
 

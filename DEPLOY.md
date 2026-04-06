@@ -77,6 +77,29 @@ Important limitation:
 - uploads stored inside `public/uploads` are deployment-bound assets
 - if you ever move this app to a truly dynamic multi-editor workflow, move uploads to Blob/S3-equivalent storage
 
+## AI Provider Setup
+
+The customer portal blog/update helpers support either OpenAI or OpenRouter.
+
+Recommended envs:
+
+- `AI_PROVIDER=openai`
+- `OPENAI_API_KEY=...`
+
+Optional alternative:
+
+- `AI_PROVIDER=openrouter`
+- `OPENROUTER_API_KEY=...`
+
+Behavior:
+- if a valid AI provider key exists, the portal will use live AI generation
+- if no valid key exists, the portal falls back to the built-in seasonal writer
+- the customer still sees a generated result either way
+
+Recommendation:
+- prefer `openai` with `gpt-4.1-mini` for this portal
+- keep monthly limits in the portal for protection even when AI is live
+
 ## Fast Triage
 
 If the site looks wrong:

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { kv, CONTENT_KEY } from "@/lib/kv";
 
@@ -39,8 +39,12 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    // Write to KV instead of filesystem
-    await kv.set(CONTENT_KEY, body);
+    try {
+      await kv.set(CONTENT_KEY, body);
+    } catch {
+      // Local/dev fallback so the portal remains editable without KV.
+      writeFileSync(CONTENT_PATH, JSON.stringify(body, null, 2), "utf8");
+    }
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Failed to save content" }, { status: 500 });

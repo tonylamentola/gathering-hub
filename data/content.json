@@ -1,109 +1,30 @@
 {
-  "settings": {
-    "siteName": "The Gathering Hub",
-    "tagline": "Ithaca's Premier Event Venue",
-    "phone": "(989) 400-2175",
-    "email": "thegatheringhub2025@outlook.com",
-    "address": "121 S Pine River St, Ithaca, MI 48847",
-    "facebook": "https://www.facebook.com/share/1DptauBgQV/",
-    "mapsUrl": "https://maps.google.com/?q=121+S+Pine+River+Street+Ithaca+MI+48847"
+  "error": "Failed to read content",
+  "aiProfile": {
+    "tone": "Warm, welcoming, professional, community-focused",
+    "audience": "Families, local hosts, community organizers, and people planning private events in the Ithaca area",
+    "approvedFacts": "",
+    "avoidClaims": "",
+    "seasonalFocus": "",
+    "voiceProfile": "",
+    "writingDo": "",
+    "writingAvoid": ""
   },
+  "events": [],
+  "amenities": [],
+  "reviews": [],
   "announcements": [
     {
-      "id": "ann1",
-      "title": "Now Booking for 2025!",
-      "body": "Dates are filling fast — reach out today to reserve your event.",
+      "id": "ann1775458934315",
+      "title": "Spring Has Sprung!",
+      "body": "Spring is here! Celebrate your special occasions like birthdays and baby showers in our bright and flexible event space.",
       "active": true
     }
   ],
-  "events": [
-    {
-      "id": "ev1",
-      "title": "Birthday Parties",
-      "emoji": "🎂",
-      "description": "Make your birthday unforgettable with a private venue that's all yours for the day."
-    },
-    {
-      "id": "ev2",
-      "title": "Baby Showers",
-      "emoji": "🍼",
-      "description": "Welcome your little one in style with a beautiful, intimate gathering space."
-    },
-    {
-      "id": "ev3",
-      "title": "Bridal Showers",
-      "emoji": "💍",
-      "description": "Celebrate the bride-to-be with an elegant venue she'll remember forever."
-    },
-    {
-      "id": "ev4",
-      "title": "Corporate Events",
-      "emoji": "💼",
-      "description": "Professional meetings, team gatherings, and company celebrations done right."
-    },
-    {
-      "id": "ev5",
-      "title": "Family Reunions",
-      "emoji": "👨‍👩‍👧‍👦",
-      "description": "Bring the whole family together in a comfortable, spacious setting."
-    },
-    {
-      "id": "ev6",
-      "title": "Community Events",
-      "emoji": "🌟",
-      "description": "Classes, workshops, fundraisers, and community gatherings welcome."
-    }
-  ],
-  "amenities": [
-    { "id": "am1", "icon": "🪑", "title": "Tables & Chairs", "description": "Flexible seating and table arrangements for any layout." },
-    { "id": "am2", "icon": "🔊", "title": "Sound System", "description": "Professional audio for music, speeches, and performances." },
-    { "id": "am3", "icon": "💡", "title": "Flexible Lighting", "description": "Set the perfect ambiance with adjustable lighting options." },
-    { "id": "am4", "icon": "🍽️", "title": "Kitchen Prep Area", "description": "Refrigerator, microwave, and sink for catered or self-serve events." },
-    { "id": "am5", "icon": "🅿️", "title": "Easy Parking", "description": "Conveniently located in downtown Ithaca with accessible parking." },
-    { "id": "am6", "icon": "📍", "title": "Downtown Location", "description": "Right in the heart of Ithaca — easy to find, easy to get to." }
-  ],
-  "reviews": [
-    {
-      "id": "rv1",
-      "stars": 5,
-      "text": "The perfect venue for our daughter's birthday party. The space was clean, beautiful, and had everything we needed. Will absolutely be back!",
-      "author": "Facebook Reviewer"
-    },
-    {
-      "id": "rv2",
-      "stars": 5,
-      "text": "We hosted our baby shower here and it was absolutely wonderful. So welcoming and accommodating — exactly what we were looking for.",
-      "author": "Facebook Reviewer"
-    },
-    {
-      "id": "rv3",
-      "stars": 5,
-      "text": "Stunning space, easy to work with, and right in downtown Ithaca. If you're looking for an event venue in the area, this is it.",
-      "author": "Facebook Reviewer"
-    }
-  ],
-  "photos": [
-    { "id": "ph1", "caption": "The Space", "src": null },
-    { "id": "ph2", "caption": "Event Setup", "src": null },
-    { "id": "ph3", "caption": "Interior", "src": null },
-    { "id": "ph4", "caption": "Downtown Ithaca", "src": null },
-    { "id": "ph5", "caption": "Party Ready", "src": null }
-  ],
-  "blogPosts": [
-    {
-      "id": "bp1",
-      "slug": "welcome-to-the-gathering-hub",
-      "title": "Welcome to The Gathering Hub",
-      "excerpt": "We're thrilled to open Ithaca's newest event venue — a beautiful space for birthdays, showers, corporate events, and more.",
-      "body": "We're thrilled to open Ithaca's newest event venue — a beautiful space for birthdays, showers, corporate events, and more.\n\nThe Gathering Hub was born out of a simple idea: Ithaca deserves a beautiful, flexible venue where people can celebrate life's moments together. Whether it's a milestone birthday, a baby shower, a bridal celebration, or a corporate gathering, we've created a space that feels both elegant and welcoming.\n\nLocated right in the heart of downtown Ithaca at 121 S Pine River Street, we're easy to find and even easier to love. Our space features comfortable seating, professional audio, flexible lighting, and a prep kitchen — everything you need to host a memorable event.\n\nWe'd love to host your next gathering. Reach out today to check availability!",
-      "seoTitle": "Welcome to The Gathering Hub | Event Venue in Ithaca, MI",
-      "seoDescription": "Discover The Gathering Hub — Ithaca Michigan's newest event venue for birthdays, baby showers, bridal showers, corporate events, and more.",
-      "publishedAt": "2025-01-15T00:00:00.000Z"
-    }
-  ],
+  "blogPosts": [],
   "tokenBudget": {
     "monthlyLimit": 50000,
-    "used": 0,
-    "resetMonth": "2025-01"
+    "used": 1000,
+    "resetMonth": "2026-04"
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 
 const ADMIN_PASSWORD = "GatheringHub2026!";
@@ -8,6 +9,16 @@ const TOKENS_PER_POST_SUGGESTION = 2000;
 
 type ContentData = {
   settings: { siteName: string; phone: string; email: string; address: string };
+  aiProfile?: {
+    tone: string;
+    audience: string;
+    approvedFacts: string;
+    avoidClaims: string;
+    seasonalFocus: string;
+    voiceProfile?: string;
+    writingDo?: string;
+    writingAvoid?: string;
+  };
   events: Array<{ id: string; title: string; emoji: string; description: string }>;
   amenities: Array<{ id: string; icon: string; title: string; description: string }>;
   reviews: Array<{ id: string; stars: number; text: string; author: string }>;
@@ -21,14 +32,44 @@ type PostSuggestion = {
   outline: string[];
   seoTitle: string;
   seoDescription: string;
+  fullDraft?: string;
+  whyThisFits?: string;
 };
 
-export default function AdminPage() {
+type PostRegenerateMode = "fresh" | "new_topic" | "more_polished" | "more_friendly";
+
+function normalizeContent(content: ContentData): ContentData {
+  return {
+    ...content,
+    aiProfile: content.aiProfile ?? {
+      tone: "Warm, welcoming, professional, community-focused",
+      audience: "Families, local hosts, community organizers, and people planning private events in the Ithaca area",
+      approvedFacts: "",
+      avoidClaims: "",
+      seasonalFocus: "",
+      voiceProfile: "",
+      writingDo: "",
+      writingAvoid: "",
+    },
+    events: content.events ?? [],
+    amenities: content.amenities ?? [],
+    reviews: content.reviews ?? [],
+    announcements: content.announcements ?? [],
+    blogPosts: content.blogPosts ?? [],
+    tokenBudget: content.tokenBudget ?? {
+      monthlyLimit: 50000,
+      used: 0,
+      resetMonth: new Date().toISOString().slice(0, 7),
+    },
+  };
+}
+
+function AdminPageInner() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [pwError, setPwError] = useState("");
-  const [tab, setTab] = useState<"dashboard" | "blog" | "events" | "reviews" | "announcements" | "amenities">("dashboard");
+  const [tab, setTab] = useState<"overview" | "blog" | "events" | "reviews" | "announcements" | "amenities">("overview");
   const [content, setContent] = useState<ContentData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -47,6 +88,11 @@ export default function AdminPage() {
   const [postSuggestionTitle, setPostSuggestionTitle] = useState("");
   const [postSuggestionOpen, setPostSuggestionOpen] = useState(false);
   const [postSuggestMsg, setPostSuggestMsg] = useState("");
+  const [postRegenerateMode, setPostRegenerateMode] = useState<PostRegenerateMode>("fresh");
+  const [postRetryMenuOpen, setPostRetryMenuOpen] = useState(false);
+  const [postSuggestProgress, setPostSuggestProgress] = useState(0);
+  const [buildingVoice, setBuildingVoice] = useState(false);
+  const [voiceMsg, setVoiceMsg] = useState("");
 
   // Event editor
   const [newEvent, setNewEvent] = useState({ title: "", emoji: "🎉", description: "" });
@@ -79,6 +125,11 @@ export default function AdminPage() {
 
   const navRef = useRef<HTMLDivElement>(null);
 
+  function openPublicPath(pathname: string) {
+    if (typeof window === "undefined") return;
+    window.open(pathname, "_blank", "noopener,noreferrer");
+  }
+
   useEffect(() => {
     // Check localStorage first (remember me), then sessionStorage
     const lsToken = typeof window !== "undefined" ? localStorage.getItem("gh_auth_token") : null;
@@ -92,14 +143,56 @@ export default function AdminPage() {
     if (authed && !content) loadContent();
   }, [authed]);
 
+  useEffect(() => {
+    if (!suggestingPost) {
+      setPostSuggestProgress(0);
+      return;
+    }
+    setPostSuggestProgress(12);
+    const interval = window.setInterval(() => {
+      setPostSuggestProgress((current) => {
+        if (current >= 88) return current;
+        return Math.min(88, current + (current < 40 ? 10 : current < 70 ? 6 : 3));
+      });
+    }, 280);
+    return () => window.clearInterval(interval);
+  }, [suggestingPost]);
+
   async function loadContent() {
     try {
       const res = await fetch("/api/content");
       const data = await res.json();
-      setContent(data);
+      setContent(normalizeContent(data));
     } catch {
       console.error("Failed to load content");
     }
+  }
+
+  async function handleBuildVoiceProfile() {
+    if (!content) return;
+    setBuildingVoice(true);
+    setVoiceMsg("Building a voice profile from the site...");
+    try {
+      const token = getAuthToken();
+      const res = await fetch("/api/polish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ action: "build_voice_profile" }),
+      });
+      const data = await res.json();
+      if (data.aiProfile) {
+        const updated = { ...content, aiProfile: { ...content.aiProfile, ...data.aiProfile } };
+        setContent(updated);
+        await saveContent(updated);
+        setVoiceMsg("✅ Voice profile updated.");
+      } else {
+        setVoiceMsg("❌ Voice build failed.");
+      }
+    } catch {
+      setVoiceMsg("❌ Voice build failed.");
+    }
+    setBuildingVoice(false);
+    setTimeout(() => setVoiceMsg(""), 4000);
   }
 
   function getAuthToken() {
@@ -216,7 +309,7 @@ export default function AdminPage() {
     setTimeout(() => setPolishMsg(""), 5000);
   }
 
-  async function handleSuggestPost() {
+  async function handleSuggestPost(mode: PostRegenerateMode = "fresh") {
     if (!content) return;
     const remaining = content.tokenBudget.monthlyLimit - content.tokenBudget.used;
     if (remaining < TOKENS_PER_POST_SUGGESTION) {
@@ -224,20 +317,43 @@ export default function AdminPage() {
       return;
     }
     setSuggestingPost(true);
-    setPostSuggestMsg("🔍 Generating SEO post idea...");
-    setPostSuggestionOpen(false);
+    setPostRegenerateMode(mode);
+    setPostRetryMenuOpen(false);
+    setPostSuggestMsg(
+      mode === "fresh"
+        ? "🔍 Generating SEO post idea..."
+        : mode === "new_topic"
+          ? "🔄 Trying a different topic..."
+          : mode === "more_polished"
+            ? "✨ Making it more polished..."
+            : "😊 Making it feel more welcoming..."
+    );
+    setPostSuggestionOpen(true);
     try {
       const token = getAuthToken();
       const res = await fetch("/api/polish", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ content: "The Gathering Hub, event venue, Ithaca MI", action: "suggest_post" }),
+        body: JSON.stringify({
+          content: "The Gathering Hub, event venue, Ithaca MI",
+          action: "suggest_post",
+          regenerateMode: mode,
+          previousSuggestion: postSuggestion
+            ? {
+                title: postSuggestionTitle || postSuggestion.title,
+                seoTitle: postSuggestion.seoTitle,
+                seoDescription: postSuggestion.seoDescription,
+                whyThisFits: postSuggestion.whyThisFits,
+              }
+            : null,
+        }),
       });
       const data = await res.json();
       if (data.suggestion?.title) {
         setPostSuggestion(data.suggestion);
         setPostSuggestionTitle(data.suggestion.title);
         setPostSuggestionOpen(true);
+        setPostSuggestProgress(100);
         const updated = {
           ...content,
           tokenBudget: { ...content.tokenBudget, used: content.tokenBudget.used + TOKENS_PER_POST_SUGGESTION },
@@ -256,12 +372,16 @@ export default function AdminPage() {
   function applyPostSuggestion() {
     if (!postSuggestion) return;
     const outlineText = postSuggestion.outline.map((item) => `• ${item}`).join("\n");
-    const starter = `${postSuggestionTitle}\n\n${outlineText}\n\n[Start writing here...]`;
+    const starter = postSuggestion.fullDraft?.trim()
+      ? postSuggestion.fullDraft
+      : `${postSuggestionTitle}\n\n${outlineText}\n\n[Start writing here...]`;
     setBlogTitle(postSuggestionTitle);
     setBlogExcerpt(postSuggestion.seoDescription || "");
     setBlogBody(starter);
     setPostSuggestionOpen(false);
     setPostSuggestion(null);
+    setPostSuggestMsg("");
+    setPostRetryMenuOpen(false);
   }
 
   function saveBlogPost() {
@@ -290,6 +410,9 @@ export default function AdminPage() {
     setBlogBody("");
     setBlogExcerpt("");
     setEditingPost(null);
+    setPostSuggestion(null);
+    setPostSuggestionOpen(false);
+    setPostRetryMenuOpen(false);
   }
 
   function editPost(post: ContentData["blogPosts"][0]) {
@@ -586,7 +709,7 @@ export default function AdminPage() {
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#c9a84c", marginBottom: 8 }}>
             The Gathering Hub
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 28 }}>Admin Panel</p>
+          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 28 }}>Customer Portal</p>
           <form onSubmit={handleLogin}>
             <input
               type="password"
@@ -625,10 +748,80 @@ export default function AdminPage() {
     );
   }
 
-  const tokenRemaining = content.tokenBudget.monthlyLimit - content.tokenBudget.used;
-  const tokenPct = Math.round((tokenRemaining / content.tokenBudget.monthlyLimit) * 100);
+  const tokenBudget = content.tokenBudget;
+  const tokenRemaining = tokenBudget.monthlyLimit - tokenBudget.used;
+  const tokenPct = Math.round((tokenRemaining / tokenBudget.monthlyLimit) * 100);
+  const monthlyAiActions = Math.max(1, Math.floor(tokenBudget.monthlyLimit / TOKENS_PER_REWRITE));
+  const aiActionsUsed = Math.min(monthlyAiActions, Math.ceil(tokenBudget.used / TOKENS_PER_REWRITE));
+  const aiActionsRemaining = Math.max(0, monthlyAiActions - aiActionsUsed);
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const blogPostsThisMonth = content.blogPosts.filter((post) => {
+    const published = new Date(post.publishedAt);
+    return published.getMonth() === currentMonth && published.getFullYear() === currentYear;
+  }).length;
+  const monthlyBlogDraftLimit = 4;
 
-  const tabs = ["dashboard", "blog", "events", "reviews", "announcements", "amenities"] as const;
+  const tabs = [
+    { id: "overview", label: "Overview" },
+    { id: "blog", label: "Blog" },
+    { id: "events", label: "Events" },
+    { id: "announcements", label: "Updates" },
+    { id: "amenities", label: "Venue" },
+    { id: "reviews", label: "Reviews" },
+  ] as const;
+
+  const ghostBtn: React.CSSProperties = {
+    background: "transparent",
+    border: "1px solid rgba(255,255,255,0.15)",
+    color: "rgba(255,255,255,0.75)",
+    borderRadius: 8,
+    padding: "10px 18px",
+    cursor: "pointer",
+    fontSize: 14,
+    textDecoration: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+  };
+
+  const usageCard: React.CSSProperties = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 10,
+    padding: "14px 16px",
+    minWidth: 180,
+  };
+
+  function renderSectionIntro(
+    title: string,
+    description: string,
+    actions?: React.ReactNode,
+    usage?: React.ReactNode,
+  ) {
+    return (
+      <div style={{ ...cardStyle, marginBottom: 24, padding: "20px 24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#c9a84c", fontWeight: 700, marginBottom: 8 }}>
+              Customer Portal
+            </div>
+            <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 8px" }}>{title}</h2>
+            <p style={{ color: "rgba(255,255,255,0.58)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{description}</p>
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            {actions}
+          </div>
+        </div>
+        {usage && (
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
+            {usage}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={adminStyle}>
@@ -646,11 +839,10 @@ export default function AdminPage() {
       }}>
         <div>
           <span style={{ fontFamily: "'Playfair Display', serif", color: "#c9a84c", fontSize: 18, fontWeight: 700 }}>The Gathering Hub</span>
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 12 }}>Admin Panel</span>
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 12 }}>Customer Portal</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {saveMsg && <span style={{ fontSize: 13 }}>{saveMsg}</span>}
-          {/* Token balance pill */}
           <span style={{
             background: tokenPct > 30 ? "rgba(201,168,76,0.12)" : "rgba(248,113,113,0.12)",
             color: tokenPct > 30 ? "#c9a84c" : "#f87171",
@@ -661,7 +853,7 @@ export default function AdminPage() {
             fontWeight: 600,
             whiteSpace: "nowrap",
           }}>
-            Tokens: {tokenRemaining.toLocaleString()} / {content.tokenBudget.monthlyLimit.toLocaleString()}
+            AI helps left: {aiActionsRemaining} / {monthlyAiActions}
           </span>
           <a href="/" target="_blank" style={{ color: "#c9a84c", fontSize: 13, textDecoration: "none" }}>View Site →</a>
           <button
@@ -692,23 +884,22 @@ export default function AdminPage() {
         >
           {tabs.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t.id}
+              onClick={() => setTab(t.id)}
               style={{
-                background: tab === t ? "#c9a84c" : "transparent",
-                color: tab === t ? "#1a2459" : "rgba(255,255,255,0.5)",
+                background: tab === t.id ? "#c9a84c" : "transparent",
+                color: tab === t.id ? "#1a2459" : "rgba(255,255,255,0.5)",
                 border: "none",
                 padding: "0 20px",
                 fontWeight: 600,
                 fontSize: 13,
                 cursor: "pointer",
-                textTransform: "capitalize",
                 whiteSpace: "nowrap",
                 minHeight: 48,
                 flexShrink: 0,
               }}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
@@ -732,22 +923,38 @@ export default function AdminPage() {
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
 
-        {/* DASHBOARD */}
-        {tab === "dashboard" && (
+        {tab === "overview" && (
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>Dashboard</h2>
+            {renderSectionIntro(
+              "Overview",
+              "Everything important in one place. Update your site, keep an eye on monthly AI usage, and jump into the area you want to change.",
+              <>
+                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>
+                <button onClick={() => setTab("blog")} style={btnStyle}>Write New</button>
+              </>,
+              <>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Monthly AI help</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
+                </div>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Blog posts this month</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} / {monthlyBlogDraftLimit}</div>
+                </div>
+              </>,
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
               <div style={cardStyle}>
-                <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{tokenRemaining.toLocaleString()}</div>
-                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Tokens Remaining This Month</div>
+                <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{aiActionsRemaining}</div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>AI Helps Left This Month</div>
                 <div style={{ marginTop: 10, background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 6 }}>
                   <div style={{ width: `${tokenPct}%`, height: "100%", background: tokenPct > 30 ? "#c9a84c" : "#f87171", borderRadius: 4 }} />
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>{content.tokenBudget.used.toLocaleString()} used / {content.tokenBudget.monthlyLimit.toLocaleString()} limit</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>Resets monthly with your plan</div>
               </div>
               <div style={cardStyle}>
-                <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{content.blogPosts.length}</div>
-                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Blog Posts</div>
+                <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{blogPostsThisMonth}</div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Posts Published This Month</div>
               </div>
               <div style={cardStyle}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{content.events.length}</div>
@@ -757,6 +964,88 @@ export default function AdminPage() {
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{content.reviews.length}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Reviews</div>
               </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Business Voice For AI</h3>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
+                    Fill this out when a customer converts. Future blog and update drafts should use these facts and avoid guessing.
+                  </p>
+                </div>
+                <button
+                  onClick={() => content && saveContent(content)}
+                  style={btnStyle}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : "Save Voice Notes"}
+                </button>
+                <button
+                  onClick={handleBuildVoiceProfile}
+                  style={ghostBtn}
+                  disabled={buildingVoice}
+                >
+                  {buildingVoice ? "Building..." : "Build Voice From Site"}
+                </button>
+              </div>
+              {voiceMsg && <div style={{ fontSize: 13, color: voiceMsg.startsWith("✅") ? "#4ade80" : voiceMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{voiceMsg}</div>}
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Business tone</label>
+              <input
+                style={inputStyle}
+                value={content.aiProfile?.tone ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, tone: e.target.value } })}
+                placeholder="Warm, polished, family-friendly, community-focused"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Target audience</label>
+              <input
+                style={inputStyle}
+                value={content.aiProfile?.audience ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, audience: e.target.value } })}
+                placeholder="Who the content should speak to"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Approved facts AI may use</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                value={content.aiProfile?.approvedFacts ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, approvedFacts: e.target.value } })}
+                placeholder="Confirmed facts, services, offerings, or recurring themes that are safe to mention"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Claims AI must avoid</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                value={content.aiProfile?.avoidClaims ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, avoidClaims: e.target.value } })}
+                placeholder="Anything that should never be promised or invented"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Seasonal priorities</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 70, resize: "vertical", marginBottom: 0 }}
+                value={content.aiProfile?.seasonalFocus ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, seasonalFocus: e.target.value } })}
+                placeholder="Current priorities for this season or quarter"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", margin: "16px 0 6px" }}>Voice character</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                value={content.aiProfile?.voiceProfile ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, voiceProfile: e.target.value } })}
+                placeholder="Who the site sounds like in plain English"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should do</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                value={content.aiProfile?.writingDo ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingDo: e.target.value } })}
+                placeholder="Helpful habits to keep the voice consistent"
+              />
+              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should avoid</label>
+              <textarea
+                style={{ ...inputStyle, minHeight: 90, resize: "vertical", marginBottom: 0 }}
+                value={content.aiProfile?.writingAvoid ?? ""}
+                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingAvoid: e.target.value } })}
+                placeholder="Salesy habits, risky claims, and things that break trust"
+              />
             </div>
 
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Recent Blog Posts</h3>
@@ -778,23 +1067,70 @@ export default function AdminPage() {
         {/* BLOG EDITOR */}
         {tab === "blog" && (
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>
-              {editingPost ? "Edit Blog Post" : "New Blog Post"}
-            </h2>
-            <div style={cardStyle}>
-              {/* Suggest Post */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>AI can suggest a timely SEO post idea:</span>
+            {renderSectionIntro(
+              editingPost ? "Edit Blog Post" : "Blog",
+              "Write a post yourself, generate a starting draft with AI, or polish what you already wrote before publishing it.",
+              <>
                 <button
-                  onClick={handleSuggestPost}
+                  onClick={() => handleSuggestPost("fresh")}
                   disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION}
                   style={aiBtn}
                 >
-                  {suggestingPost ? "Thinking..." : "💡 Suggest Post"}
+                  {suggestingPost ? "Thinking..." : "Generate New"}
                 </button>
+                <button
+                  onClick={() => {
+                    setBlogTitle("");
+                    setBlogBody("");
+                    setBlogExcerpt("");
+                    setEditingPost(null);
+                    setPostSuggestion(null);
+                    setPostSuggestionOpen(false);
+                    setPostSuggestMsg("");
+                    setPostRetryMenuOpen(false);
+                  }}
+                  style={btnStyle}
+                >
+                  Write New
+                </button>
+                <button onClick={() => openPublicPath("/blog")} style={ghostBtn}>View Live Blog</button>
+              </>,
+              <>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Blog posts this month</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} / {monthlyBlogDraftLimit}</div>
+                </div>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
+                </div>
+              </>,
+            )}
+            <div style={cardStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Need help getting started? Use AI to make a first draft, then edit it in your own voice.</span>
               </div>
               {postSuggestMsg && (
                 <div style={{ fontSize: 13, color: postSuggestMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 16 }}>{postSuggestMsg}</div>
+              )}
+              {suggestingPost && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 }}>
+                    <div
+                      style={{
+                        width: `${postSuggestProgress}%`,
+                        height: "100%",
+                        borderRadius: 999,
+                        background: "linear-gradient(90deg, #c9a84c 0%, #f3d57b 100%)",
+                        transition: "width 260ms ease",
+                        boxShadow: "0 0 18px rgba(201,168,76,0.35)",
+                      }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.42)" }}>
+                    Building a draft in your brand voice and checking for SEO fit.
+                  </div>
+                </div>
               )}
               {postSuggestionOpen && postSuggestion && (
                 <div style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 10, padding: "20px", marginBottom: 20 }}>
@@ -815,56 +1151,108 @@ export default function AdminPage() {
                   <div style={{ fontSize: 13, color: "#e2e8f0", marginBottom: 10, fontStyle: "italic" }}>{postSuggestion.seoTitle}</div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>SEO Description</div>
                   <div style={{ fontSize: 13, color: "#e2e8f0", marginBottom: 16 }}>{postSuggestion.seoDescription}</div>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <button onClick={applyPostSuggestion} style={btnStyle}>✏️ Start Writing</button>
-                    <button onClick={() => setPostSuggestionOpen(false)} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.5)", borderRadius: 8, padding: "10px 18px", cursor: "pointer", fontSize: 14 }}>Dismiss</button>
+                  {postSuggestion.whyThisFits && (
+                    <>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>Why this fits</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", marginBottom: 16 }}>{postSuggestion.whyThisFits}</div>
+                    </>
+                  )}
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                    <button onClick={applyPostSuggestion} style={btnStyle}>Accept</button>
+                    <button
+                      onClick={() => {
+                        setPostSuggestionOpen(false);
+                        setPostRetryMenuOpen(false);
+                      }}
+                      style={ghostBtn}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => setPostRetryMenuOpen((open) => !open)}
+                      style={ghostBtn}
+                    >
+                      Retry
+                    </button>
                   </div>
+                  {postRetryMenuOpen && (
+                    <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10 }}>Retry options</div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => handleSuggestPost("new_topic")}
+                          disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION}
+                          style={ghostBtn}
+                        >
+                          New topic
+                        </button>
+                        <button
+                          onClick={() => handleSuggestPost("more_polished")}
+                          disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION}
+                          style={ghostBtn}
+                        >
+                          Change tone
+                        </button>
+                        <button
+                          onClick={() => handleSuggestPost("more_friendly")}
+                          disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION}
+                          style={ghostBtn}
+                        >
+                          More friendly
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Post Title</label>
-              <input style={inputStyle} placeholder="e.g. 5 Tips for Planning a Baby Shower" value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} />
+              {(!postSuggestionOpen || editingPost || blogTitle || blogBody || blogExcerpt) && (
+                <>
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Post Title</label>
+                  <input style={inputStyle} placeholder="e.g. 5 Tips for Planning a Baby Shower" value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} />
 
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Excerpt (shown in blog listing)</label>
-              <input style={inputStyle} placeholder="Short summary of the post..." value={blogExcerpt} onChange={(e) => setBlogExcerpt(e.target.value)} />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Excerpt (shown in blog listing)</label>
+                  <input style={inputStyle} placeholder="Short summary of the post..." value={blogExcerpt} onChange={(e) => setBlogExcerpt(e.target.value)} />
 
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Body Content</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 300, resize: "vertical", fontFamily: "inherit" }}
-                placeholder="Write your blog post here. Separate paragraphs with a blank line."
-                value={blogBody}
-                onChange={(e) => setBlogBody(e.target.value)}
-              />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Body Content</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 300, resize: "vertical", fontFamily: "inherit" }}
+                    placeholder="Write your blog post here. Separate paragraphs with a blank line."
+                    value={blogBody}
+                    onChange={(e) => setBlogBody(e.target.value)}
+                  />
 
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                <button onClick={saveBlogPost} style={btnStyle} disabled={saving}>
-                  {saving ? "Saving..." : editingPost ? "Save Changes" : "Publish Post"}
-                </button>
-                <button
-                  onClick={handlePolish}
-                  disabled={polishing || tokenRemaining < TOKENS_PER_REWRITE}
-                  style={{
-                    ...btnStyle,
-                    background: polishing ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.2)",
-                    color: "#c9a84c",
-                    border: "1px solid rgba(201,168,76,0.4)",
-                  }}
-                >
-                  {polishing ? "Polishing..." : "✨ Polish with AI"}
-                </button>
-                {editingPost && (
-                  <button
-                    onClick={() => { setBlogTitle(""); setBlogBody(""); setBlogExcerpt(""); setEditingPost(null); }}
-                    style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.5)", borderRadius: 8, padding: "10px 18px", cursor: "pointer", fontSize: 14 }}
-                  >
-                    Cancel Edit
-                  </button>
-                )}
-              </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-                Token budget: <strong style={{ color: "#c9a84c" }}>{tokenRemaining.toLocaleString()}</strong> remaining · ~{TOKENS_PER_REWRITE} per AI rewrite
-              </div>
-              {polishMsg && <div style={{ marginTop: 12, fontSize: 14, color: polishMsg.startsWith("✅") ? "#4ade80" : polishMsg.startsWith("✨") ? "#c9a84c" : "#f87171" }}>{polishMsg}</div>}
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                    <button onClick={saveBlogPost} style={btnStyle} disabled={saving}>
+                      {saving ? "Saving..." : editingPost ? "Save Changes" : "Publish Post"}
+                    </button>
+                    <button
+                      onClick={handlePolish}
+                      disabled={polishing || tokenRemaining < TOKENS_PER_REWRITE}
+                      style={{
+                        ...btnStyle,
+                        background: polishing ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.2)",
+                        color: "#c9a84c",
+                        border: "1px solid rgba(201,168,76,0.4)",
+                      }}
+                    >
+                      {polishing ? "Polishing..." : "✨ Polish with AI"}
+                    </button>
+                    {editingPost && (
+                      <button
+                        onClick={() => { setBlogTitle(""); setBlogBody(""); setBlogExcerpt(""); setEditingPost(null); }}
+                        style={ghostBtn}
+                      >
+                        Cancel Edit
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                    Monthly AI help left: <strong style={{ color: "#c9a84c" }}>{aiActionsRemaining}</strong> of {monthlyAiActions}
+                  </div>
+                  {polishMsg && <div style={{ marginTop: 12, fontSize: 14, color: polishMsg.startsWith("✅") ? "#4ade80" : polishMsg.startsWith("✨") ? "#c9a84c" : "#f87171" }}>{polishMsg}</div>}
+                </>
+              )}
             </div>
 
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>All Posts</h3>
@@ -887,16 +1275,24 @@ export default function AdminPage() {
         {/* EVENTS EDITOR */}
         {tab === "events" && (
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Event Types</h2>
-              <button
-                onClick={handleSuggestEvents}
-                disabled={suggestingEvents || tokenRemaining < TOKENS_PER_SUGGESTION}
-                style={aiBtn}
-              >
-                {suggestingEvents ? "Thinking..." : "💡 AI Suggest"}
-              </button>
-            </div>
+            {renderSectionIntro(
+              "Events",
+              "Add the kinds of events you host, improve descriptions, and keep the page feeling fresh without needing technical help.",
+              <>
+                <button
+                  onClick={handleSuggestEvents}
+                  disabled={suggestingEvents || tokenRemaining < TOKENS_PER_SUGGESTION}
+                  style={aiBtn}
+                >
+                  {suggestingEvents ? "Thinking..." : "Generate New"}
+                </button>
+                <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>
+              </>,
+              <div style={usageCard}>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
+              </div>,
+            )}
 
             {eventSuggestMsg && (
               <div style={{ fontSize: 13, color: eventSuggestMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 16 }}>{eventSuggestMsg}</div>
@@ -968,7 +1364,11 @@ export default function AdminPage() {
         {/* REVIEWS EDITOR */}
         {tab === "reviews" && (
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>Reviews</h2>
+            {renderSectionIntro(
+              "Reviews",
+              "Keep the best social proof on the site. Add a new review, remove outdated ones, and keep this section current.",
+              <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>,
+            )}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add New Review</h3>
               <select
@@ -1004,16 +1404,24 @@ export default function AdminPage() {
         {/* ANNOUNCEMENTS */}
         {tab === "announcements" && (
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-              <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Announcements</h2>
-              <button
-                onClick={handleSuggestAnnouncements}
-                disabled={suggestingAnnouncements || tokenRemaining < TOKENS_PER_SUGGESTION}
-                style={aiBtn}
-              >
-                {suggestingAnnouncements ? "Thinking..." : "💡 AI Suggest"}
-              </button>
-            </div>
+            {renderSectionIntro(
+              "Updates",
+              "Share a quick announcement, feature a special, or post a temporary note that customers should see right away.",
+              <>
+                <button
+                  onClick={handleSuggestAnnouncements}
+                  disabled={suggestingAnnouncements || tokenRemaining < TOKENS_PER_SUGGESTION}
+                  style={aiBtn}
+                >
+                  {suggestingAnnouncements ? "Thinking..." : "Generate New"}
+                </button>
+                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>
+              </>,
+              <div style={usageCard}>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
+              </div>,
+            )}
 
             {annSuggestMsg && (
               <div style={{ fontSize: 13, color: annSuggestMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 16 }}>{annSuggestMsg}</div>
@@ -1092,7 +1500,15 @@ export default function AdminPage() {
         {/* AMENITIES */}
         {tab === "amenities" && (
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 24 }}>Amenities</h2>
+            {renderSectionIntro(
+              "Venue Details",
+              "Update the features and highlights customers should know about when they’re deciding whether to book your space.",
+              <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>,
+              <div style={usageCard}>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
+              </div>,
+            )}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add New Amenity</h3>
               <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12 }}>
@@ -1143,3 +1559,7 @@ export default function AdminPage() {
     </div>
   );
 }
+
+export default dynamic(() => Promise.resolve(AdminPageInner), {
+  ssr: false,
+});
