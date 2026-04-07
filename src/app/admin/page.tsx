@@ -37,6 +37,27 @@ type PostSuggestion = {
 };
 
 type PostRegenerateMode = "fresh" | "new_topic" | "more_polished" | "more_friendly";
+type EventSuggestion = {
+  emoji: string;
+  title: string;
+  description: string;
+  seasons?: string[];
+};
+
+const EVENT_IDEA_BANK: EventSuggestion[] = [
+  { emoji: "🍼", title: "Baby Showers", description: "A warm, easy space for showers with room for gifts, desserts, and time together.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "🎓", title: "Graduation Parties", description: "Celebrate graduates with a flexible setup for family photos, food, and a relaxed open-house flow.", seasons: ["spring", "summer"] },
+  { emoji: "💍", title: "Bridal Showers", description: "Create a charming setting for showers, brunches, and meaningful time with family and friends.", seasons: ["spring", "summer", "fall"] },
+  { emoji: "🎂", title: "Birthday Gatherings", description: "A comfortable venue for milestone birthdays, family parties, and casual celebrations of all sizes.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "👶", title: "Family Celebrations", description: "Host reunions, anniversaries, and other family occasions in a welcoming space that feels easy to enjoy.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "🤝", title: "Community Gatherings", description: "Bring neighbors, volunteers, or local groups together for meetings, celebrations, and shared events.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "🏢", title: "Small Business Events", description: "Use the space for team celebrations, customer appreciation nights, workshops, or simple business gatherings.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "🍽️", title: "Private Dinners", description: "Offer a cozy setting for private meals, rehearsal dinners, and special evenings built around good food and conversation.", seasons: ["fall", "winter", "spring"] },
+  { emoji: "🌸", title: "Seasonal Brunches", description: "A bright, welcoming setup for spring brunches, Mother's Day gatherings, and daytime celebrations.", seasons: ["spring"] },
+  { emoji: "🎄", title: "Holiday Parties", description: "Give families, friends, and local groups a festive space for end-of-year gatherings and seasonal celebrations.", seasons: ["fall", "winter"] },
+  { emoji: "🎨", title: "Creative Workshops", description: "Host small classes, craft nights, or community workshops in a space that feels relaxed and inviting.", seasons: ["spring", "summer", "fall", "winter"] },
+  { emoji: "🛍️", title: "Vendor Pop-Ups", description: "Welcome local makers, specialty vendors, and community shopping events with a flexible event setup.", seasons: ["spring", "summer", "fall"] },
+];
 
 function normalizeContent(content: ContentData): ContentData {
   return {
@@ -62,6 +83,33 @@ function normalizeContent(content: ContentData): ContentData {
       resetMonth: new Date().toISOString().slice(0, 7),
     },
   };
+}
+
+function getSeasonForDate(date: Date) {
+  const month = date.getMonth();
+  if (month >= 2 && month <= 4) return "spring";
+  if (month >= 5 && month <= 7) return "summer";
+  if (month >= 8 && month <= 10) return "fall";
+  return "winter";
+}
+
+function buildEventIdeaSuggestions(content: ContentData, previousTitles: string[]): EventSuggestion[] {
+  const season = getSeasonForDate(new Date());
+  const existingTitles = new Set(content.events.map((event) => event.title.trim().toLowerCase()));
+  const recentTitles = new Set(previousTitles.map((title) => title.trim().toLowerCase()));
+
+  const seasonMatches = EVENT_IDEA_BANK.filter((idea) => {
+    const title = idea.title.trim().toLowerCase();
+    return !existingTitles.has(title) && !recentTitles.has(title) && (!idea.seasons || idea.seasons.includes(season));
+  });
+
+  const fallbackMatches = EVENT_IDEA_BANK.filter((idea) => {
+    const title = idea.title.trim().toLowerCase();
+    return !existingTitles.has(title) && !recentTitles.has(title);
+  });
+
+  const pool = seasonMatches.length >= 3 ? seasonMatches : fallbackMatches;
+  return pool.slice(0, 4);
 }
 
 function AdminPageInner() {
@@ -93,12 +141,14 @@ function AdminPageInner() {
   const [postSuggestProgress, setPostSuggestProgress] = useState(0);
   const [buildingVoice, setBuildingVoice] = useState(false);
   const [voiceMsg, setVoiceMsg] = useState("");
+  const [voiceToolsOpen, setVoiceToolsOpen] = useState(false);
 
   // Event editor
   const [newEvent, setNewEvent] = useState({ title: "", emoji: "🎉", description: "" });
   // AI Suggest events
   const [suggestingEvents, setSuggestingEvents] = useState(false);
-  const [eventSuggestions, setEventSuggestions] = useState<Array<{ title: string; description: string }>>([]);
+  const [eventSuggestions, setEventSuggestions] = useState<EventSuggestion[]>([]);
+  const [eventSuggestionHistory, setEventSuggestionHistory] = useState<string[]>([]);
   const [eventSuggestMsg, setEventSuggestMsg] = useState("");
   // Polish states for events
   const [polishingEventId, setPolishingEventId] = useState<string | null>(null);
@@ -448,33 +498,23 @@ function AdminPageInner() {
     if (!content) return;
     const remaining = content.tokenBudget.monthlyLimit - content.tokenBudget.used;
     if (remaining < TOKENS_PER_SUGGESTION) {
-      setEventSuggestMsg("❌ Not enough token budget.");
+      setEventSuggestMsg("❌ Not enough monthly idea refreshes left.");
       return;
     }
     setSuggestingEvents(true);
-    setEventSuggestMsg("🤔 Getting AI event ideas...");
-    setEventSuggestions([]);
-    try {
-      const token = getAuthToken();
-      const res = await fetch("/api/polish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ content: "business_type", action: "suggest_events" }),
-      });
-      const data = await res.json();
-      if (data.suggestions?.length) {
-        setEventSuggestions(data.suggestions);
-        const updated = {
-          ...content,
-          tokenBudget: { ...content.tokenBudget, used: content.tokenBudget.used + TOKENS_PER_SUGGESTION },
-        };
-        setContent(updated);
-        setEventSuggestMsg("");
-      } else {
-        setEventSuggestMsg("❌ No suggestions returned: " + (data.error || "Unknown error"));
-      }
-    } catch {
-      setEventSuggestMsg("❌ Failed. Check your connection.");
+    setEventSuggestMsg("✨ Pulling together fresh event ideas...");
+    const suggestions = buildEventIdeaSuggestions(content, eventSuggestionHistory);
+    if (suggestions.length > 0) {
+      setEventSuggestions(suggestions);
+      setEventSuggestionHistory((current) => [...current, ...suggestions.map((idea) => idea.title)].slice(-24));
+      const updated = {
+        ...content,
+        tokenBudget: { ...content.tokenBudget, used: content.tokenBudget.used + TOKENS_PER_SUGGESTION },
+      };
+      setContent(updated);
+      setEventSuggestMsg("");
+    } else {
+      setEventSuggestMsg("❌ You’ve already seen the current event idea bank. Add one or two, then rotate again later.");
     }
     setSuggestingEvents(false);
   }
@@ -631,42 +671,46 @@ function AdminPageInner() {
 
   const adminStyle = {
     minHeight: "100vh",
-    background: "#0f1220",
+    background: "radial-gradient(circle at top left, rgba(201,168,76,0.12), transparent 24%), radial-gradient(circle at top right, rgba(84,102,190,0.18), transparent 28%), linear-gradient(180deg, #0d1020 0%, #11162a 42%, #0c1120 100%)",
     color: "#e2e8f0",
     fontFamily: "'Inter', sans-serif",
   };
 
   const cardStyle: React.CSSProperties = {
-    background: "#1a2035",
-    borderRadius: 12,
+    background: "linear-gradient(180deg, rgba(25,32,54,0.94) 0%, rgba(18,24,44,0.96) 100%)",
+    borderRadius: 18,
     padding: "24px",
     border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 60px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.03)",
+    backdropFilter: "blur(14px)",
     marginBottom: 20,
   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "#0f1220",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 8,
-    padding: "10px 14px",
+    background: "rgba(9,12,24,0.78)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 12,
+    padding: "12px 14px",
     color: "#e2e8f0",
     fontSize: 14,
     marginBottom: 12,
     outline: "none",
     boxSizing: "border-box",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)",
   };
 
   const btnStyle: React.CSSProperties = {
-    background: "#c9a84c",
-    color: "#1a2459",
+    background: "linear-gradient(135deg, #d4b25b 0%, #b88f33 100%)",
+    color: "#10172f",
     border: "none",
-    borderRadius: 8,
-    padding: "10px 22px",
+    borderRadius: 12,
+    padding: "11px 22px",
     fontWeight: 700,
     fontSize: 14,
     cursor: "pointer",
     minHeight: 44,
+    boxShadow: "0 12px 28px rgba(201,168,76,0.22)",
   };
 
   const dangerBtn: React.CSSProperties = {
@@ -681,15 +725,16 @@ function AdminPageInner() {
   };
 
   const aiBtn: React.CSSProperties = {
-    background: "rgba(201,168,76,0.15)",
-    color: "#c9a84c",
-    border: "1px solid rgba(201,168,76,0.3)",
-    borderRadius: 8,
+    background: "linear-gradient(180deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.1) 100%)",
+    color: "#f2d78c",
+    border: "1px solid rgba(201,168,76,0.28)",
+    borderRadius: 12,
     padding: "8px 16px",
     fontWeight: 600,
     fontSize: 13,
     cursor: "pointer",
     minHeight: 44,
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
   };
 
   const suggestionCard: React.CSSProperties = {
@@ -705,11 +750,25 @@ function AdminPageInner() {
   if (!authed) {
     return (
       <div style={{ ...adminStyle, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ ...cardStyle, width: "100%", maxWidth: 420, textAlign: "center" }}>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#c9a84c", marginBottom: 8 }}>
+        <div style={{ ...cardStyle, width: "100%", maxWidth: 460, textAlign: "center", padding: "34px 30px 30px", position: "relative", overflow: "hidden" }}>
+          <div style={{
+            position: "absolute",
+            inset: "auto -30px -40px auto",
+            width: 180,
+            height: 180,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0) 72%)",
+            pointerEvents: "none",
+          }} />
+          <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700, marginBottom: 12 }}>
+            Customer Portal
+          </div>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "#c9a84c", marginBottom: 8 }}>
             The Gathering Hub
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 28 }}>Customer Portal</p>
+          <p style={{ color: "rgba(255,255,255,0.56)", margin: "0 auto 28px", maxWidth: 320, lineHeight: 1.65 }}>
+            Update your site, publish new posts, and keep everything feeling current without touching the code.
+          </p>
           <form onSubmit={handleLogin}>
             <input
               type="password"
@@ -732,7 +791,7 @@ function AdminPageInner() {
             </div>
             {pwError && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 12 }}>{pwError}</p>}
             <button type="submit" style={{ ...btnStyle, width: "100%", padding: "12px" }}>
-              Sign In →
+              Enter Portal →
             </button>
           </form>
         </div>
@@ -766,16 +825,16 @@ function AdminPageInner() {
     { id: "overview", label: "Overview" },
     { id: "blog", label: "Blog" },
     { id: "events", label: "Events" },
-    { id: "announcements", label: "Updates" },
+    { id: "announcements", label: "Quick Updates" },
     { id: "amenities", label: "Venue" },
     { id: "reviews", label: "Reviews" },
   ] as const;
 
   const ghostBtn: React.CSSProperties = {
-    background: "transparent",
-    border: "1px solid rgba(255,255,255,0.15)",
-    color: "rgba(255,255,255,0.75)",
-    borderRadius: 8,
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    color: "rgba(255,255,255,0.82)",
+    borderRadius: 12,
     padding: "10px 18px",
     cursor: "pointer",
     fontSize: 14,
@@ -784,14 +843,16 @@ function AdminPageInner() {
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44,
+    backdropFilter: "blur(8px)",
   };
 
   const usageCard: React.CSSProperties = {
-    background: "rgba(255,255,255,0.04)",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.025) 100%)",
     border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: 10,
+    borderRadius: 14,
     padding: "14px 16px",
     minWidth: 180,
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
   };
 
   function renderSectionIntro(
@@ -801,7 +862,17 @@ function AdminPageInner() {
     usage?: React.ReactNode,
   ) {
     return (
-      <div style={{ ...cardStyle, marginBottom: 24, padding: "20px 24px" }}>
+      <div style={{ ...cardStyle, marginBottom: 24, padding: "24px 24px 22px", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute",
+          top: -40,
+          right: -30,
+          width: 180,
+          height: 180,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0) 68%)",
+          pointerEvents: "none",
+        }} />
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 260 }}>
             <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#c9a84c", fontWeight: 700, marginBottom: 8 }}>
@@ -830,22 +901,24 @@ function AdminPageInner() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#1a2035",
+        background: "rgba(12,16,31,0.9)",
+        backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
-        padding: "12px 24px",
+        padding: "14px 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
       }}>
         <div>
-          <span style={{ fontFamily: "'Playfair Display', serif", color: "#c9a84c", fontSize: 18, fontWeight: 700 }}>The Gathering Hub</span>
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 12 }}>Customer Portal</span>
+          <span style={{ fontFamily: "'Playfair Display', serif", color: "#d4b25b", fontSize: 19, fontWeight: 700 }}>The Gathering Hub</span>
+          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 12, letterSpacing: "0.12em", textTransform: "uppercase" }}>Customer Portal</span>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {saveMsg && <span style={{ fontSize: 13 }}>{saveMsg}</span>}
           <span style={{
             background: tokenPct > 30 ? "rgba(201,168,76,0.12)" : "rgba(248,113,113,0.12)",
-            color: tokenPct > 30 ? "#c9a84c" : "#f87171",
+            color: tokenPct > 30 ? "#f3d57b" : "#f87171",
             border: `1px solid ${tokenPct > 30 ? "rgba(201,168,76,0.3)" : "rgba(248,113,113,0.3)"}`,
             borderRadius: 20,
             padding: "4px 12px",
@@ -870,11 +943,12 @@ function AdminPageInner() {
         <div
           ref={navRef}
           style={{
-            background: "#141928",
+            background: "rgba(14,19,36,0.88)",
+            backdropFilter: "blur(14px)",
             borderBottom: "1px solid rgba(255,255,255,0.06)",
-            padding: "0 24px",
+            padding: "8px 24px 10px",
             display: "flex",
-            gap: 4,
+            gap: 8,
             overflowX: "auto",
             WebkitOverflowScrolling: "touch",
             scrollbarWidth: "none",
@@ -887,16 +961,18 @@ function AdminPageInner() {
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
-                background: tab === t.id ? "#c9a84c" : "transparent",
-                color: tab === t.id ? "#1a2459" : "rgba(255,255,255,0.5)",
-                border: "none",
-                padding: "0 20px",
+                background: tab === t.id ? "linear-gradient(135deg, #d4b25b 0%, #b88f33 100%)" : "rgba(255,255,255,0.03)",
+                color: tab === t.id ? "#10172f" : "rgba(255,255,255,0.62)",
+                border: tab === t.id ? "none" : "1px solid rgba(255,255,255,0.07)",
+                borderRadius: 999,
+                padding: "0 18px",
                 fontWeight: 600,
                 fontSize: 13,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                minHeight: 48,
+                minHeight: 40,
                 flexShrink: 0,
+                boxShadow: tab === t.id ? "0 10px 22px rgba(201,168,76,0.2)" : "none",
               }}
             >
               {t.label}
@@ -921,7 +997,7 @@ function AdminPageInner() {
         .suggestion-card:hover { background: rgba(201,168,76,0.18) !important; }
       `}</style>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 56px" }}>
 
         {tab === "overview" && (
           <div>
@@ -944,7 +1020,7 @@ function AdminPageInner() {
               </>,
             )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
-              <div style={cardStyle}>
+              <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(29,37,64,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{aiActionsRemaining}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>AI Helps Left This Month</div>
                 <div style={{ marginTop: 10, background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 6 }}>
@@ -952,100 +1028,126 @@ function AdminPageInner() {
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>Resets monthly with your plan</div>
               </div>
-              <div style={cardStyle}>
+              <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(73,124,214,0.12) 0%, rgba(25,32,54,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{blogPostsThisMonth}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Posts Published This Month</div>
               </div>
-              <div style={cardStyle}>
+              <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(95,170,135,0.12) 0%, rgba(25,32,54,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{content.events.length}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Event Types</div>
               </div>
-              <div style={cardStyle}>
+              <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(152,110,197,0.12) 0%, rgba(25,32,54,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{content.reviews.length}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Reviews</div>
               </div>
             </div>
 
             <div style={cardStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
-                <div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Business Voice For AI</h3>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
-                    Fill this out when a customer converts. Future blog and update drafts should use these facts and avoid guessing.
-                  </p>
-                </div>
-                <button
-                  onClick={() => content && saveContent(content)}
-                  style={btnStyle}
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : "Save Voice Notes"}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 18 }}>
+                <button onClick={() => setTab("blog")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Start Here</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Write or generate a new post</span>
                 </button>
-                <button
-                  onClick={handleBuildVoiceProfile}
-                  style={ghostBtn}
-                  disabled={buildingVoice}
-                >
-                  {buildingVoice ? "Building..." : "Build Voice From Site"}
+                <button onClick={() => setTab("events")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Seasonal</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Refresh events and updates</span>
+                </button>
+                <button onClick={() => openPublicPath("/")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Live Site</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Preview what guests see</span>
                 </button>
               </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>🤖 AI Voice Tools</h3>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
+                    Keep this tucked away unless you’re tuning how the AI writes. It helps the assistant stay on-brand without taking over the page.
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => setVoiceToolsOpen((open) => !open)}
+                    style={ghostBtn}
+                  >
+                    {voiceToolsOpen ? "Hide Robot Notes" : "Show Robot Notes"}
+                  </button>
+                  <button
+                    onClick={handleBuildVoiceProfile}
+                    style={ghostBtn}
+                    disabled={buildingVoice}
+                  >
+                    {buildingVoice ? "Building..." : "Build Voice From Site"}
+                  </button>
+                </div>
+              </div>
               {voiceMsg && <div style={{ fontSize: 13, color: voiceMsg.startsWith("✅") ? "#4ade80" : voiceMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{voiceMsg}</div>}
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Business tone</label>
-              <input
-                style={inputStyle}
-                value={content.aiProfile?.tone ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, tone: e.target.value } })}
-                placeholder="Warm, polished, family-friendly, community-focused"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Target audience</label>
-              <input
-                style={inputStyle}
-                value={content.aiProfile?.audience ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, audience: e.target.value } })}
-                placeholder="Who the content should speak to"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Approved facts AI may use</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-                value={content.aiProfile?.approvedFacts ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, approvedFacts: e.target.value } })}
-                placeholder="Confirmed facts, services, offerings, or recurring themes that are safe to mention"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Claims AI must avoid</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-                value={content.aiProfile?.avoidClaims ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, avoidClaims: e.target.value } })}
-                placeholder="Anything that should never be promised or invented"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Seasonal priorities</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 70, resize: "vertical", marginBottom: 0 }}
-                value={content.aiProfile?.seasonalFocus ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, seasonalFocus: e.target.value } })}
-                placeholder="Current priorities for this season or quarter"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", margin: "16px 0 6px" }}>Voice character</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-                value={content.aiProfile?.voiceProfile ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, voiceProfile: e.target.value } })}
-                placeholder="Who the site sounds like in plain English"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should do</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-                value={content.aiProfile?.writingDo ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingDo: e.target.value } })}
-                placeholder="Helpful habits to keep the voice consistent"
-              />
-              <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should avoid</label>
-              <textarea
-                style={{ ...inputStyle, minHeight: 90, resize: "vertical", marginBottom: 0 }}
-                value={content.aiProfile?.writingAvoid ?? ""}
-                onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingAvoid: e.target.value } })}
-                placeholder="Salesy habits, risky claims, and things that break trust"
-              />
+              {voiceToolsOpen && (
+                <>
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Business tone</label>
+                  <input
+                    style={inputStyle}
+                    value={content.aiProfile?.tone ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, tone: e.target.value } })}
+                    placeholder="Warm, polished, family-friendly, community-focused"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Target audience</label>
+                  <input
+                    style={inputStyle}
+                    value={content.aiProfile?.audience ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, audience: e.target.value } })}
+                    placeholder="Who the content should speak to"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Approved facts AI may use</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                    value={content.aiProfile?.approvedFacts ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, approvedFacts: e.target.value } })}
+                    placeholder="Confirmed facts, services, offerings, or recurring themes that are safe to mention"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Claims AI must avoid</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                    value={content.aiProfile?.avoidClaims ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, avoidClaims: e.target.value } })}
+                    placeholder="Anything that should never be promised or invented"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Seasonal priorities</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 70, resize: "vertical", marginBottom: 0 }}
+                    value={content.aiProfile?.seasonalFocus ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, seasonalFocus: e.target.value } })}
+                    placeholder="Current priorities for this season or quarter"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", margin: "16px 0 6px" }}>Voice character</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                    value={content.aiProfile?.voiceProfile ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, voiceProfile: e.target.value } })}
+                    placeholder="Who the site sounds like in plain English"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should do</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+                    value={content.aiProfile?.writingDo ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingDo: e.target.value } })}
+                    placeholder="Helpful habits to keep the voice consistent"
+                  />
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>What the writing should avoid</label>
+                  <textarea
+                    style={{ ...inputStyle, minHeight: 90, resize: "vertical", marginBottom: 12 }}
+                    value={content.aiProfile?.writingAvoid ?? ""}
+                    onChange={(e) => setContent({ ...content, aiProfile: { ...content.aiProfile!, writingAvoid: e.target.value } })}
+                    placeholder="Salesy habits, risky claims, and things that break trust"
+                  />
+                  <button
+                    onClick={() => content && saveContent(content)}
+                    style={btnStyle}
+                    disabled={saving}
+                  >
+                    {saving ? "Saving..." : "Save Robot Notes"}
+                  </button>
+                </>
+              )}
             </div>
 
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Recent Blog Posts</h3>
@@ -1133,15 +1235,25 @@ function AdminPageInner() {
                 </div>
               )}
               {postSuggestionOpen && postSuggestion && (
-                <div style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 10, padding: "20px", marginBottom: 20 }}>
-                  <div style={{ fontSize: 12, color: "#c9a84c", fontWeight: 700, marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>💡 AI Post Suggestion</div>
+                <div style={{ background: "linear-gradient(160deg, rgba(201,168,76,0.08) 0%, rgba(30,38,63,0.96) 62%)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 16, padding: "22px", marginBottom: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.18)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: "#f3d57b", fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Editorial Draft</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", maxWidth: 420 }}>
+                        A suggested post shaped around your voice, local search intent, and what feels timely for the business right now.
+                      </div>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 999, padding: "6px 12px", fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
+                      SEO-guided draft
+                    </div>
+                  </div>
                   <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 4 }}>Title (editable)</label>
                   <input
                     style={{ ...inputStyle, marginBottom: 12 }}
                     value={postSuggestionTitle}
                     onChange={(e) => setPostSuggestionTitle(e.target.value)}
                   />
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Outline</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Talking points</div>
                   <ul style={{ margin: "0 0 12px 0", padding: "0 0 0 18px" }}>
                     {postSuggestion.outline.map((item, i) => (
                       <li key={i} style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginBottom: 4 }}>{item}</li>
@@ -1277,19 +1389,19 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               "Events",
-              "Add the kinds of events you host, improve descriptions, and keep the page feeling fresh without needing technical help.",
+              "Show the kinds of gatherings you host, rotate through strong booking ideas, and keep this page focused on what people can actually reserve here.",
               <>
                 <button
                   onClick={handleSuggestEvents}
                   disabled={suggestingEvents || tokenRemaining < TOKENS_PER_SUGGESTION}
                   style={aiBtn}
                 >
-                  {suggestingEvents ? "Thinking..." : "Generate New"}
+                  {suggestingEvents ? "Gathering ideas..." : eventSuggestions.length > 0 ? "Rotate Ideas" : "Generate Event Ideas"}
                 </button>
                 <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>
               </>,
               <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Idea refreshes left</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
               </div>,
             )}
@@ -1300,29 +1412,35 @@ function AdminPageInner() {
 
             {eventSuggestions.length > 0 && (
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Click a suggestion to auto-fill the form:</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Pick an idea to pre-fill the event card with booking-friendly copy:</div>
                 {eventSuggestions.map((s, i) => (
                   <div
                     key={i}
                     className="suggestion-card"
                     style={suggestionCard}
-                    onClick={() => setNewEvent({ ...newEvent, title: s.title, description: s.description })}
+                    onClick={() => setNewEvent({ ...newEvent, emoji: s.emoji, title: s.title, description: s.description })}
                   >
-                    <div style={{ fontWeight: 600, color: "#c9a84c", marginBottom: 4 }}>{s.title}</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>{s.description}</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <span style={{ fontSize: 22 }}>{s.emoji}</span>
+                        <div style={{ fontWeight: 600, color: "#c9a84c" }}>{s.title}</div>
+                      </div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Use this</div>
+                    </div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 6 }}>{s.description}</div>
                   </div>
                 ))}
               </div>
             )}
 
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add New Event Type</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add Your Own Event Idea</h3>
               <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12 }}>
                 <input style={inputStyle} placeholder="Emoji" value={newEvent.emoji} onChange={(e) => setNewEvent({ ...newEvent, emoji: e.target.value })} />
-                <input style={inputStyle} placeholder="Event Title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
+                <input style={inputStyle} placeholder="Event idea title" value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
               </div>
-              <input style={inputStyle} placeholder="Description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
-              <button onClick={addEvent} style={btnStyle}>Add Event Type</button>
+              <input style={inputStyle} placeholder="Short booking-friendly description" value={newEvent.description} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} />
+              <button onClick={addEvent} style={btnStyle}>Save Event Idea</button>
             </div>
 
             {content.events.map((ev) => (
@@ -1405,20 +1523,20 @@ function AdminPageInner() {
         {tab === "announcements" && (
           <div>
             {renderSectionIntro(
-              "Updates",
-              "Share a quick announcement, feature a special, or post a temporary note that customers should see right away.",
+              "Quick Updates",
+              "Use this for timely notices guests should see right now, like holiday hours, booking reminders, specials, or temporary changes on the homepage.",
               <>
                 <button
                   onClick={handleSuggestAnnouncements}
                   disabled={suggestingAnnouncements || tokenRemaining < TOKENS_PER_SUGGESTION}
                   style={aiBtn}
                 >
-                  {suggestingAnnouncements ? "Thinking..." : "Generate New"}
+                  {suggestingAnnouncements ? "Writing..." : "Generate Notice"}
                 </button>
-                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>
+                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Homepage</button>
               </>,
               <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Notice refreshes left</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
               </div>,
             )}
@@ -1429,7 +1547,7 @@ function AdminPageInner() {
 
             {announcementSuggestions.length > 0 && (
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Click a suggestion to auto-fill the form:</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Pick a notice to pre-fill the form below:</div>
                 {announcementSuggestions.map((s, i) => (
                   <div
                     key={i}
@@ -1444,19 +1562,22 @@ function AdminPageInner() {
             )}
 
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add Announcement</h3>
-              <input style={inputStyle} placeholder="Title" value={newAnnouncement.title} onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })} />
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Add a Quick Update</h3>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", marginBottom: 16, lineHeight: 1.6 }}>
+                Good uses: holiday hours, private-event closures, booking reminders, seasonal specials, or a short note guests should see before visiting.
+              </div>
+              <input style={inputStyle} placeholder="Short headline" value={newAnnouncement.title} onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })} />
               <textarea
                 style={{ ...inputStyle, minHeight: 80, resize: "vertical" }}
-                placeholder="Announcement body..."
+                placeholder="Write the short guest-facing notice..."
                 value={newAnnouncement.body}
                 onChange={(e) => setNewAnnouncement({ ...newAnnouncement, body: e.target.value })}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <input type="checkbox" id="active" checked={newAnnouncement.active} onChange={(e) => setNewAnnouncement({ ...newAnnouncement, active: e.target.checked })} />
-                <label htmlFor="active" style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>Active (shown on site)</label>
+                <label htmlFor="active" style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>Active on homepage</label>
               </div>
-              <button onClick={addAnnouncement} style={btnStyle}>Add Announcement</button>
+              <button onClick={addAnnouncement} style={btnStyle}>Save Quick Update</button>
             </div>
 
             {content.announcements.map((ann) => (

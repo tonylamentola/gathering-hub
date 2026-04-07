@@ -1,28 +1,19 @@
 import Nav from "@/components/Nav";
-import content from "../../../data/content.json";
 import Link from "next/link";
 import type { Metadata } from "next";
-
-type BlogPost = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  publishedAt: string;
-};
-
-type SiteSettings = {
-  facebook?: string;
-};
+import { getSiteContent, BlogPost, SiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Blog | The Gathering Hub",
   description: "Event planning tips, venue news, and inspiration from The Gathering Hub in Ithaca, MI.",
 };
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const content = await getSiteContent();
   const posts = (content.blogPosts ?? []) as BlogPost[];
-  const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+  const settings = (content.settings ?? {}) as SiteSettings;
 
   return (
     <>

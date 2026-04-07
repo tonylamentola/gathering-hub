@@ -1,29 +1,15 @@
 import Nav from "@/components/Nav";
-import content from "../../../../data/content.json";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getSiteContent, BlogPost, SiteSettings } from "@/lib/content";
 
 type Props = { params: Promise<{ slug: string }> };
-type BlogPost = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  body: string;
-  seoTitle: string;
-  seoDescription: string;
-  publishedAt: string;
-};
-
-type SiteSettings = {
-  facebook?: string;
-};
-
-const blogPosts = (content.blogPosts ?? []) as BlogPost[];
-const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const content = await getSiteContent();
+  const blogPosts = (content.blogPosts ?? []) as BlogPost[];
   const post = blogPosts.find((p) => p.slug === slug);
   if (!post) return { title: "Post Not Found | The Gathering Hub" };
   return {
@@ -37,12 +23,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export async function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }));
-}
-
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
+  const content = await getSiteContent();
+  const blogPosts = (content.blogPosts ?? []) as BlogPost[];
+  const settings = (content.settings ?? {}) as SiteSettings;
   const post = blogPosts.find((p) => p.slug === slug);
   if (!post) notFound();
 
