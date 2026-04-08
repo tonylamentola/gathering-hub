@@ -81,17 +81,21 @@ I’ve also been pulling in your newer Facebook photos so the content is feeling
 - Send live link
 - Send billing link
 - Send simple agreement
+- Confirm request line: `(313) 444-3317`
 - Confirm how she wants to request changes:
+  - text to `(313) 444-3317`
   - portal
-  - email
   - Facebook message for now
 
 ## Request Channel Test
 
-Short-term easiest option:
-- keep using Facebook / direct message while we validate the workflow
+Primary request line:
+- Google Voice / update line: `(313) 444-3317`
 
-Next best option:
+Short-term fallback:
+- keep using Facebook / direct message until Google Voice verification is fully approved
+
+Next best option after text:
 - set up a dedicated email like `updates@...`
 - route requests into an approval queue
 - keep approval required before publish

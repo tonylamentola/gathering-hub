@@ -48,5 +48,8 @@ If you want changes, the easiest things to send me are:
 - quick announcements
 - blog/topic ideas
 
-Once we settle on your preferred request flow, I can make updates really quickly from there.
+The easiest request line for updates is:
+(313) 444-3317
+
+You can text that number with anything you want changed and I can get it prepared quickly.
 ```

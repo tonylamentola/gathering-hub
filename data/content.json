@@ -10,8 +10,8 @@
     "stripeBillingUrl": "https://buy.stripe.com/7sYbJ1adqbLW5BU2CmefC00",
     "billingPlan": "$50/month",
     "billingStatus": "Ready to send",
-    "nextStep": "Show demo, confirm hosting/domain, then send billing link and simple agreement.",
-    "onboardingNotes": ""
+    "nextStep": "Show demo, confirm hosting/domain, send billing link and simple agreement, then confirm the update text line.",
+    "onboardingNotes": "Planned update request line: (313) 444-3317"
   },
   "onboarding": {
     "billingLinkReady": false,
