@@ -39,6 +39,39 @@ const safePhone = settings.phone || "(989) 400-2175";
 const safeEmail = settings.email || "thegatheringhub2025@outlook.com";
 const safeFacebook = settings.facebook || "#";
 const safeMapsUrl = settings.mapsUrl || "#";
+const heroImage = "/uploads/upload-1775614780498.jpg";
+const homepagePhotos = [
+  {
+    id: "home-photo-1",
+    imageUrl: "/uploads/upload-1775614780498.jpg",
+    alt: "The Gathering Hub storefront in downtown Ithaca",
+    className: "photo-item large",
+  },
+  {
+    id: "home-photo-2",
+    imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg",
+    alt: "Guests enjoying a gathering at The Gathering Hub",
+    className: "photo-item",
+  },
+  {
+    id: "home-photo-3",
+    imageUrl: "/uploads/upload-1775616162773.jpg",
+    alt: "Dessert slice from The Gathering Hub",
+    className: "photo-item",
+  },
+  {
+    id: "home-photo-4",
+    imageUrl: "/uploads/IMG_3761.jpeg",
+    alt: "Fresh cookies at The Gathering Hub",
+    className: "photo-item",
+  },
+  {
+    id: "home-photo-5",
+    imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg",
+    alt: "Warm interior setup at The Gathering Hub",
+    className: "photo-item",
+  },
+];
 const fallbackUpcomingStrip = [
   { id: "fallback-upcoming-1", title: "Upcoming at the Hub", description: "Watch for bingo, featured nights, and community happenings at The Gathering Hub.", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg" },
   { id: "fallback-upcoming-2", title: "Plan Your Next Visit", description: "Check the latest public happenings and special nights at the Hub.", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg" },
@@ -77,7 +110,7 @@ export default function HomePage() {
     <>
       <Nav />
       {/* HERO */}
-      <section className="hero">
+      <section className="hero" style={{ backgroundImage: `linear-gradient(160deg, rgba(26,36,89,0.82) 0%, rgba(36,49,117,0.78) 55%, rgba(45,61,138,0.74) 100%), url(${heroImage})` }}>
         <div className="hero-content">
           <div className="hero-badge">✨ Ithaca&rsquo;s Premier Event Venue</div>
           <h1>Where Every <em>Gathering</em> Becomes a Memory</h1>
@@ -148,36 +181,11 @@ export default function HomePage() {
             <p className="section-sub">An elegant, flexible space ready to become the backdrop for your most memorable moments.</p>
           </div>
           <div className="photos-grid">
-            <div className="photo-item large">
-              <div className="photo-placeholder tall">
-                <span>🏛️</span>
-                <p>The Gathering Hub<br />Main Event Space</p>
+            {homepagePhotos.map((photo) => (
+              <div key={photo.id} className={photo.className}>
+                <img src={photo.imageUrl} alt={photo.alt} className="photo-image" loading="lazy" />
               </div>
-            </div>
-            <div className="photo-item">
-              <div className="photo-placeholder">
-                <span>🎉</span>
-                <p>Event Setup</p>
-              </div>
-            </div>
-            <div className="photo-item">
-              <div className="photo-placeholder">
-                <span>💡</span>
-                <p>Interior Lighting</p>
-              </div>
-            </div>
-            <div className="photo-item">
-              <div className="photo-placeholder">
-                <span>🍽️</span>
-                <p>Prep Kitchen</p>
-              </div>
-            </div>
-            <div className="photo-item">
-              <div className="photo-placeholder">
-                <span>📍</span>
-                <p>Downtown Ithaca</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

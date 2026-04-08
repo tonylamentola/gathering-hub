@@ -48,6 +48,8 @@ nav {
 .hero {
   min-height: 100vh;
   background: linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 55%, #2d3d8a 100%);
+  background-size: cover;
+  background-position: center;
   display: flex; align-items: center; justify-content: center;
   text-align: center; padding: 130px 24px 80px; position: relative; overflow: hidden;
 }
@@ -149,6 +151,16 @@ section { padding: 90px 24px; }
 .photos-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: auto auto; gap: 12px; }
 .photo-item { border-radius: 12px; overflow: hidden; background: var(--navy); position: relative; }
 .photo-item.large { grid-row: span 2; }
+.photo-image {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  display: block;
+  object-fit: cover;
+}
+.photo-item.large .photo-image {
+  min-height: 100%;
+}
 .photo-placeholder {
   aspect-ratio: 4/3; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 10px;
