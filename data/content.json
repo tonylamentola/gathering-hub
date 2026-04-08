@@ -1,5 +1,26 @@
 {
   "error": "Failed to read content",
+  "settings": {
+    "siteName": "The Gathering Hub",
+    "phone": "(989) 400-2175",
+    "email": "thegatheringhub2025@outlook.com",
+    "address": "121 S Pine River St, Ithaca, MI 48847",
+    "facebook": "",
+    "mapsUrl": "",
+    "stripeBillingUrl": "https://buy.stripe.com/7sYbJ1adqbLW5BU2CmefC00",
+    "billingPlan": "$50/month",
+    "billingStatus": "Ready to send",
+    "nextStep": "Show demo, confirm hosting/domain, then send billing link and simple agreement.",
+    "onboardingNotes": ""
+  },
+  "onboarding": {
+    "billingLinkReady": false,
+    "contractShared": false,
+    "hostingAnswered": false,
+    "photosReceived": false,
+    "portalWalkthroughDone": false,
+    "voiceReviewed": false
+  },
   "aiProfile": {
     "tone": "Warm, welcoming, professional, community-focused",
     "audience": "Families, local hosts, community organizers, and people planning private events in the Ithaca area",
@@ -12,19 +33,131 @@
   },
   "events": [],
   "amenities": [],
-  "reviews": [],
-  "announcements": [
+  "menuItems": [
     {
-      "id": "ann1775458934315",
-      "title": "Spring Has Sprung!",
-      "body": "Spring is here! Celebrate your special occasions like birthdays and baby showers in our bright and flexible event space.",
-      "active": true
+      "id": "legacy-menu-1",
+      "name": "Fresh-Baked Cookies",
+      "description": "Warm homemade cookies fresh from the café oven.",
+      "imageUrl": "/uploads/1775364248235-pphenppbah.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-2",
+      "name": "Hub Bites Parmesan Bread",
+      "description": "A savory favorite that fits well with gatherings, lunches, and shared tables.",
+      "imageUrl": "/uploads/1775364596605-auu88h6cqgf.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-2b",
+      "name": "Signature Sub",
+      "description": "A hearty house favorite with a hand-crafted feel and plenty of flavor.",
+      "imageUrl": "/uploads/1775364755623-ze97r4xwh0m.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-3",
+      "name": "Asian Zing Salad",
+      "description": "A fresh menu option with bold flavor and a lighter feel.",
+      "imageUrl": "/uploads/1775364755624-m02hojwg2w.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-4",
+      "name": "Raspberry Cheesecake",
+      "description": "A homemade dessert that feels special enough for celebrations and sweet finishes.",
+      "imageUrl": "/uploads/1775364755624-17c88k7fp79.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-5",
+      "name": "Dessert Assortment",
+      "description": "A sweet selection that works well for gatherings, parties, and coffee breaks.",
+      "imageUrl": "/uploads/1775364755625-6ydqx3vb01r.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-6",
+      "name": "Desserts To Go",
+      "description": "Homemade treats ready to take along for celebrations, gifts, or a simple sweet stop.",
+      "imageUrl": "/uploads/1775365063795-9a1ndlwdghs.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-7",
+      "name": "Chicken Noodle Soup",
+      "description": "A cozy café favorite with a homemade feel and simple comfort.",
+      "imageUrl": "/uploads/1775365063796-nkcommvfglh.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-8",
+      "name": "Hub Sub",
+      "description": "A filling sandwich option that feels easy, familiar, and satisfying.",
+      "imageUrl": "/uploads/1775365063796-0fwru35womi.png",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-9",
+      "name": "Featured Homemade Dessert",
+      "description": "A rotating homemade dessert highlight for guests who want something sweet and special.",
+      "imageUrl": "/uploads/1775365063797-gompbh4stj.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
     }
   ],
+  "lifeAtHubPhotos": [
+    {
+      "id": "legacy-life-1",
+      "imageUrl": "/uploads/1775365063798-xp8ohwtk3b.jpeg",
+      "imageAspect": "landscape",
+      "caption": "A welcoming look at the venue before guests arrive."
+    },
+    {
+      "id": "legacy-life-2",
+      "imageUrl": "/uploads/1775365063800-w4x3jcou9hq.jpeg",
+      "imageAspect": "landscape",
+      "caption": "A warm first impression at The Gathering Hub."
+    },
+    {
+      "id": "legacy-life-3",
+      "imageUrl": "/uploads/1775365063799-5g3cs93mz1w.jpeg",
+      "imageAspect": "landscape",
+      "caption": "A lively moment at the Hub during a fun gathering."
+    },
+    {
+      "id": "legacy-life-4",
+      "imageUrl": "/uploads/1775365063797-t2nj2g2nwa.jpeg",
+      "imageAspect": "portrait",
+      "caption": "The people and personality behind the space."
+    }
+  ],
+  "upcomingItems": [],
+  "reviews": [],
+  "announcements": [],
   "blogPosts": [],
   "tokenBudget": {
     "monthlyLimit": 50000,
-    "used": 1000,
+    "used": 0,
     "resetMonth": "2026-04"
   }
 }

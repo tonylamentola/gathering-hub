@@ -1,6 +1,7 @@
 "use client";
 import Nav from "@/components/Nav";
 import content from "../../data/content.json";
+import { useEffect, useState } from "react";
 
 type EventItem = {
   id: string;
@@ -38,8 +39,40 @@ const safePhone = settings.phone || "(989) 400-2175";
 const safeEmail = settings.email || "thegatheringhub2025@outlook.com";
 const safeFacebook = settings.facebook || "#";
 const safeMapsUrl = settings.mapsUrl || "#";
+const fallbackUpcomingStrip = [
+  { id: "fallback-upcoming-1", title: "Upcoming at the Hub", description: "Watch for bingo, featured nights, and community happenings at The Gathering Hub.", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg" },
+  { id: "fallback-upcoming-2", title: "Plan Your Next Visit", description: "Check the latest public happenings and special nights at the Hub.", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg" },
+  { id: "fallback-upcoming-3", title: "Featured Nights", description: "See what’s coming up next and what guests are talking about.", imageUrl: "/uploads/1775365063800-w4x3jcou9hq.jpeg" },
+];
 
 export default function HomePage() {
+  const [upcomingStrip, setUpcomingStrip] = useState(fallbackUpcomingStrip);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/content")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load"))))
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data.upcomingItems) && data.upcomingItems.length > 0) {
+          setUpcomingStrip(
+            data.upcomingItems.slice(0, 4).map((item: { id: string; title: string; description: string; imageUrl?: string }) => ({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              imageUrl: item.imageUrl || "/uploads/1775365063799-5g3cs93mz1w.jpeg",
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        // Keep fallback strip.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
       <Nav />
@@ -68,25 +101,20 @@ export default function HomePage() {
       <section className="kitchen-strip">
         <div className="container">
           <div className="kitchen-header">
-            <div className="section-label">From Our Kitchen</div>
-            <h2 className="section-title" style={{ color: 'var(--navy-dark)' }}>Life at The Hub</h2>
-            <p className="section-sub">Homemade food, warm spaces, and moments worth remembering.</p>
+            <div className="section-label">Coming Up</div>
+            <h2 className="section-title" style={{ color: 'var(--navy-dark)' }}>Upcoming at The Hub</h2>
+            <p className="section-sub">Bingo, public happenings, featured nights, and the kind of moments people will want to circle on the calendar.</p>
           </div>
           <div className="kitchen-scroll">
-            {[
-              { src: "/uploads/1775364248235-pphenppbah.jpeg", caption: "Fresh-baked cookies" },
-              { src: "/uploads/1775364755624-17c88k7fp79.jpeg", caption: "Raspberry cheesecake" },
-              { src: "/uploads/1775365063798-xp8ohwtk3b.jpeg", caption: "Our event venue" },
-              { src: "/uploads/1775365063796-nkcommvfglh.jpeg", caption: "Homemade chicken soup" },
-            ].map((photo, i) => (
-              <a key={i} href="/menu" className="kitchen-photo">
-                <img src={photo.src} alt={photo.caption} loading="lazy" />
-                <div className="kitchen-caption">{photo.caption}</div>
+            {upcomingStrip.map((item) => (
+              <a key={item.id} href="/upcoming" className="kitchen-photo">
+                <img src={item.imageUrl} alt={item.title} loading="lazy" />
+                <div className="kitchen-caption">{item.title}: {item.description}</div>
               </a>
             ))}
           </div>
           <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <a href="/menu" className="btn-secondary" style={{ display: 'inline-block' }}>See Full Menu & Gallery →</a>
+            <a href="/upcoming" className="btn-secondary" style={{ display: 'inline-block' }}>See Upcoming at the Hub →</a>
           </div>
         </div>
       </section>

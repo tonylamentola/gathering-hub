@@ -1,8 +1,8 @@
 "use client";
 import Nav from "@/components/Nav";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const photos = [
+const fallbackPhotos = [
   { src: "/uploads/1775364248235-pphenppbah.jpeg", caption: "Warm homemade cookies fresh from our café oven in Ithaca MI.", category: "Food" },
   { src: "/uploads/1775364596605-auu88h6cqgf.jpeg", caption: "Savor our Hub Bites Parmesan Bread, perfect for any event venue.", category: "Food" },
   { src: "/uploads/1775364755623-ze97r4xwh0m.jpeg", caption: "Discover our hand-drawn signature sub, crafted with care in Ithaca MI.", category: "Food" },
@@ -20,13 +20,52 @@ const photos = [
   { src: "/uploads/1775365063800-w4x3jcou9hq.jpeg", caption: "Welcome to The Gathering Hub, your cozy event venue in Ithaca MI.", category: "Venue" },
 ];
 
-export default function MenuPage() {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+const fallbackMenuItems = fallbackPhotos
+  .filter((photo) => ["Food", "Desserts"].includes(photo.category))
+  .map((photo, index) => ({
+    id: `fallback-menu-${index}`,
+    name: photo.category === "Desserts" ? "Featured Dessert" : "Featured Favorite",
+    description: photo.caption,
+    imageUrl: photo.src,
+    imageAspect: "square",
+    price: "",
+    availability: "",
+  }));
 
-  const openLightbox = (index: number) => setLightboxIndex(index);
-  const closeLightbox = () => setLightboxIndex(null);
-  const prevPhoto = () => setLightboxIndex(i => (i !== null ? (i - 1 + photos.length) % photos.length : null));
-  const nextPhoto = () => setLightboxIndex(i => (i !== null ? (i + 1) % photos.length : null));
+function getAspectRatioValue(aspect?: string) {
+  if (aspect === "portrait") return "4 / 5";
+  if (aspect === "landscape") return "4 / 3";
+  return "1 / 1";
+}
+
+function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
+  return {
+    objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+    transform: `scale(${crop?.zoom ?? 1})`,
+    transformOrigin: "center center",
+  };
+}
+
+export default function MenuPage() {
+  const [menuItems, setMenuItems] = useState(fallbackMenuItems);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/content")
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error("Failed to load")))
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data.menuItems) && data.menuItems.length > 0) {
+          setMenuItems(data.menuItems);
+        }
+      })
+      .catch(() => {
+        // Keep fallback content in local/dev or if content load fails.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -179,20 +218,27 @@ export default function MenuPage() {
       `}</style>
 
       <div className="page-header">
-        <h1>Our <em>Menu</em> & Gallery</h1>
-        <p>Homemade food, beautiful moments, and a warm community — all under one roof.</p>
+        <h1>Our <em>Menu</em></h1>
+        <p>Homemade food, featured favorites, and simple details guests can check before they visit.</p>
       </div>
 
       <section className="menu-section">
         <h2 className="section-title">Homemade & Fresh</h2>
         <p className="section-sub">From our kitchen to your table — or your next event</p>
         <div className="menu-grid">
-          {photos.filter(p => ["Food", "Desserts"].includes(p.category)).map((photo, i) => (
-            <div key={i} className="menu-card">
-              <img src={photo.src} alt={photo.caption} className="menu-card-img" loading="lazy" />
+          {menuItems.map((item) => (
+            <div key={item.id} className="menu-card">
+              {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="menu-card-img" loading="lazy" style={{ aspectRatio: getAspectRatioValue(item.imageAspect), ...getCropStyle((item as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop) }} />}
               <div className="menu-card-body">
-                <div className="menu-card-cat">{photo.category}</div>
-                <p>{photo.caption}</p>
+                <div className="menu-card-cat">Menu</div>
+                <div style={{ fontWeight: 700, color: "var(--navy-dark)", marginBottom: 6 }}>{item.name}</div>
+                <p>{item.description}</p>
+                {(item.price || item.availability) && (
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                    {item.price && <span>{item.price}</span>}
+                    {item.availability && <span>{item.availability}</span>}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -200,17 +246,24 @@ export default function MenuPage() {
       </section>
 
       <section className="gallery-section">
-        <h2 className="section-title">Life at The Hub</h2>
-        <p className="section-sub">Events, food, and the people who make it special</p>
-        <div className="gallery-grid">
-          {photos.map((photo, i) => (
-            <div key={i} className="gallery-item" onClick={() => openLightbox(i)}>
-              <img src={photo.src} alt={photo.caption} loading="lazy" />
-              <div className="gallery-overlay">
-                <div className="gold-border">{photo.caption}</div>
-              </div>
-            </div>
-          ))}
+        <h2 className="section-title">See What’s Happening</h2>
+        <p className="section-sub">Looking for photos, flyers, or community happenings? Visit Upcoming at the Hub.</p>
+        <div style={{ textAlign: "center" }}>
+          <a href="/upcoming" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 48,
+            padding: "0 22px",
+            borderRadius: 999,
+            background: "linear-gradient(135deg, #243175 0%, #1a2459 100%)",
+            color: "white",
+            textDecoration: "none",
+            fontWeight: 700,
+            boxShadow: "0 12px 26px rgba(36,49,117,0.18)",
+          }}>
+            Visit Upcoming at the Hub →
+          </a>
         </div>
       </section>
 
@@ -218,26 +271,6 @@ export default function MenuPage() {
         The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847 · (989) 400-2175
       </footer>
 
-      {/* LIGHTBOX */}
-      {lightboxIndex !== null && (
-        <div
-          className="lightbox-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}
-        >
-          <button className="lightbox-close" onClick={closeLightbox} aria-label="Close">×</button>
-          <button className="lightbox-nav prev" onClick={(e) => { e.stopPropagation(); prevPhoto(); }} aria-label="Previous">‹</button>
-          <button className="lightbox-nav next" onClick={(e) => { e.stopPropagation(); nextPhoto(); }} aria-label="Next">›</button>
-          <div className="lightbox-inner" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={photos[lightboxIndex].src}
-              alt={photos[lightboxIndex].caption}
-              className="lightbox-img"
-            />
-            <div className="lightbox-caption">{photos[lightboxIndex].caption}</div>
-          </div>
-          <div className="lightbox-counter">{lightboxIndex + 1} / {photos.length}</div>
-        </div>
-      )}
     </>
   );
 }

@@ -11,6 +11,11 @@ export type SiteSettings = {
   address?: string;
   facebook?: string;
   mapsUrl?: string;
+  stripeBillingUrl?: string;
+  billingPlan?: string;
+  billingStatus?: string;
+  nextStep?: string;
+  onboardingNotes?: string;
 };
 
 export type BlogPost = {
@@ -24,9 +29,49 @@ export type BlogPost = {
   publishedAt: string;
 };
 
+export type MenuItem = {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  imageAspect?: "landscape" | "square" | "portrait";
+  imageCrop?: { zoom?: number; x?: number; y?: number };
+  price?: string;
+  availability?: string;
+};
+
+export type LifeAtHubPhoto = {
+  id: string;
+  imageUrl: string;
+  imageAspect?: "landscape" | "square" | "portrait";
+  imageCrop?: { zoom?: number; x?: number; y?: number };
+  caption: string;
+};
+
+export type UpcomingItem = {
+  id: string;
+  title: string;
+  date?: string;
+  description: string;
+  imageUrl?: string;
+  imageAspect?: "landscape" | "square" | "portrait";
+  imageCrop?: { zoom?: number; x?: number; y?: number };
+};
+
 export type SiteContent = {
   settings?: SiteSettings;
+  onboarding?: {
+    billingLinkReady?: boolean;
+    contractShared?: boolean;
+    hostingAnswered?: boolean;
+    photosReceived?: boolean;
+    portalWalkthroughDone?: boolean;
+    voiceReviewed?: boolean;
+  };
   blogPosts?: BlogPost[];
+  menuItems?: MenuItem[];
+  lifeAtHubPhotos?: LifeAtHubPhoto[];
+  upcomingItems?: UpcomingItem[];
 };
 
 export async function getSiteContent(): Promise<SiteContent> {

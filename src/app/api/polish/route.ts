@@ -278,7 +278,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { content, title, action, regenerateMode, previousSuggestion } = body;
+    const { content, title, action, regenerateMode, previousSuggestion, instructions } = body;
 
     // Read token budget from KV (or fallback to file)
     const contentData = await getContentData();
@@ -506,7 +506,7 @@ Rules:
       return NextResponse.json({ error: "Token budget exceeded for this month" }, { status: 429 });
     }
 
-    const prompt = `You are a professional copywriter and SEO expert for The Gathering Hub, an event venue in Ithaca, Michigan.
+    const prompt = `You are an AI assistant helping ${business.siteName} improve customer-facing copy while staying truthful and on-brand.
 
 Voice rules:
 - Brand tone: ${business.tone}
@@ -515,7 +515,10 @@ Voice rules:
 - Writing should do: ${business.writingDo || "Be useful, clear, and trustworthy."}
 - Writing should avoid: ${business.writingAvoid || "Avoid hype and invented claims."}
 
-Task: Polish and improve the following blog post content. Make it engaging, warm, and professional. Optimize for local SEO (Ithaca, MI, event venue keywords) without sounding like a commercial.
+Task: Polish and improve the following content. Keep it warm, clear, and professional without inventing facts.
+
+Specific instructions:
+${instructions || "Improve readability, clarity, and tone while keeping all facts the same."}
 
 Title: ${title || "Blog Post"}
 Content: ${content}
@@ -527,28 +530,7 @@ Return ONLY a JSON object with these exact fields:
   "seoDescription": "Meta description for SEO, 150-160 characters"
 }`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://gathering-hub-cms.vercel.app",
-        "X-Title": "The Gathering Hub CMS",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-4.1-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      return NextResponse.json({ error: `OpenRouter error: ${err}` }, { status: 500 });
-    }
-
-    const data = await response.json();
+    const data = await generateJson(prompt, 700, 0.6);
     const raw_text = data.choices?.[0]?.message?.content || "";
 
     // Parse JSON from response
