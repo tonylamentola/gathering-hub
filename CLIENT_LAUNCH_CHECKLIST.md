@@ -14,6 +14,18 @@
 5. Publish and test the site.
 6. Test the client request channel.
 
+## Tomorrow Launch Priority
+
+Keep tomorrow focused on customer-facing items only:
+
+1. Final homepage photo selection.
+2. Final review of `Menu`, `Upcoming`, `Blog`, and contact details.
+3. Demo review with client.
+4. Confirm hosting/domain decision.
+5. Send billing link and simple agreement.
+6. Publish live.
+7. Test one real update request after publish.
+
 ## Next Message To Send
 
 Use this as the next message:
@@ -99,3 +111,14 @@ Next best option after text:
 - set up a dedicated email like `updates@...`
 - route requests into an approval queue
 - keep approval required before publish
+
+## After Launch Fixes
+
+These are important, but not launch blockers for the customer-facing demo tomorrow:
+
+- Remove hardcoded secrets from dashboard/SimpleWeb/task-webhook runtime code and rotate them.
+- Lock down temporary dashboard no-auth routes after the mobile-safe flow is replaced.
+- Add auth checks to client/intake dashboard APIs.
+- Move dashboard away from deprecated `middleware` naming to the newer `proxy` approach.
+- Separate read-only mobile dashboard views from any project-seeding write path.
+- Do one full dashboard cleanup pass for duplicated fetches, fallback behavior, and long-term token hygiene.
