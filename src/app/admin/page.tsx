@@ -2327,9 +2327,9 @@ function AdminPageInner() {
                     ...ghostBtn,
                     minHeight: 36,
                     padding: "0 14px",
-                    background: flyerMode === "generate" ? "rgba(201,168,76,0.22)" : "rgba(255,255,255,0.03)",
-                    color: flyerMode === "generate" ? "#f3d57b" : "rgba(255,255,255,0.72)",
-                    border: flyerMode === "generate" ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(255,255,255,0.12)",
+                    background: flyerMode === "generate" ? "rgba(201,168,76,0.22)" : "#131a36",
+                    color: flyerMode === "generate" ? "#f3d57b" : "rgba(226,232,240,0.82)",
+                    border: flyerMode === "generate" ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(11,17,39,0.7)",
                   }}
                 >
                   ✨ Generate Flyer
@@ -2341,9 +2341,9 @@ function AdminPageInner() {
                     ...ghostBtn,
                     minHeight: 36,
                     padding: "0 14px",
-                    background: flyerMode === "upload" ? "rgba(97,111,182,0.22)" : "rgba(255,255,255,0.03)",
-                    color: flyerMode === "upload" ? "#d9e2ff" : "rgba(255,255,255,0.72)",
-                    border: flyerMode === "upload" ? "1px solid rgba(97,111,182,0.42)" : "1px solid rgba(255,255,255,0.12)",
+                    background: flyerMode === "upload" ? "rgba(97,111,182,0.22)" : "#131a36",
+                    color: flyerMode === "upload" ? "#d9e2ff" : "rgba(226,232,240,0.82)",
+                    border: flyerMode === "upload" ? "1px solid rgba(97,111,182,0.42)" : "1px solid rgba(11,17,39,0.7)",
                   }}
                 >
                   Upload Your Own

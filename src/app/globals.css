@@ -125,11 +125,12 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(10, 16, 36, 0.78);
+  border: 1px solid rgba(20, 29, 62, 0.92);
   border-radius: 999px;
   padding: 7px 12px;
-  color: rgba(255,255,255,0.92);
+  color: rgba(255,255,255,0.9);
+  box-shadow: 0 8px 22px rgba(8, 12, 30, 0.18);
 }
 
 /* BUTTONS */

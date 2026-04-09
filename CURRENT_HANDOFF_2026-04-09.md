@@ -109,3 +109,24 @@ The site is in much better shape than the earlier “empty shell” critiques su
 - final content/photo choices
 - possible quote/pricing refinement
 - continued localhost sanity checks because the dev loop has been unreliable
+
+## Latest UX Pass
+
+Latest committed UX batch on `codex/gathering-portal-snapshot`:
+- commit: `3dfef85`
+- message: `Refine Gathering Hub customer-facing UX`
+
+This pass includes:
+- shared header logo on public pages
+- real logo favicon
+- active nav highlighting and mobile nav auto-close
+- cleaner decorative line icons on homepage sections
+- updated homepage event labels including `Reunions & Game Nights`
+- `Upcoming` flyer generation flow with review states
+- OpenRouter flyer route using the provided logo reference
+- mobile quote-form sizing cleanup
+
+Intentionally not included in that commit:
+- generated test flyer files under `public/uploads`
+- `.claude/`
+- unrelated local content state
