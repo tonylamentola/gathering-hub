@@ -1,5 +1,8 @@
 # Client Launch Checklist
 
+Companion handoff note for active build context:
+- `CODEX_CLAUDE_HANDOFF.md`
+
 ## Current Client
 
 - Client: The Gathering Hub

@@ -1,5 +1,5 @@
 import Nav from "@/components/Nav";
-import content from "../../../data/content.json";
+import { getSiteContent } from "@/lib/content";
 import type { Metadata } from "next";
 
 type EventItem = {
@@ -16,20 +16,44 @@ type AmenityItem = {
   description: string;
 };
 
-type SiteSettings = {
-  facebook?: string;
-};
+const fallbackEvents: EventItem[] = [
+  { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, decorations, and the people you actually want around you." },
+  { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting for showers that feel thoughtful, easy, and worth remembering." },
+  { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, and guests of all ages." },
+  { id: "event-private", emoji: "🥂", title: "Private Gatherings", description: "Perfect for reunions, dinner parties, and special nights that need more warmth than a standard event room." },
+];
 
-const events = (content.events ?? []) as EventItem[];
-const amenities = (content.amenities ?? []) as AmenityItem[];
-const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+const fallbackAmenities: AmenityItem[] = [
+  { id: "amenity-tables", icon: "🪑", title: "Tables & Chairs Included", description: "The basics are already here so you can focus on planning the details that matter most." },
+  { id: "amenity-av", icon: "🔊", title: "AV Ready", description: "Use the space for music, announcements, slideshows, and the little moments people gather around." },
+  { id: "amenity-kitchen", icon: "🍽️", title: "Full Kitchen Access", description: "Bring your own food, prep for guests, and keep the flow of the event feeling easy." },
+  { id: "amenity-downtown", icon: "📍", title: "Downtown Ithaca Location", description: "A central location that makes it easy for local guests to find you and settle in." },
+];
 
 export const metadata: Metadata = {
   title: "Events | The Gathering Hub - Ithaca, MI",
   description: "Book The Gathering Hub for birthdays, baby showers, bridal showers, corporate events, and more in Ithaca, Michigan.",
+  alternates: {
+    canonical: "/events",
+  },
+  openGraph: {
+    title: "Events | The Gathering Hub - Ithaca, MI",
+    description: "Book The Gathering Hub for birthdays, baby showers, bridal showers, corporate events, and more in Ithaca, Michigan.",
+    url: "https://gathering-hub-cms.vercel.app/events",
+    images: [{ url: "/images/hero-main.jpg", width: 1200, height: 630, alt: "The Gathering Hub in Ithaca, Michigan" }],
+  },
 };
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const content = await getSiteContent();
+  const events = ((content as { events?: EventItem[] }).events?.length
+    ? (content as { events?: EventItem[] }).events
+    : fallbackEvents) as EventItem[];
+  const amenities = ((content as { amenities?: AmenityItem[] }).amenities?.length
+    ? (content as { amenities?: AmenityItem[] }).amenities
+    : fallbackAmenities) as AmenityItem[];
+  const settings = content.settings ?? {};
+
   return (
     <>
       <Nav />
@@ -92,10 +116,10 @@ export default function EventsPage() {
       </section>
 
       <footer>
-        <div>© 2025 The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847</div>
+        <div>© 2026 The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847</div>
         <div style={{ display: "flex", gap: 20 }}>
-          <a href="tel:9894002175">(989) 400-2175</a>
-          <a href="mailto:thegatheringhub2025@outlook.com">Email</a>
+          <a href={`tel:${(settings.phone || "(989) 400-2175").replace(/\D/g, "")}`}>{settings.phone || "(989) 400-2175"}</a>
+          <a href={`mailto:${settings.email || "thegatheringhub2025@outlook.com"}`}>Email</a>
           <a href={settings.facebook || "#"} target="_blank" rel="noopener noreferrer">Facebook</a>
         </div>
       </footer>

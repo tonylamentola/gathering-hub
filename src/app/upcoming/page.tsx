@@ -1,6 +1,6 @@
-"use client";
 import Nav from "@/components/Nav";
-import { useEffect, useState } from "react";
+import { getSiteContent } from "@/lib/content";
+import type { Metadata } from "next";
 
 const fallbackUpcoming = [
   {
@@ -9,15 +9,29 @@ const fallbackUpcoming = [
     date: "",
     description: "Watch this space for upcoming bingo nights, community fun, and public happenings at The Gathering Hub.",
     imageUrl: "",
-    imageAspect: "portrait",
+    imageAspect: "portrait" as const,
   },
 ];
 
 const fallbackLifePhotos = [
-  { id: "fallback-life-1", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg", imageAspect: "landscape", caption: "Our event venue ready for a memorable gathering." },
-  { id: "fallback-life-2", imageUrl: "/uploads/1775365063800-w4x3jcou9hq.jpeg", imageAspect: "landscape", caption: "A warm welcome at The Gathering Hub in Ithaca." },
-  { id: "fallback-life-3", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg", imageAspect: "landscape", caption: "A fun night at the Hub with room for community events." },
+  { id: "fallback-life-1", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg", imageAspect: "landscape" as const, caption: "Our event venue ready for a memorable gathering." },
+  { id: "fallback-life-2", imageUrl: "/uploads/1775365063800-w4x3jcou9hq.jpeg", imageAspect: "landscape" as const, caption: "A warm welcome at The Gathering Hub in Ithaca." },
+  { id: "fallback-life-3", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg", imageAspect: "landscape" as const, caption: "A fun night at the Hub with room for community events." },
 ];
+
+export const metadata: Metadata = {
+  title: "Upcoming | The Gathering Hub - Ithaca, MI",
+  description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
+  alternates: {
+    canonical: "/upcoming",
+  },
+  openGraph: {
+    title: "Upcoming | The Gathering Hub - Ithaca, MI",
+    description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
+    url: "https://gathering-hub-cms.vercel.app/upcoming",
+    images: [{ url: "/images/upcoming-main.jpg", width: 1200, height: 630, alt: "Upcoming events at The Gathering Hub" }],
+  },
+};
 
 function getAspectRatioValue(aspect?: string) {
   if (aspect === "square") return "1 / 1";
@@ -33,30 +47,39 @@ function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
   };
 }
 
-export default function UpcomingPage() {
-  const [upcomingItems, setUpcomingItems] = useState(fallbackUpcoming);
-  const [lifePhotos, setLifePhotos] = useState(fallbackLifePhotos);
+function sortUpcomingItems<T extends { date?: string }>(items: T[]) {
+  return [...items].sort((a, b) => {
+    const aTime = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    const bTime = b.date ? new Date(`${b.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    return bTime - aTime;
+  });
+}
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/content")
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load"))))
-      .then((data) => {
-        if (cancelled) return;
-        if (Array.isArray(data.upcomingItems) && data.upcomingItems.length > 0) {
-          setUpcomingItems(data.upcomingItems);
-        }
-        if (Array.isArray(data.lifeAtHubPhotos) && data.lifeAtHubPhotos.length > 0) {
-          setLifePhotos(data.lifeAtHubPhotos);
-        }
-      })
-      .catch(() => {
-        // Keep fallback content.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+function getEventStatus(date?: string) {
+  if (!date) return "Date To Be Announced";
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const eventTime = new Date(`${date}T00:00:00`).getTime();
+  return eventTime >= todayStart ? "Coming Up" : "Past Event";
+}
+
+function formatEventDate(date?: string) {
+  if (!date) return "";
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default async function UpcomingPage() {
+  const content = await getSiteContent();
+  const upcomingItems = content.upcomingItems?.length ? sortUpcomingItems(content.upcomingItems) : fallbackUpcoming;
+  const lifePhotos = (content.lifeAtHubPhotos?.length ? content.lifeAtHubPhotos : fallbackLifePhotos).map((photo) => ({
+    ...photo,
+    eyebrow: "Life at the Hub",
+    description: photo.caption,
+  }));
 
   return (
     <>
@@ -145,6 +168,9 @@ export default function UpcomingPage() {
           color: var(--gold);
           margin-bottom: 10px;
         }
+        .eyebrow.past {
+          color: #8b5e16;
+        }
         .upcoming-copy, .life-copy {
           font-size: 14px;
           color: #334155;
@@ -158,16 +184,27 @@ export default function UpcomingPage() {
       </div>
 
       <section className="upcoming-section">
-        <h2 className="section-title">What’s Coming Up</h2>
+        <h2 className="section-title">What’s Happening at the Hub</h2>
         <p className="section-sub">This is the easy place for guests to spot bingo, karaoke, special nights, flyers, and public happenings.</p>
         <div className="upcoming-grid">
           {upcomingItems.map((item) => (
             <div key={item.id} className="upcoming-card">
-              {item.imageUrl && <img src={item.imageUrl} alt={item.title} className="upcoming-image" loading="lazy" style={{ aspectRatio: getAspectRatioValue(item.imageAspect), ...getCropStyle((item as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop) }} />}
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="upcoming-image"
+                  loading="lazy"
+                  style={{
+                    aspectRatio: getAspectRatioValue(item.imageAspect),
+                    ...getCropStyle((item as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop),
+                  }}
+                />
+              )}
               <div className="upcoming-body">
-                <div className="eyebrow">Upcoming</div>
+                <div className={`eyebrow ${getEventStatus(item.date) === "Past Event" ? "past" : ""}`}>{getEventStatus(item.date)}</div>
                 <div className="upcoming-title">{item.title}</div>
-                {item.date && <div className="upcoming-date">{new Date(item.date).toLocaleDateString()}</div>}
+                {item.date && <div className="upcoming-date">{formatEventDate(item.date)}</div>}
                 <div className="upcoming-copy">{item.description}</div>
               </div>
             </div>
@@ -177,14 +214,23 @@ export default function UpcomingPage() {
 
       <section className="life-section">
         <h2 className="section-title">Life at the Hub</h2>
-        <p className="section-sub">A look at the people, atmosphere, and moments that make the space feel special.</p>
+        <p className="section-sub">A look at the atmosphere, people, and warm community moments that make the space feel special.</p>
         <div className="life-grid">
           {lifePhotos.map((photo) => (
             <div key={photo.id} className="life-card">
-              <img src={photo.imageUrl} alt={photo.caption} className="life-image" loading="lazy" style={{ aspectRatio: getAspectRatioValue(photo.imageAspect), ...getCropStyle((photo as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop) }} />
+              <img
+                src={photo.imageUrl}
+                alt={photo.caption}
+                className="life-image"
+                loading="lazy"
+                style={{
+                  aspectRatio: getAspectRatioValue(photo.imageAspect),
+                  ...getCropStyle((photo as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop),
+                }}
+              />
               <div className="life-body">
-                <div className="eyebrow">Life at the Hub</div>
-                <div className="life-copy">{photo.caption}</div>
+                <div className="eyebrow">{photo.eyebrow || "Life at the Hub"}</div>
+                <div className="life-copy">{photo.description || photo.caption}</div>
               </div>
             </div>
           ))}

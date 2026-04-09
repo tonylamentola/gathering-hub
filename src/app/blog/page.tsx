@@ -32,6 +32,27 @@ export default async function BlogPage() {
             <div className="blog-grid">
               {posts.map((post) => (
                 <div key={post.id} className="blog-card">
+                  {post.imageUrl && (
+                    <div
+                      style={{
+                        width: "100%",
+                        aspectRatio: post.imageAspect === "portrait" ? "4 / 5" : post.imageAspect === "square" ? "1 / 1" : "16 / 9",
+                        overflow: "hidden",
+                        background: "#efe5d3",
+                      }}
+                    >
+                      <img
+                        src={post.imageUrl}
+                        alt={post.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className="blog-card-body">
                     <div className="blog-date">{new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
                     <h2>{post.title}</h2>

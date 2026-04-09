@@ -50,6 +50,31 @@ export default async function BlogPostPage({ params }: Props) {
             {post.title}
           </h1>
 
+          {post.imageUrl && (
+            <div
+              style={{
+                width: "100%",
+                aspectRatio: "16 / 9",
+                overflow: "hidden",
+                borderRadius: 18,
+                marginBottom: 24,
+                background: "#efe5d3",
+                maxHeight: 420,
+              }}
+            >
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: post.imageAspect === "portrait" ? "contain" : "cover",
+                  display: "block",
+                }}
+              />
+            </div>
+          )}
+
           <div style={{ fontSize: 17, lineHeight: 1.75, color: "var(--text)" }}>
             {paragraphs.map((para, i) => (
               <p key={i} style={{ marginBottom: 24 }}>{para}</p>

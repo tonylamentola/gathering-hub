@@ -12,26 +12,6 @@ type ImageAspect = "landscape" | "square" | "portrait";
 type ImageCrop = { zoom: number; x: number; y: number };
 const DEFAULT_CROP: ImageCrop = { zoom: 1, x: 0, y: 0 };
 
-const DEFAULT_MENU_ITEMS: NonNullable<ContentData["menuItems"]> = [
-  { id: "legacy-menu-1", name: "Fresh-Baked Cookies", description: "Warm homemade cookies fresh from the café oven.", imageUrl: "/uploads/1775364248235-pphenppbah.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-2", name: "Hub Bites Parmesan Bread", description: "A savory favorite that fits well with gatherings, lunches, and shared tables.", imageUrl: "/uploads/1775364596605-auu88h6cqgf.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-2b", name: "Signature Sub", description: "A hearty house favorite with a hand-crafted feel and plenty of flavor.", imageUrl: "/uploads/1775364755623-ze97r4xwh0m.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-3", name: "Asian Zing Salad", description: "A fresh menu option with bold flavor and a lighter feel.", imageUrl: "/uploads/1775364755624-m02hojwg2w.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-4", name: "Raspberry Cheesecake", description: "A homemade dessert that feels special enough for celebrations and sweet finishes.", imageUrl: "/uploads/1775364755624-17c88k7fp79.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-5", name: "Dessert Assortment", description: "A sweet selection that works well for gatherings, parties, and coffee breaks.", imageUrl: "/uploads/1775364755625-6ydqx3vb01r.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-6", name: "Desserts To Go", description: "Homemade treats ready to take along for celebrations, gifts, or a simple sweet stop.", imageUrl: "/uploads/1775365063795-9a1ndlwdghs.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-7", name: "Chicken Noodle Soup", description: "A cozy café favorite with a homemade feel and simple comfort.", imageUrl: "/uploads/1775365063796-nkcommvfglh.jpeg", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-8", name: "Hub Sub", description: "A filling sandwich option that feels easy, familiar, and satisfying.", imageUrl: "/uploads/1775365063796-0fwru35womi.png", imageAspect: "square", price: "", availability: "" },
-  { id: "legacy-menu-9", name: "Featured Homemade Dessert", description: "A rotating homemade dessert highlight for guests who want something sweet and special.", imageUrl: "/uploads/1775365063797-gompbh4stj.jpeg", imageAspect: "square", price: "", availability: "" },
-];
-
-const DEFAULT_LIFE_AT_HUB_PHOTOS: NonNullable<ContentData["lifeAtHubPhotos"]> = [
-  { id: "legacy-life-1", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg", imageAspect: "landscape", caption: "A welcoming look at the venue before guests arrive." },
-  { id: "legacy-life-2", imageUrl: "/uploads/1775365063800-w4x3jcou9hq.jpeg", imageAspect: "landscape", caption: "A warm first impression at The Gathering Hub." },
-  { id: "legacy-life-3", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg", imageAspect: "landscape", caption: "A lively moment at the Hub during a fun gathering." },
-  { id: "legacy-life-4", imageUrl: "/uploads/1775365063797-t2nj2g2nwa.jpeg", imageAspect: "portrait", caption: "The people and personality behind the space." },
-];
-
 type ContentData = {
   settings: {
     siteName: string;
@@ -66,12 +46,12 @@ type ContentData = {
   };
   events: Array<{ id: string; title: string; emoji: string; description: string }>;
   amenities: Array<{ id: string; icon: string; title: string; description: string }>;
-  menuItems?: Array<{ id: string; name: string; description: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop; price?: string; availability?: string }>;
+  menuItems?: Array<{ id: string; name: string; description: string; category?: "featured" | "cafe" | "sweets"; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop; price?: string; availability?: string }>;
   lifeAtHubPhotos?: Array<{ id: string; imageUrl: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop; caption: string }>;
   upcomingItems?: Array<{ id: string; title: string; date?: string; description: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
   reviews: Array<{ id: string; stars: number; text: string; author: string }>;
   announcements: Array<{ id: string; title: string; body: string; active: boolean }>;
-  blogPosts: Array<{ id: string; slug: string; title: string; excerpt: string; body: string; seoTitle: string; seoDescription: string; publishedAt: string }>;
+  blogPosts: Array<{ id: string; slug: string; title: string; excerpt: string; body: string; seoTitle: string; seoDescription: string; publishedAt: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
   tokenBudget: { monthlyLimit: number; used: number; resetMonth: string };
 };
 
@@ -108,12 +88,6 @@ const EVENT_IDEA_BANK: EventSuggestion[] = [
 ];
 
 function normalizeContent(content: ContentData): ContentData {
-  const mergedMenuItems = [...(content.menuItems ?? [])];
-  for (const legacyItem of DEFAULT_MENU_ITEMS) {
-    const exists = mergedMenuItems.some((item) => item.imageUrl === legacyItem.imageUrl || item.name === legacyItem.name);
-    if (!exists) mergedMenuItems.push(legacyItem);
-  }
-
   return {
     ...content,
     settings: {
@@ -149,8 +123,8 @@ function normalizeContent(content: ContentData): ContentData {
     },
     events: content.events ?? [],
     amenities: content.amenities ?? [],
-    menuItems: mergedMenuItems.length > 0 ? mergedMenuItems : DEFAULT_MENU_ITEMS,
-    lifeAtHubPhotos: content.lifeAtHubPhotos && content.lifeAtHubPhotos.length > 0 ? content.lifeAtHubPhotos : DEFAULT_LIFE_AT_HUB_PHOTOS,
+    menuItems: content.menuItems ?? [],
+    lifeAtHubPhotos: content.lifeAtHubPhotos ?? [],
     upcomingItems: content.upcomingItems ?? [],
     reviews: content.reviews ?? [],
     announcements: content.announcements ?? [],
@@ -214,12 +188,36 @@ function getAspectRatioNumber(aspect: ImageAspect) {
   return 4 / 3;
 }
 
+function getUpcomingStatus(date?: string) {
+  if (!date) {
+    return { label: "Date To Be Announced", color: "rgba(255,255,255,0.42)", background: "rgba(255,255,255,0.06)" };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = new Date(`${date}T00:00:00`);
+
+  if (eventDate >= today) {
+    return { label: "Happening Soon", color: "#4ade80", background: "rgba(74,222,128,0.15)" };
+  }
+
+  return { label: "Past Highlight", color: "#f3d57b", background: "rgba(201,168,76,0.15)" };
+}
+
+function sortUpcomingItems(items: NonNullable<ContentData["upcomingItems"]>) {
+  return [...items].sort((a, b) => {
+    const aTime = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    const bTime = b.date ? new Date(`${b.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    return bTime - aTime;
+  });
+}
+
 function AdminPageInner() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [pwError, setPwError] = useState("");
-  const [tab, setTab] = useState<"overview" | "blog" | "events" | "upcoming" | "reviews" | "announcements" | "menu" | "life">("blog");
+  const [tab, setTab] = useState<"overview" | "blog" | "events" | "amenities" | "upcoming" | "reviews" | "announcements" | "menu" | "life">("blog");
   const [content, setContent] = useState<ContentData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -244,10 +242,13 @@ function AdminPageInner() {
   const [buildingVoice, setBuildingVoice] = useState(false);
   const [voiceMsg, setVoiceMsg] = useState("");
   const [voiceToolsOpen, setVoiceToolsOpen] = useState(false);
+  const [blogPublishDate, setBlogPublishDate] = useState(new Date().toISOString().slice(0, 10));
 
   // Event editor
   const [newEvent, setNewEvent] = useState({ title: "", emoji: "🎉", description: "" });
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [newAmenity, setNewAmenity] = useState({ title: "", icon: "✨", description: "" });
+  const [editingAmenityId, setEditingAmenityId] = useState<string | null>(null);
   // AI Suggest events
   const [suggestingEvents, setSuggestingEvents] = useState(false);
   const [eventSuggestions, setEventSuggestions] = useState<EventSuggestion[]>([]);
@@ -259,6 +260,7 @@ function AdminPageInner() {
 
   // Review editor
   const [newReview, setNewReview] = useState({ stars: 5, text: "", author: "" });
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
 
   // Announcement editor
   const [newAnnouncement, setNewAnnouncement] = useState({ title: "", body: "", active: true });
@@ -271,15 +273,20 @@ function AdminPageInner() {
   const [polishingAnnId, setPolishingAnnId] = useState<string | null>(null);
   const [announcementEditorMsg, setAnnouncementEditorMsg] = useState("");
 
-  const [newMenuItem, setNewMenuItem] = useState({ name: "", description: "", imageUrl: "", imageAspect: "square" as ImageAspect, imageCrop: DEFAULT_CROP, price: "", availability: "" });
+  const [newMenuItem, setNewMenuItem] = useState({ name: "", description: "", category: "featured" as "featured" | "cafe" | "sweets", imageUrl: "", imageAspect: "square" as ImageAspect, imageCrop: DEFAULT_CROP, price: "", availability: "" });
   const [newLifePhoto, setNewLifePhoto] = useState({ imageUrl: "", imageAspect: "landscape" as ImageAspect, imageCrop: DEFAULT_CROP, caption: "" });
   const [newUpcoming, setNewUpcoming] = useState({ title: "", date: "", description: "", imageUrl: "", imageAspect: "portrait" as ImageAspect, imageCrop: DEFAULT_CROP });
+  const [blogImageUrl, setBlogImageUrl] = useState("");
+  const [blogImageAspect, setBlogImageAspect] = useState("landscape" as ImageAspect);
+  const [blogImageCrop, setBlogImageCrop] = useState(DEFAULT_CROP);
   const [editingMenuItemId, setEditingMenuItemId] = useState<string | null>(null);
   const [editingLifePhotoId, setEditingLifePhotoId] = useState<string | null>(null);
   const [editingUpcomingId, setEditingUpcomingId] = useState<string | null>(null);
+  const [uploadingBlogPhoto, setUploadingBlogPhoto] = useState(false);
   const [uploadingMenuPhoto, setUploadingMenuPhoto] = useState(false);
   const [uploadingLifePhoto, setUploadingLifePhoto] = useState(false);
   const [uploadingUpcomingPhoto, setUploadingUpcomingPhoto] = useState(false);
+  const [blogPhotoMsg, setBlogPhotoMsg] = useState("");
   const [menuPhotoMsg, setMenuPhotoMsg] = useState("");
   const [lifePhotoMsg, setLifePhotoMsg] = useState("");
   const [upcomingPhotoMsg, setUpcomingPhotoMsg] = useState("");
@@ -562,7 +569,10 @@ function AdminPageInner() {
       body: blogBody,
       seoTitle: `${blogTitle} | The Gathering Hub`,
       seoDescription: blogExcerpt || blogBody.slice(0, 160),
-      publishedAt: new Date().toISOString(),
+      publishedAt: new Date(`${blogPublishDate || new Date().toISOString().slice(0, 10)}T12:00:00`).toISOString(),
+      imageUrl: blogImageUrl || undefined,
+      imageAspect: blogImageUrl ? blogImageAspect : undefined,
+      imageCrop: blogImageUrl ? blogImageCrop : undefined,
     };
     let posts = [...content.blogPosts];
     if (editingPost) {
@@ -575,6 +585,10 @@ function AdminPageInner() {
     setBlogTitle("");
     setBlogBody("");
     setBlogExcerpt("");
+    setBlogPublishDate(new Date().toISOString().slice(0, 10));
+    setBlogImageUrl("");
+    setBlogImageAspect("landscape");
+    setBlogImageCrop(DEFAULT_CROP);
     setEditingPost(null);
     setPostSuggestion(null);
     setPostSuggestionOpen(false);
@@ -585,6 +599,10 @@ function AdminPageInner() {
     setBlogTitle(post.title);
     setBlogBody(post.body);
     setBlogExcerpt(post.excerpt);
+    setBlogPublishDate(post.publishedAt ? post.publishedAt.slice(0, 10) : new Date().toISOString().slice(0, 10));
+    setBlogImageUrl(post.imageUrl || "");
+    setBlogImageAspect(post.imageAspect || "landscape");
+    setBlogImageCrop(post.imageCrop || DEFAULT_CROP);
     setEditingPost(post.id);
     setTab("blog");
   }
@@ -673,15 +691,48 @@ function AdminPageInner() {
     if (!content || !newReview.text) return;
     const updated = {
       ...content,
-      reviews: [...content.reviews, { id: `rv${Date.now()}`, ...newReview }],
+      reviews: editingReviewId
+        ? content.reviews.map((review) => (review.id === editingReviewId ? { ...review, ...newReview } : review))
+        : [...content.reviews, { id: `rv${Date.now()}`, ...newReview }],
     };
     saveContent(updated);
     setNewReview({ stars: 5, text: "", author: "" });
+    setEditingReviewId(null);
   }
 
   function deleteReview(id: string) {
     if (!content || !confirm("Delete this review?")) return;
     saveContent({ ...content, reviews: content.reviews.filter((r) => r.id !== id) });
+  }
+
+  function editReview(review: ContentData["reviews"][0]) {
+    setNewReview({ stars: review.stars, text: review.text, author: review.author });
+    setEditingReviewId(review.id);
+    setTab("reviews");
+  }
+
+  function addAmenity() {
+    if (!content || !newAmenity.title || !newAmenity.description) return;
+    const updated = {
+      ...content,
+      amenities: editingAmenityId
+        ? content.amenities.map((amenity) => (amenity.id === editingAmenityId ? { ...amenity, ...newAmenity } : amenity))
+        : [...content.amenities, { id: `amenity${Date.now()}`, ...newAmenity }],
+    };
+    saveContent(updated);
+    setNewAmenity({ title: "", icon: "✨", description: "" });
+    setEditingAmenityId(null);
+  }
+
+  function deleteAmenity(id: string) {
+    if (!content || !confirm("Delete this amenity?")) return;
+    saveContent({ ...content, amenities: content.amenities.filter((amenity) => amenity.id !== id) });
+  }
+
+  function editAmenity(amenity: ContentData["amenities"][0]) {
+    setNewAmenity({ title: amenity.title, icon: amenity.icon, description: amenity.description });
+    setEditingAmenityId(amenity.id);
+    setTab("amenities");
   }
 
   function addAnnouncement() {
@@ -710,12 +761,26 @@ function AdminPageInner() {
     setTab("announcements");
   }
 
-  async function uploadImage(file: File, target: "menu" | "life" | "upcoming") {
+  async function uploadImage(file: File, target: "blog" | "menu" | "life" | "upcoming") {
     const token = getAuthToken();
     const formData = new FormData();
     formData.append("file", file);
-    const setLoading = target === "menu" ? setUploadingMenuPhoto : target === "life" ? setUploadingLifePhoto : setUploadingUpcomingPhoto;
-    const setMsg = target === "menu" ? setMenuPhotoMsg : target === "life" ? setLifePhotoMsg : setUpcomingPhotoMsg;
+    const setLoading =
+      target === "blog"
+        ? setUploadingBlogPhoto
+        : target === "menu"
+          ? setUploadingMenuPhoto
+          : target === "life"
+            ? setUploadingLifePhoto
+            : setUploadingUpcomingPhoto;
+    const setMsg =
+      target === "blog"
+        ? setBlogPhotoMsg
+        : target === "menu"
+          ? setMenuPhotoMsg
+          : target === "life"
+            ? setLifePhotoMsg
+            : setUpcomingPhotoMsg;
     setLoading(true);
     setMsg("");
     try {
@@ -749,7 +814,7 @@ function AdminPageInner() {
         : [...(content.menuItems ?? []), { id: `menu${Date.now()}`, ...newMenuItem }],
     };
     saveContent(updated);
-    setNewMenuItem({ name: "", description: "", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" });
+    setNewMenuItem({ name: "", description: "", category: "featured", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" });
     setEditingMenuItemId(null);
   }
 
@@ -762,6 +827,7 @@ function AdminPageInner() {
     setNewMenuItem({
       name: item.name,
       description: item.description,
+      category: item.category ?? "featured",
       imageUrl: item.imageUrl ?? "",
       imageAspect: item.imageAspect ?? "square",
       imageCrop: item.imageCrop ?? DEFAULT_CROP,
@@ -1101,6 +1167,7 @@ function AdminPageInner() {
   const monthlyAiActions = Math.max(1, Math.floor(tokenBudget.monthlyLimit / TOKENS_PER_REWRITE));
   const aiActionsUsed = Math.min(monthlyAiActions, Math.ceil(tokenBudget.used / TOKENS_PER_REWRITE));
   const aiActionsRemaining = Math.max(0, monthlyAiActions - aiActionsUsed);
+  const sortedUpcomingItems = sortUpcomingItems(content.upcomingItems ?? []);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
   const blogPostsThisMonth = content.blogPosts.filter((post) => {
@@ -1113,6 +1180,7 @@ function AdminPageInner() {
   const tabs = [
     { id: "blog", label: "Blog" },
     { id: "events", label: "Events" },
+    { id: "amenities", label: "Amenities" },
     { id: "upcoming", label: "Upcoming" },
     { id: "announcements", label: "Quick Updates" },
     { id: "menu", label: "Menu" },
@@ -1831,6 +1899,14 @@ function AdminPageInner() {
                   <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Excerpt (shown in blog listing)</label>
                   <input style={inputStyle} placeholder="Short summary of the post..." value={blogExcerpt} onChange={(e) => setBlogExcerpt(e.target.value)} />
 
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Publish Date</label>
+                  <input
+                    type="date"
+                    style={inputStyle}
+                    value={blogPublishDate}
+                    onChange={(e) => setBlogPublishDate(e.target.value)}
+                  />
+
                   <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Body Content</label>
                   <textarea
                     style={{ ...inputStyle, minHeight: 300, resize: "vertical", fontFamily: "inherit" }}
@@ -1838,6 +1914,42 @@ function AdminPageInner() {
                     value={blogBody}
                     onChange={(e) => setBlogBody(e.target.value)}
                   />
+
+                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Blog Photo</label>
+                  {renderAspectPicker(blogImageAspect, setBlogImageAspect)}
+                  {renderImagePreview("blog-draft", blogImageUrl, blogImageAspect, blogImageCrop, setBlogImageCrop, "Upload a blog photo to preview the crop")}
+                  {blogImageUrl && renderCropControls(blogImageCrop, setBlogImageCrop)}
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
+                    <label style={{ ...ghostBtn, cursor: uploadingBlogPhoto ? "wait" : "pointer" }}>
+                      {uploadingBlogPhoto ? "Uploading..." : "Upload Blog Photo"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const url = await uploadImage(file, "blog");
+                          if (url) setBlogImageUrl(url);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {blogImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBlogImageUrl("");
+                          setBlogImageAspect("landscape");
+                          setBlogImageCrop(DEFAULT_CROP);
+                        }}
+                        style={ghostBtn}
+                      >
+                        Remove Photo
+                      </button>
+                    )}
+                    {blogPhotoMsg && <span style={{ fontSize: 12, color: blogPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{blogPhotoMsg}</span>}
+                  </div>
 
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button onClick={saveBlogPost} style={btnStyle} disabled={saving}>
@@ -1977,6 +2089,56 @@ function AdminPageInner() {
           </div>
         )}
 
+        {/* AMENITIES */}
+        {tab === "amenities" && (
+          <div>
+            {renderSectionIntro(
+              "Amenities",
+              "Edit the included features people see on the site, like tables, chairs, AV, kitchen access, and location benefits.",
+              <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>,
+            )}
+
+            <div style={cardStyle}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{editingAmenityId ? "Edit Amenity" : "Add Amenity"}</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 12 }}>
+                <input style={inputStyle} placeholder="Icon" value={newAmenity.icon} onChange={(e) => setNewAmenity({ ...newAmenity, icon: e.target.value })} />
+                <input style={inputStyle} placeholder="Amenity title" value={newAmenity.title} onChange={(e) => setNewAmenity({ ...newAmenity, title: e.target.value })} />
+              </div>
+              <textarea
+                style={{ ...inputStyle, minHeight: 86, resize: "vertical" }}
+                placeholder="Short amenity description"
+                value={newAmenity.description}
+                onChange={(e) => setNewAmenity({ ...newAmenity, description: e.target.value })}
+              />
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={addAmenity} style={btnStyle}>{editingAmenityId ? "Save Changes" : "Save Amenity"}</button>
+                {editingAmenityId && <button onClick={() => { setNewAmenity({ title: "", icon: "✨", description: "" }); setEditingAmenityId(null); }} style={ghostBtn}>Cancel Edit</button>}
+              </div>
+            </div>
+
+            {content.amenities.length === 0 && (
+              <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No amenities yet.</div>
+            )}
+            {content.amenities.map((amenity) => (
+              <div key={amenity.id} style={{ ...cardStyle }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                    <span style={{ fontSize: 28 }}>{amenity.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>{amenity.title}</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{amenity.description}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }}>
+                    <button onClick={() => editAmenity(amenity)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
+                    <button onClick={() => deleteAmenity(amenity.id)} style={dangerBtn}>Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* UPCOMING */}
         {tab === "upcoming" && (
           <div>
@@ -1993,9 +2155,10 @@ function AdminPageInner() {
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Add Upcoming Item</h3>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", marginBottom: 16, lineHeight: 1.6 }}>
-                Great for flyers and public happenings. Keep it short, clear, and easy for guests to scan.
+                Great for flyers and public happenings like line dancing, bingo, karaoke, trivia, and special nights. Keep it short, clear, and easy for guests to scan.
               </div>
               <input style={inputStyle} placeholder="Title" value={newUpcoming.title} onChange={(e) => setNewUpcoming({ ...newUpcoming, title: e.target.value })} />
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Event date</div>
               <input style={inputStyle} type="date" value={newUpcoming.date} onChange={(e) => setNewUpcoming({ ...newUpcoming, date: e.target.value })} />
               <textarea
                 style={{ ...inputStyle, minHeight: 86, resize: "vertical" }}
@@ -2038,10 +2201,12 @@ function AdminPageInner() {
               </div>
             </div>
 
-            {(content.upcomingItems ?? []).length === 0 && (
+            {sortedUpcomingItems.length === 0 && (
               <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No upcoming items yet.</div>
             )}
-            {(content.upcomingItems ?? []).map((item) => (
+            {sortedUpcomingItems.map((item) => {
+              const status = getUpcomingStatus(item.date);
+              return (
               <div key={item.id} style={{ ...cardStyle }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                   <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -2051,8 +2216,13 @@ function AdminPageInner() {
                       </div>
                     )}
                     <div>
-                      <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
-                      {item.date && <div style={{ fontSize: 12, color: "#c9a84c", marginBottom: 8 }}>{new Date(item.date).toLocaleDateString()}</div>}
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
+                        <div style={{ fontWeight: 600 }}>{item.title}</div>
+                        <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: status.background, color: status.color, fontWeight: 700 }}>
+                          {status.label}
+                        </span>
+                      </div>
+                      {item.date && <div style={{ fontSize: 12, color: "#c9a84c", marginBottom: 8 }}>{new Date(`${item.date}T00:00:00`).toLocaleDateString()}</div>}
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)" }}>{item.description}</div>
                     </div>
                   </div>
@@ -2062,7 +2232,7 @@ function AdminPageInner() {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
 
@@ -2075,7 +2245,7 @@ function AdminPageInner() {
               <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>,
             )}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Add New Review</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{editingReviewId ? "Edit Review" : "Add New Review"}</h3>
               <select
                 style={{ ...inputStyle, cursor: "pointer" }}
                 value={newReview.stars}
@@ -2090,7 +2260,10 @@ function AdminPageInner() {
                 onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
               />
               <input style={inputStyle} placeholder="Author name (e.g. Facebook Reviewer)" value={newReview.author} onChange={(e) => setNewReview({ ...newReview, author: e.target.value })} />
-              <button onClick={addReview} style={btnStyle}>Add Review</button>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={addReview} style={btnStyle}>{editingReviewId ? "Save Changes" : "Add Review"}</button>
+                {editingReviewId && <button onClick={() => { setNewReview({ stars: 5, text: "", author: "" }); setEditingReviewId(null); }} style={ghostBtn}>Cancel Edit</button>}
+              </div>
             </div>
 
             {content.reviews.map((rv) => (
@@ -2100,7 +2273,10 @@ function AdminPageInner() {
                   <div style={{ fontStyle: "italic", color: "rgba(255,255,255,0.8)", marginBottom: 8, fontSize: 14 }}>&ldquo;{rv.text}&rdquo;</div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>— {rv.author}</div>
                 </div>
-                <button onClick={() => deleteReview(rv.id)} style={{ ...dangerBtn, flexShrink: 0, marginLeft: 16 }}>Delete</button>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>
+                  <button onClick={() => editReview(rv)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
+                  <button onClick={() => deleteReview(rv.id)} style={dangerBtn}>Delete</button>
+                </div>
               </div>
             ))}
           </div>
@@ -2216,6 +2392,16 @@ function AdminPageInner() {
                 Keep this focused on food and drinks. AI polish can improve wording, but it should not change ingredients, facts, prices, or availability.
               </div>
               <input style={inputStyle} placeholder="Item name" value={newMenuItem.name} onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })} />
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Menu section</div>
+              <select
+                style={inputStyle}
+                value={newMenuItem.category}
+                onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value as "featured" | "cafe" | "sweets" })}
+              >
+                <option value="featured">Featured Food</option>
+                <option value="cafe">Cafe Favorites</option>
+                <option value="sweets">Sweet Treats</option>
+              </select>
               <textarea style={{ ...inputStyle, minHeight: 86, resize: "vertical" }} placeholder="Description" value={newMenuItem.description} onChange={(e) => setNewMenuItem({ ...newMenuItem, description: e.target.value })} />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: -2, marginBottom: 12 }}>
                 <button onClick={polishMenuDraft} disabled={!newMenuItem.description || polishingMenuId !== null || tokenRemaining < TOKENS_PER_REWRITE} style={aiBtn}>
@@ -2252,7 +2438,7 @@ function AdminPageInner() {
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button onClick={addMenuItem} style={btnStyle}>{editingMenuItemId ? "Save Changes" : "Save Menu Item"}</button>
-                {editingMenuItemId && <button onClick={() => { setNewMenuItem({ name: "", description: "", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" }); setEditingMenuItemId(null); }} style={ghostBtn}>Cancel Edit</button>}
+                {editingMenuItemId && <button onClick={() => { setNewMenuItem({ name: "", description: "", category: "featured", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" }); setEditingMenuItemId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
 
@@ -2270,6 +2456,9 @@ function AdminPageInner() {
                       </div>
                     )}
                     <div>
+                      <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "#c9a84c", marginBottom: 4 }}>
+                        {item.category === "cafe" ? "Cafe Favorites" : item.category === "sweets" ? "Sweet Treats" : "Featured Food"}
+                      </div>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.name}</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", marginBottom: 8 }}>{item.description}</div>
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, color: "rgba(255,255,255,0.42)" }}>
@@ -2293,7 +2482,7 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               "Life at the Hub",
-              "Manage atmosphere photos and captions for the public gallery. This is the place for people, venue moments, and the feel of the business.",
+              "Manage atmosphere photos and captions for the public gallery. This is the place for people, venue moments, and the feel of the business, not dated public events.",
               <button onClick={() => openPublicPath("/upcoming")} style={ghostBtn}>View Upcoming & Life</button>,
               <div style={usageCard}>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Photos live</div>
@@ -2304,7 +2493,7 @@ function AdminPageInner() {
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>{editingLifePhotoId ? "Edit Life at the Hub Photo" : "Add Life at the Hub Photo"}</h3>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", marginBottom: 16, lineHeight: 1.6 }}>
-                Use this for atmosphere, people, venue moments, or featured gatherings. AI polish can tighten the caption without inventing what happened.
+                Use this for atmosphere, people, venue moments, or general gallery photos. If it is a dated public happening like line dancing, bingo, or karaoke, put it in Upcoming instead.
               </div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Photo shape</div>
               {renderAspectPicker(newLifePhoto.imageAspect, (next) => setNewLifePhoto({ ...newLifePhoto, imageAspect: next }))}
