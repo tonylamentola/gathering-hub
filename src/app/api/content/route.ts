@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { kv, CONTENT_KEY } from "@/lib/kv";
+import { kv, CONTENT_KEY, CONTENT_BACKUP_PREFIX } from "@/lib/kv";
 
 const CONTENT_PATH = path.join(process.cwd(), "data", "content.json");
 const ADMIN_PASSWORD = "GatheringHub2026!";
@@ -53,6 +53,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     try {
+      try {
+        const existing = await kv.get(CONTENT_KEY);
+        if (existing) {
+          await kv.set(`${CONTENT_BACKUP_PREFIX}${Date.now()}`, existing);
+        }
+      } catch {
+        // Ignore backup failures and still attempt primary save.
+      }
       await kv.set(CONTENT_KEY, body);
     } catch {
       // Local/dev fallback so the portal remains editable without KV.

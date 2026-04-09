@@ -87,39 +87,6 @@ function readLocalContent(): SiteContent {
   return JSON.parse(raw) as SiteContent;
 }
 
-function mergeById<T extends { id: string }>(primary: T[] = [], fallback: T[] = []): T[] {
-  const merged = [...primary];
-  for (const item of fallback) {
-    if (!merged.some((existing) => existing.id === item.id)) {
-      merged.push(item);
-    }
-  }
-  return merged;
-}
-
-export function mergeSiteContent(primary: SiteContent = {}, fallback: SiteContent = {}): SiteContent {
-  return {
-    ...fallback,
-    ...primary,
-    settings: {
-      ...(fallback.settings ?? {}),
-      ...(primary.settings ?? {}),
-    },
-    onboarding: {
-      ...(fallback.onboarding ?? {}),
-      ...(primary.onboarding ?? {}),
-    },
-    events: mergeById(primary.events, fallback.events),
-    amenities: mergeById(primary.amenities, fallback.amenities),
-    blogPosts: primary.blogPosts ?? fallback.blogPosts ?? [],
-    menuItems: mergeById(primary.menuItems, fallback.menuItems),
-    lifeAtHubPhotos: mergeById(primary.lifeAtHubPhotos, fallback.lifeAtHubPhotos),
-    upcomingItems: mergeById(primary.upcomingItems, fallback.upcomingItems),
-    reviews: mergeById(primary.reviews, fallback.reviews),
-    announcements: mergeById(primary.announcements, fallback.announcements),
-  };
-}
-
 export async function getSiteContent(): Promise<SiteContent> {
   const hasKvConfig = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
   const localContent = readLocalContent();
@@ -127,7 +94,7 @@ export async function getSiteContent(): Promise<SiteContent> {
   if (hasKvConfig) {
     try {
       const kvData = await kv.get<SiteContent>(CONTENT_KEY);
-      if (kvData) return mergeSiteContent(kvData, localContent);
+      if (kvData) return kvData;
     } catch {
       // Fallback for local/dev or missing KV.
     }
