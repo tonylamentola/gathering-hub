@@ -56,6 +56,9 @@ export type UpcomingItem = {
   id: string;
   title: string;
   date?: string;
+  time?: string;
+  price?: string;
+  details?: string;
   description: string;
   imageUrl?: string;
   imageAspect?: "landscape" | "square" | "portrait";
@@ -78,6 +81,13 @@ export type SiteContent = {
   menuItems?: MenuItem[];
   lifeAtHubPhotos?: LifeAtHubPhoto[];
   upcomingItems?: UpcomingItem[];
+  flyerBudget?: {
+    monthlyLimit: number;
+    used: number;
+    resetMonth: string;
+    extraRequested?: boolean;
+    requestNote?: string;
+  };
   reviews?: Array<{ id: string; stars: number; text: string; author: string }>;
   announcements?: Array<{ id: string; title: string; body: string; active: boolean }>;
 };

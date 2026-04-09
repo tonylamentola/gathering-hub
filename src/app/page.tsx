@@ -1,6 +1,7 @@
 import Nav from "@/components/Nav";
 import QuoteForm from "@/components/QuoteForm";
 import { getSiteContent } from "@/lib/content";
+import type { ReactNode } from "react";
 
 type EventItem = {
   id: string;
@@ -27,7 +28,7 @@ const fallbackEvents: EventItem[] = [
   { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, decorations, and the people you actually want around you." },
   { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting for showers that feel thoughtful, easy, and worth remembering." },
   { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, and guests of all ages." },
-  { id: "event-private", emoji: "🥂", title: "Private Gatherings", description: "Perfect for reunions, dinner parties, and special nights that need more warmth than a standard event room." },
+  { id: "event-private", emoji: "🎲", title: "Reunions & Game Nights", description: "Perfect for reunions, game nights, and easygoing gatherings that need more warmth than a standard event room." },
 ];
 
 const fallbackAmenities: AmenityItem[] = [
@@ -36,6 +37,54 @@ const fallbackAmenities: AmenityItem[] = [
   { id: "amenity-kitchen", icon: "🍽️", title: "Full Kitchen Access", description: "Bring your own food, prep for guests, and keep the flow of the event feeling easy." },
   { id: "amenity-downtown", icon: "📍", title: "Downtown Ithaca Location", description: "A central location that makes it easy for local guests to find you and settle in." },
 ];
+
+function LineIcon({ kind, color = "currentColor", size = 38, stroke = 1.8 }: { kind: string; color?: string; size?: number; stroke?: number }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: color,
+    strokeWidth: stroke,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  const icons: Record<string, ReactNode> = {
+    cake: <><path d="M5 10h14v8H5z" /><path d="M8 10V7" /><path d="M12 10V6" /><path d="M16 10V7" /><path d="M7 14h10" /><path d="M7 18h10" /></>,
+    baby: <><rect x="5" y="12" width="5" height="5" rx="1" /><rect x="10" y="7" width="5" height="5" rx="1" /><rect x="15" y="12" width="5" height="5" rx="1" /><path d="M7.5 14.5h0" /><path d="M12.5 9.5h0" /><path d="M17.5 14.5h0" /></>,
+    grad: <><path d="m3 9 9-4 9 4-9 4-9-4Z" /><path d="M7 11.5V15c0 1.7 2.2 3 5 3s5-1.3 5-3v-3.5" /><path d="M21 10v5" /></>,
+    toast: <><path d="M9 4h6v4a3 3 0 0 1-6 0V4Z" /><path d="M12 11v6" /><path d="M9 21h6" /></>,
+    games: <><rect x="5" y="6" width="14" height="14" rx="3" /><path d="M9 11h.01" /><path d="M15 11h.01" /><path d="M9 16h.01" /><path d="M15 16h.01" /></>,
+    chair: <><path d="M4 18v-5h3v5" /><path d="M17 18v-5h3v5" /><path d="M8 9h8v4H8z" /><path d="M12 13v5" /><path d="M5 13h14" /><path d="M4 9h2v4H4z" /><path d="M18 9h2v4h-2z" /></>,
+    speaker: <><path d="M4 14h4l5 4V6L8 10H4v4Z" /><path d="M17 9a4 4 0 0 1 0 6" /><path d="M19.5 6.5a7.5 7.5 0 0 1 0 11" /></>,
+    utensils: <><path d="M6 3v8" /><path d="M4 3v5" /><path d="M8 3v5" /><path d="M6 11v10" /><path d="M14 3v8" /><path d="M18 3v18" /><path d="M14 11h4" /></>,
+    pin: <><path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z" /><circle cx="12" cy="10" r="2.5" /></>,
+    phone: <><path d="M6 4h3l2 5-2 1.5a14 14 0 0 0 4.5 4.5L15 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 2-2Z" /></>,
+    mail: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="m4 8 8 6 8-6" /></>,
+    users: <><circle cx="9" cy="9" r="3" /><path d="M4 19a5 5 0 0 1 10 0" /><circle cx="17.5" cy="10" r="2.5" /><path d="M15.5 19a4 4 0 0 1 4-3.5" /></>,
+  };
+
+  return <svg {...common}>{icons[kind] || icons.pin}</svg>;
+}
+
+function eventIconFor(title: string, fallback: string) {
+  const text = `${title} ${fallback}`.toLowerCase();
+  if (text.includes("baby")) return "baby";
+  if (text.includes("grad")) return "grad";
+  if (text.includes("birthday")) return "cake";
+  if (text.includes("reunion") || text.includes("game")) return "games";
+  return "toast";
+}
+
+function amenityIconFor(title: string, fallback: string) {
+  const text = `${title} ${fallback}`.toLowerCase();
+  if (text.includes("chair") || text.includes("table")) return "chair";
+  if (text.includes("av") || text.includes("speaker") || text.includes("music")) return "speaker";
+  if (text.includes("kitchen") || text.includes("food")) return "utensils";
+  return "pin";
+}
 
 const images = {
   hero: "/images/hero-main.jpg",
@@ -229,7 +278,9 @@ export default async function HomePage({
           <div className="events-grid">
             {events.map((ev) => (
               <div key={ev.id} className="event-card">
-                <div className="event-card-icon">{ev.emoji}</div>
+                <div className="event-card-icon">
+                  <LineIcon kind={eventIconFor(ev.title, ev.emoji)} color="var(--gold-light)" size={44} stroke={1.7} />
+                </div>
                 <div className="event-card-body">
                   <h3>{ev.title}</h3>
                   <p>{ev.description}</p>
@@ -275,7 +326,7 @@ export default async function HomePage({
                 Owned and operated right here in Ithaca, Michigan, we take pride in offering a space that feels both elegant and comfortable. We handle the space so you can focus on the people and the occasion.
               </p>
               <div className="about-address">
-                <span>📍</span>
+                <span style={{ display: "inline-flex", color: "var(--navy)" }}><LineIcon kind="pin" color="currentColor" size={20} stroke={1.9} /></span>
                 <div>
                   <strong style={{ color: "var(--navy-dark)" }}>121 S Pine River Street</strong><br />
                   Ithaca, MI 48847<br />
@@ -296,7 +347,9 @@ export default async function HomePage({
           <div className="amenities-grid">
             {amenities.map((am) => (
               <div key={am.id} className="amenity-card">
-                <div className="amenity-icon">{am.icon}</div>
+                <div className="amenity-icon">
+                  <LineIcon kind={amenityIconFor(am.title, am.icon)} color="var(--gold-light)" size={34} stroke={1.7} />
+                </div>
                 <h4>{am.title}</h4>
                 <p>{am.description}</p>
               </div>
@@ -334,24 +387,24 @@ export default async function HomePage({
           <QuoteForm safeEmail={safeEmail} />
           <div className="contact-cards">
             <a href={`tel:${safePhone.replace(/\D/g, "")}`} className="contact-card">
-              <div className="icon">📞</div>
+              <div className="icon"><LineIcon kind="phone" color="currentColor" size={28} stroke={1.8} /></div>
               <div className="label">Call Us</div>
               <div className="value">{safePhone}</div>
             </a>
             <a href={`mailto:${safeEmail}`} className="contact-card">
-              <div className="icon">✉️</div>
+              <div className="icon"><LineIcon kind="mail" color="currentColor" size={28} stroke={1.8} /></div>
               <div className="label">Email Us</div>
               <div className="value" style={{ fontSize: 13 }}>{safeEmail}</div>
             </a>
             {safeFacebook && (
               <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="contact-card">
-                <div className="icon">👥</div>
+                <div className="icon"><LineIcon kind="users" color="currentColor" size={28} stroke={1.8} /></div>
                 <div className="label">Follow Us</div>
                 <div className="value">Facebook Page</div>
               </a>
             )}
             <a href={safeMapsUrl} target="_blank" rel="noopener noreferrer" className="contact-card">
-              <div className="icon">📍</div>
+              <div className="icon"><LineIcon kind="pin" color="currentColor" size={28} stroke={1.8} /></div>
               <div className="label">Find Us</div>
               <div className="value" style={{ fontSize: 13 }}>121 S Pine River St<br />Ithaca, MI 48847</div>
             </a>

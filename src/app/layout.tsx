@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   title: "The Gathering Hub | Event Venue in Ithaca, MI",
   description: "The Gathering Hub is Ithaca Michigan's premier event venue for birthdays, baby showers, bridal showers, corporate events, and more. 121 S Pine River St.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/images/gatheringhub-logo.jpg",
+    shortcut: "/images/gatheringhub-logo.jpg",
+    apple: "/images/gatheringhub-logo.jpg",
   },
   alternates: {
     canonical: "/",

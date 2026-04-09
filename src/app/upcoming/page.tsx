@@ -7,6 +7,9 @@ const fallbackUpcoming = [
     id: "fallback-upcoming-1",
     title: "Bingo Night",
     date: "",
+    time: "",
+    price: "",
+    details: "",
     description: "Watch this space for upcoming bingo nights, community fun, and public happenings at The Gathering Hub.",
     imageUrl: "",
     imageAspect: "portrait" as const,
@@ -41,7 +44,7 @@ function getAspectRatioValue(aspect?: string) {
 
 function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
   return {
-    objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+    objectPosition: `calc(50% + ${crop?.x ?? 0}px) calc(50% + ${crop?.y ?? 0}px)`,
     transform: `scale(${crop?.zoom ?? 1})`,
     transformOrigin: "center center",
   };
@@ -181,6 +184,9 @@ export default async function UpcomingPage() {
       <div className="page-header">
         <h1>Upcoming at the Hub</h1>
         <p>See what’s coming up next at The Gathering Hub, from bingo nights and public happenings to community events and featured moments.</p>
+        <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.82)", fontSize: 12, fontWeight: 600 }}>
+          Updated with current happenings
+        </div>
       </div>
 
       <section className="upcoming-section">
@@ -205,6 +211,11 @@ export default async function UpcomingPage() {
                 <div className={`eyebrow ${getEventStatus(item.date) === "Past Event" ? "past" : ""}`}>{getEventStatus(item.date)}</div>
                 <div className="upcoming-title">{item.title}</div>
                 {item.date && <div className="upcoming-date">{formatEventDate(item.date)}</div>}
+                {(item.time || item.price) && (
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+                    {[item.time, item.price].filter(Boolean).join(" · ")}
+                  </div>
+                )}
                 <div className="upcoming-copy">{item.description}</div>
               </div>
             </div>

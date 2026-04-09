@@ -63,7 +63,7 @@ function getAspectRatioValue(aspect?: string) {
 
 function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
   return {
-    objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+    objectPosition: `calc(50% + ${crop?.x ?? 0}px) calc(50% + ${crop?.y ?? 0}px)`,
     transform: `scale(${crop?.zoom ?? 1})`,
     transformOrigin: "center center",
   };
@@ -182,6 +182,9 @@ export default async function MenuPage() {
       <div className="page-header">
         <h1>Our <em>Menu</em></h1>
         <p>Homemade food, featured favorites, and simple details guests can check before they visit.</p>
+        <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.82)", fontSize: 12, fontWeight: 600 }}>
+          Recently updated menu highlights
+        </div>
       </div>
 
       <section className="menu-section">

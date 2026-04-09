@@ -33,10 +33,13 @@ export default function QuoteForm({ safeEmail }: QuoteFormProps) {
     padding: "12px 14px",
     borderRadius: 8,
     border: "1px solid rgba(36,49,117,0.15)",
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "inherit",
     color: "#1a1a2e",
     background: "white",
+    boxSizing: "border-box",
+    WebkitAppearance: "none",
+    appearance: "none",
   };
 
   return (

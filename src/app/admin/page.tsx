@@ -48,7 +48,8 @@ type ContentData = {
   amenities: Array<{ id: string; icon: string; title: string; description: string }>;
   menuItems?: Array<{ id: string; name: string; description: string; category?: "featured" | "cafe" | "sweets"; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop; price?: string; availability?: string }>;
   lifeAtHubPhotos?: Array<{ id: string; imageUrl: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop; caption: string }>;
-  upcomingItems?: Array<{ id: string; title: string; date?: string; description: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
+  upcomingItems?: Array<{ id: string; title: string; date?: string; time?: string; price?: string; details?: string; description: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
+  flyerBudget?: { monthlyLimit: number; used: number; resetMonth: string; extraRequested?: boolean; requestNote?: string };
   reviews: Array<{ id: string; stars: number; text: string; author: string }>;
   announcements: Array<{ id: string; title: string; body: string; active: boolean }>;
   blogPosts: Array<{ id: string; slug: string; title: string; excerpt: string; body: string; seoTitle: string; seoDescription: string; publishedAt: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
@@ -88,6 +89,18 @@ const EVENT_IDEA_BANK: EventSuggestion[] = [
 ];
 
 function normalizeContent(content: ContentData): ContentData {
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const normalizedFlyerBudget =
+    content.flyerBudget && content.flyerBudget.resetMonth === currentMonth
+      ? content.flyerBudget
+      : {
+          monthlyLimit: 5,
+          used: 0,
+          resetMonth: currentMonth,
+          extraRequested: false,
+          requestNote: "",
+        };
+
   return {
     ...content,
     settings: {
@@ -126,6 +139,7 @@ function normalizeContent(content: ContentData): ContentData {
     menuItems: content.menuItems ?? [],
     lifeAtHubPhotos: content.lifeAtHubPhotos ?? [],
     upcomingItems: content.upcomingItems ?? [],
+    flyerBudget: normalizedFlyerBudget,
     reviews: content.reviews ?? [],
     announcements: content.announcements ?? [],
     blogPosts: content.blogPosts ?? [],
@@ -135,6 +149,18 @@ function normalizeContent(content: ContentData): ContentData {
       resetMonth: new Date().toISOString().slice(0, 7),
     },
   };
+}
+
+function inferMenuCategory(item: { name?: string; description?: string; category?: "featured" | "cafe" | "sweets" }) {
+  if (item.category === "featured" || item.category === "cafe" || item.category === "sweets") return item.category;
+  const text = `${item.name ?? ""} ${item.description ?? ""}`.toLowerCase();
+  if (/(cookie|cheesecake|dessert|sweet|treat|brownie|cupcake|pie|cake)/.test(text)) return "sweets";
+  if (/(soup|salad|sub|sandwich|bread|lunch|cafe|bite)/.test(text)) return "cafe";
+  return "featured";
+}
+
+function getMenuCategoryLabel(category: "featured" | "cafe" | "sweets") {
+  return category === "cafe" ? "Cafe Favorites" : category === "sweets" ? "Sweet Treats" : "Featured Food";
 }
 
 function getSeasonForDate(date: Date) {
@@ -275,13 +301,20 @@ function AdminPageInner() {
 
   const [newMenuItem, setNewMenuItem] = useState({ name: "", description: "", category: "featured" as "featured" | "cafe" | "sweets", imageUrl: "", imageAspect: "square" as ImageAspect, imageCrop: DEFAULT_CROP, price: "", availability: "" });
   const [newLifePhoto, setNewLifePhoto] = useState({ imageUrl: "", imageAspect: "landscape" as ImageAspect, imageCrop: DEFAULT_CROP, caption: "" });
-  const [newUpcoming, setNewUpcoming] = useState({ title: "", date: "", description: "", imageUrl: "", imageAspect: "portrait" as ImageAspect, imageCrop: DEFAULT_CROP });
+  const [newUpcoming, setNewUpcoming] = useState({ title: "", date: "", time: "", price: "", details: "", description: "", imageUrl: "", imageAspect: "portrait" as ImageAspect, imageCrop: DEFAULT_CROP });
+  const [flyerStyleNote, setFlyerStyleNote] = useState("");
+  const [flyerMode, setFlyerMode] = useState<"generate" | "upload">("generate");
+  const [flyerDraftUrl, setFlyerDraftUrl] = useState("");
+  const [flyerAdjustNote, setFlyerAdjustNote] = useState("");
+  const [flyerChangesUsed, setFlyerChangesUsed] = useState(0);
   const [blogImageUrl, setBlogImageUrl] = useState("");
   const [blogImageAspect, setBlogImageAspect] = useState("landscape" as ImageAspect);
   const [blogImageCrop, setBlogImageCrop] = useState(DEFAULT_CROP);
   const [editingMenuItemId, setEditingMenuItemId] = useState<string | null>(null);
   const [editingLifePhotoId, setEditingLifePhotoId] = useState<string | null>(null);
   const [editingUpcomingId, setEditingUpcomingId] = useState<string | null>(null);
+  const [generatingFlyer, setGeneratingFlyer] = useState(false);
+  const [flyerMsg, setFlyerMsg] = useState("");
   const [uploadingBlogPhoto, setUploadingBlogPhoto] = useState(false);
   const [uploadingMenuPhoto, setUploadingMenuPhoto] = useState(false);
   const [uploadingLifePhoto, setUploadingLifePhoto] = useState(false);
@@ -827,7 +860,7 @@ function AdminPageInner() {
     setNewMenuItem({
       name: item.name,
       description: item.description,
-      category: item.category ?? "featured",
+      category: inferMenuCategory(item),
       imageUrl: item.imageUrl ?? "",
       imageAspect: item.imageAspect ?? "square",
       imageCrop: item.imageCrop ?? DEFAULT_CROP,
@@ -915,11 +948,17 @@ function AdminPageInner() {
     const updated = {
       ...content,
       upcomingItems: editingUpcomingId
-        ? (content.upcomingItems ?? []).map((item) => (item.id === editingUpcomingId ? { ...item, ...newUpcoming } : item))
-        : [...(content.upcomingItems ?? []), { id: `upcoming${Date.now()}`, ...newUpcoming }],
+        ? (content.upcomingItems ?? []).map((item) => (item.id === editingUpcomingId ? { ...item, ...newUpcoming, description: newUpcoming.description, details: newUpcoming.description } : item))
+        : [...(content.upcomingItems ?? []), { id: `upcoming${Date.now()}`, ...newUpcoming, description: newUpcoming.description, details: newUpcoming.description }],
     };
     saveContent(updated);
-    setNewUpcoming({ title: "", date: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP });
+    setNewUpcoming({ title: "", date: "", time: "", price: "", details: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP });
+    setFlyerStyleNote("");
+    setFlyerMsg("");
+    setFlyerDraftUrl("");
+    setFlyerAdjustNote("");
+    setFlyerChangesUsed(0);
+    setFlyerMode("generate");
     setEditingUpcomingId(null);
   }
 
@@ -932,14 +971,121 @@ function AdminPageInner() {
     setNewUpcoming({
       title: item.title,
       date: item.date ?? "",
-      description: item.description,
+      time: item.time ?? "",
+      price: item.price ?? "",
+      details: item.details ?? "",
+      description: item.details || item.description,
       imageUrl: item.imageUrl ?? "",
       imageAspect: item.imageAspect ?? "portrait",
       imageCrop: item.imageCrop ?? DEFAULT_CROP,
     });
     setEditingUpcomingId(item.id);
     setUpcomingEditorMsg("");
+    setFlyerMsg("");
+    setFlyerDraftUrl("");
+    setFlyerAdjustNote("");
+    setFlyerChangesUsed(0);
+    setFlyerMode(item.imageUrl ? "upload" : "generate");
     setTab("upcoming");
+  }
+
+  async function generateFlyerDraft(mode: "fresh" | "retry" | "adjust" = "fresh") {
+    if (!content || !newUpcoming.title.trim()) {
+      setFlyerMsg("❌ Add a title first.");
+      return;
+    }
+
+    const flyerBudget = content.flyerBudget ?? { monthlyLimit: 5, used: 0, resetMonth: new Date().toISOString().slice(0, 7), extraRequested: false, requestNote: "" };
+    const remaining = flyerBudget.monthlyLimit - flyerBudget.used;
+    if (mode === "fresh" && remaining <= 0) {
+      setFlyerMsg("❌ You’ve used all 5 flyer generations for this month.");
+      return;
+    }
+    if (mode !== "fresh" && !flyerDraftUrl) {
+      setFlyerMsg("❌ Generate a flyer first.");
+      return;
+    }
+    if (mode !== "fresh" && flyerChangesUsed >= 3) {
+      setFlyerMsg("❌ You’ve used all 3 flyer changes for this design.");
+      return;
+    }
+    if (mode === "adjust" && !flyerAdjustNote.trim()) {
+      setFlyerMsg("❌ Add what you want changed first.");
+      return;
+    }
+
+    setGeneratingFlyer(true);
+    setFlyerMsg(mode === "fresh" ? "🎨 Generating flyer..." : mode === "retry" ? "🔄 Trying another version..." : "✏️ Adjusting flyer...");
+    try {
+      const token = getAuthToken();
+      const res = await fetch("/api/flyer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: newUpcoming.title,
+          date: newUpcoming.date,
+          time: newUpcoming.time,
+          price: newUpcoming.price,
+          description: newUpcoming.description,
+          details: newUpcoming.description,
+          variationNote: mode === "adjust" ? flyerAdjustNote : "",
+          aspect: newUpcoming.imageAspect,
+          siteName: content.settings.siteName,
+          styleNote: flyerStyleNote,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setFlyerDraftUrl(data.url);
+        setFlyerMode("generate");
+        if (mode === "fresh") {
+          const updated = {
+            ...content,
+            flyerBudget: {
+              ...flyerBudget,
+              used: flyerBudget.used + 1,
+              extraRequested: false,
+              requestNote: "",
+            },
+          };
+          setContent(updated);
+          await saveContent(updated);
+          setFlyerChangesUsed(0);
+        } else {
+          setFlyerChangesUsed((current) => current + 1);
+        }
+        if (mode === "adjust") setFlyerAdjustNote("");
+        setFlyerMsg("✅ Flyer ready to review.");
+      } else {
+        setFlyerMsg(`❌ Flyer failed: ${data.error || "Unknown error"}`);
+      }
+    } catch {
+      setFlyerMsg("❌ Flyer failed. Check your connection.");
+    } finally {
+      setGeneratingFlyer(false);
+    }
+  }
+
+  async function requestMoreFlyers() {
+    if (!content) return;
+    const flyerBudget = content.flyerBudget ?? { monthlyLimit: 5, used: 0, resetMonth: new Date().toISOString().slice(0, 7), extraRequested: false, requestNote: "" };
+    const updated = {
+      ...content,
+      flyerBudget: {
+        ...flyerBudget,
+        extraRequested: true,
+        requestNote: "AI Assistant will let me know you want more flyer generations this month, and I’ll approve more.",
+      },
+    };
+    setContent(updated);
+    await saveContent(updated);
+    setFlyerMsg("🤖 AI Assistant will let me know and I’ll approve more.");
+  }
+
+  function keepGeneratedFlyer() {
+    if (!flyerDraftUrl) return;
+    setNewUpcoming((current) => ({ ...current, imageUrl: flyerDraftUrl }));
+    setFlyerMsg("✅ Flyer selected. Save the item to keep it on the site.");
   }
 
   async function polishUpcomingDraft() {
@@ -1167,6 +1313,8 @@ function AdminPageInner() {
   const monthlyAiActions = Math.max(1, Math.floor(tokenBudget.monthlyLimit / TOKENS_PER_REWRITE));
   const aiActionsUsed = Math.min(monthlyAiActions, Math.ceil(tokenBudget.used / TOKENS_PER_REWRITE));
   const aiActionsRemaining = Math.max(0, monthlyAiActions - aiActionsUsed);
+  const flyerBudget = content.flyerBudget ?? { monthlyLimit: 5, used: 0, resetMonth: new Date().toISOString().slice(0, 7), extraRequested: false, requestNote: "" };
+  const flyerActionsRemaining = Math.max(0, flyerBudget.monthlyLimit - flyerBudget.used);
   const sortedUpcomingItems = sortUpcomingItems(content.upcomingItems ?? []);
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -2146,9 +2294,15 @@ function AdminPageInner() {
               "Upcoming at the Hub",
               "Use this for public happenings like bingo, karaoke, trivia, cornhole, or special nights you want people to notice right away.",
               <button onClick={() => openPublicPath("/upcoming")} style={ghostBtn}>View Upcoming</button>,
-              <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Upcoming items</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{(content.upcomingItems ?? []).length}</div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Upcoming items</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{(content.upcomingItems ?? []).length}</div>
+                </div>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Flyers left this month</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{flyerActionsRemaining} / {flyerBudget.monthlyLimit}</div>
+                </div>
               </div>,
             )}
 
@@ -2159,45 +2313,134 @@ function AdminPageInner() {
               </div>
               <input style={inputStyle} placeholder="Title" value={newUpcoming.title} onChange={(e) => setNewUpcoming({ ...newUpcoming, title: e.target.value })} />
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Event date</div>
-              <input style={inputStyle} type="date" value={newUpcoming.date} onChange={(e) => setNewUpcoming({ ...newUpcoming, date: e.target.value })} />
+              <input style={{ ...inputStyle, fontSize: 16, WebkitAppearance: "none", appearance: "none" }} type="date" value={newUpcoming.date} onChange={(e) => setNewUpcoming({ ...newUpcoming, date: e.target.value })} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <input style={inputStyle} placeholder="Optional time" value={newUpcoming.time} onChange={(e) => setNewUpcoming({ ...newUpcoming, time: e.target.value })} />
+                <input style={inputStyle} placeholder="Optional price" value={newUpcoming.price} onChange={(e) => setNewUpcoming({ ...newUpcoming, price: e.target.value })} />
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>How do you want to add the flyer?</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                <button
+                  type="button"
+                  onClick={() => setFlyerMode("generate")}
+                  style={{
+                    ...ghostBtn,
+                    minHeight: 36,
+                    padding: "0 14px",
+                    background: flyerMode === "generate" ? "rgba(201,168,76,0.22)" : "rgba(255,255,255,0.03)",
+                    color: flyerMode === "generate" ? "#f3d57b" : "rgba(255,255,255,0.72)",
+                    border: flyerMode === "generate" ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  ✨ Generate Flyer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFlyerMode("upload")}
+                  style={{
+                    ...ghostBtn,
+                    minHeight: 36,
+                    padding: "0 14px",
+                    background: flyerMode === "upload" ? "rgba(97,111,182,0.22)" : "rgba(255,255,255,0.03)",
+                    color: flyerMode === "upload" ? "#d9e2ff" : "rgba(255,255,255,0.72)",
+                    border: flyerMode === "upload" ? "1px solid rgba(97,111,182,0.42)" : "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  Upload Your Own
+                </button>
+              </div>
               <textarea
                 style={{ ...inputStyle, minHeight: 86, resize: "vertical" }}
-                placeholder="Short description"
+                placeholder="More details, specials, contests, etc."
                 value={newUpcoming.description}
                 onChange={(e) => setNewUpcoming({ ...newUpcoming, description: e.target.value })}
               />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: -2, marginBottom: 12 }}>
                 <button onClick={polishUpcomingDraft} disabled={!newUpcoming.description || polishingUpcomingId !== null || tokenRemaining < TOKENS_PER_REWRITE} style={aiBtn}>
-                  {polishingUpcomingId ? "Polishing..." : "✨ Polish Description"}
+                  {polishingUpcomingId ? "Polishing..." : "✨ Polish Details"}
                 </button>
               </div>
               {upcomingEditorMsg && <div style={{ fontSize: 12, color: upcomingEditorMsg.startsWith("✅") ? "#4ade80" : upcomingEditorMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{upcomingEditorMsg}</div>}
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Flyer shape</div>
-              {renderAspectPicker(newUpcoming.imageAspect, (next) => setNewUpcoming({ ...newUpcoming, imageAspect: next }))}
-              {renderImagePreview("upcoming-draft", newUpcoming.imageUrl, newUpcoming.imageAspect, newUpcoming.imageCrop, (next) => setNewUpcoming({ ...newUpcoming, imageCrop: next }), "Upload a flyer or photo to preview the crop")}
-              {newUpcoming.imageUrl && renderCropControls(newUpcoming.imageCrop, (next) => setNewUpcoming({ ...newUpcoming, imageCrop: next }))}
-              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
-                <label style={{ ...ghostBtn, cursor: uploadingUpcomingPhoto ? "wait" : "pointer" }}>
-                  {uploadingUpcomingPhoto ? "Uploading..." : "Upload Flyer"}
+              {flyerMode === "generate" ? (
+                <div style={{ marginBottom: 14, padding: 16, borderRadius: 16, border: "1px solid rgba(201,168,76,0.18)", background: "linear-gradient(180deg, rgba(201,168,76,0.08) 0%, rgba(201,168,76,0.03) 100%)" }}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Optional flyer style note</div>
                   <input
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const url = await uploadImage(file, "upcoming");
-                      if (url) setNewUpcoming((current) => ({ ...current, imageUrl: url }));
-                      e.currentTarget.value = "";
-                    }}
+                    style={inputStyle}
+                    placeholder="Example: make this feel softer, more family-friendly, or more premium"
+                    value={flyerStyleNote}
+                    onChange={(e) => setFlyerStyleNote(e.target.value)}
                   />
-                </label>
-                {upcomingPhotoMsg && <span style={{ fontSize: 12, color: upcomingPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{upcomingPhotoMsg}</span>}
-                {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the item to keep it on the site.</span>}
-              </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Flyer shape</div>
+                  {renderAspectPicker(newUpcoming.imageAspect, (next) => setNewUpcoming({ ...newUpcoming, imageAspect: next }))}
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4, marginBottom: 12 }}>
+                    <button onClick={() => generateFlyerDraft("fresh")} disabled={generatingFlyer || flyerActionsRemaining <= 0 || !newUpcoming.title.trim()} style={aiBtn}>
+                      {generatingFlyer ? "Generating..." : "Go"}
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.6 }}>
+                    Default flyer vibe: modern farmhouse with dark blue, white, and marigold accents. AI Assistant will try to work the venue branding in unless you ask for something else.
+                  </div>
+                  {flyerDraftUrl && (
+                    <div style={{ marginBottom: 14, padding: 16, borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Flyer preview</div>
+                      <div style={{ width: "100%", maxWidth: 420, margin: "0 auto 14px", aspectRatio: getAspectRatioValue(newUpcoming.imageAspect), borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
+                        <img src={flyerDraftUrl} alt="Generated flyer preview" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginBottom: 12 }}>
+                        <button type="button" onClick={keepGeneratedFlyer} style={btnStyle}>Keep This Flyer</button>
+                        <button type="button" onClick={() => generateFlyerDraft("retry")} disabled={generatingFlyer || flyerChangesUsed >= 3} style={ghostBtn}>Retry</button>
+                      </div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Adjust this flyer</div>
+                      <input
+                        style={inputStyle}
+                        placeholder="What do you want changed?"
+                        value={flyerAdjustNote}
+                        onChange={(e) => setFlyerAdjustNote(e.target.value)}
+                      />
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+                        <button type="button" onClick={() => generateFlyerDraft("adjust")} disabled={generatingFlyer || flyerChangesUsed >= 3 || !flyerAdjustNote.trim()} style={ghostBtn}>
+                          Adjust
+                        </button>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
+                          {flyerChangesUsed} / 3 changes used
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {flyerMsg && <div style={{ fontSize: 12, color: flyerMsg.startsWith("✅") || flyerMsg.startsWith("🤖") ? "#4ade80" : flyerMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{flyerMsg}</div>}
+                </div>
+              ) : (
+                <div style={{ marginBottom: 14, padding: 16, borderRadius: 16, border: "1px solid rgba(97,111,182,0.22)", background: "linear-gradient(180deg, rgba(97,111,182,0.08) 0%, rgba(97,111,182,0.03) 100%)" }}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Flyer shape</div>
+                  {renderAspectPicker(newUpcoming.imageAspect, (next) => setNewUpcoming({ ...newUpcoming, imageAspect: next }))}
+                  {renderImagePreview("upcoming-draft", newUpcoming.imageUrl, newUpcoming.imageAspect, newUpcoming.imageCrop, (next) => setNewUpcoming({ ...newUpcoming, imageCrop: next }), "Upload a flyer or photo to preview the crop")}
+                  {newUpcoming.imageUrl && renderCropControls(newUpcoming.imageCrop, (next) => setNewUpcoming({ ...newUpcoming, imageCrop: next }))}
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+                    <label style={{ ...ghostBtn, cursor: uploadingUpcomingPhoto ? "wait" : "pointer" }}>
+                      {uploadingUpcomingPhoto ? "Uploading..." : "Upload Flyer"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const url = await uploadImage(file, "upcoming");
+                          if (url) setNewUpcoming((current) => ({ ...current, imageUrl: url }));
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </label>
+                    {upcomingPhotoMsg && <span style={{ fontSize: 12, color: upcomingPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{upcomingPhotoMsg}</span>}
+                    {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the item to keep it on the site.</span>}
+                  </div>
+                </div>
+              )}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Changes" : "Save Upcoming Item"}</button>
-                {editingUpcomingId && <button onClick={() => { setNewUpcoming({ title: "", date: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP }); setEditingUpcomingId(null); }} style={ghostBtn}>Cancel Edit</button>}
+                {(flyerMode === "upload" || !!newUpcoming.imageUrl) && (
+                  <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Changes" : "Save Upcoming Item"}</button>
+                )}
+                {editingUpcomingId && <button onClick={() => { setNewUpcoming({ title: "", date: "", time: "", price: "", details: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP }); setFlyerStyleNote(""); setFlyerMsg(""); setFlyerDraftUrl(""); setFlyerAdjustNote(""); setFlyerChangesUsed(0); setFlyerMode("generate"); setEditingUpcomingId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
 
@@ -2222,7 +2465,11 @@ function AdminPageInner() {
                           {status.label}
                         </span>
                       </div>
-                      {item.date && <div style={{ fontSize: 12, color: "#c9a84c", marginBottom: 8 }}>{new Date(`${item.date}T00:00:00`).toLocaleDateString()}</div>}
+                      {(item.date || item.time || item.price) && (
+                        <div style={{ fontSize: 12, color: "#c9a84c", marginBottom: 8 }}>
+                          {[item.date ? new Date(`${item.date}T00:00:00`).toLocaleDateString() : "", item.time ?? "", item.price ?? ""].filter(Boolean).join(" · ")}
+                        </div>
+                      )}
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)" }}>{item.description}</div>
                     </div>
                   </div>
@@ -2457,7 +2704,7 @@ function AdminPageInner() {
                     )}
                     <div>
                       <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "#c9a84c", marginBottom: 4 }}>
-                        {item.category === "cafe" ? "Cafe Favorites" : item.category === "sweets" ? "Sweet Treats" : "Featured Food"}
+                        {getMenuCategoryLabel(inferMenuCategory(item))}
                       </div>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{item.name}</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", marginBottom: 8 }}>{item.description}</div>
