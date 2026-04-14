@@ -2297,7 +2297,7 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               "Amenities",
-              "Edit the included features people see on the site, like tables, chairs, AV, kitchen access, and location benefits.",
+              "Edit the included features people see on the site, like tables, chairs, AV, in-house food, and location benefits.",
               <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>,
             )}
 

@@ -43,13 +43,13 @@ const fallbackMenuItems = [
 
 export const metadata: Metadata = {
   title: "Menu | The Gathering Hub - Ithaca, MI",
-  description: "Browse homemade favorites, desserts, and featured menu items from The Gathering Hub in downtown Ithaca, Michigan.",
+  description: "Browse homemade favorites, custom cakes, cookies, desserts, and featured food from The Gathering Hub in downtown Ithaca, Michigan.",
   alternates: {
     canonical: "/menu",
   },
   openGraph: {
     title: "Menu | The Gathering Hub - Ithaca, MI",
-    description: "Browse homemade favorites, desserts, and featured menu items from The Gathering Hub in downtown Ithaca, Michigan.",
+    description: "Browse homemade favorites, custom cakes, cookies, desserts, and featured food from The Gathering Hub in downtown Ithaca, Michigan.",
     url: "https://gathering-hub-cms.vercel.app/menu",
     images: [{ url: "/images/cookies-tray.jpg", width: 1200, height: 630, alt: "Cookies from The Gathering Hub" }],
   },
@@ -81,7 +81,7 @@ const menuSections = [
   {
     id: "featured",
     title: "Featured Food",
-    sub: "The dishes guests ask about first — the flavors that make a visit feel worth it.",
+    sub: "Homemade dishes and event favorites that let hosts visit with guests instead of cooking and cleaning.",
     label: "Featured Food",
   },
   {
@@ -93,7 +93,7 @@ const menuSections = [
   {
     id: "sweets",
     title: "Sweet Treats",
-    sub: "Homemade cookies, cheesecakes, and desserts worth planning your visit around.",
+    sub: "Homemade cookies, cheesecakes, celebratory cakes, and customizable sweets worth planning your visit around.",
     label: "Sweet Treats",
   },
 ] as const;
@@ -181,7 +181,7 @@ export default async function MenuPage() {
 
       <div className="page-header">
         <h1>Our <em>Menu</em></h1>
-        <p>Homemade food, featured favorites, and simple details guests can check before they visit.</p>
+        <p>Homemade food, custom desserts, and event-friendly favorites prepared in-house by Heather.</p>
         <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.82)", fontSize: 12, fontWeight: 600 }}>
           Recently updated menu highlights
         </div>
@@ -190,7 +190,7 @@ export default async function MenuPage() {
       <section className="menu-section">
         <h2 className="section-title">Homemade & Fresh</h2>
         <p className="section-sub">
-          Everything on the menu is made in-house. From warm cookies to hearty café favorites — this is the food guests keep coming back for.
+          Everything on the menu is made in-house through The Gathering Hub&rsquo;s licensed food facility. From warm cookies to hearty favorites, Heather handles the cooking so hosts can enjoy their guests.
         </p>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           {categorized.map((section, index) => (

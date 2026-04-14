@@ -25,16 +25,16 @@ type ReviewItem = {
 };
 
 const fallbackEvents: EventItem[] = [
-  { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, decorations, and the people you actually want around you." },
-  { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting for showers that feel thoughtful, easy, and worth remembering." },
-  { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, and guests of all ages." },
-  { id: "event-private", emoji: "🎲", title: "Reunions & Game Nights", description: "Perfect for reunions, game nights, and easygoing gatherings that need more warmth than a standard event room." },
+  { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, custom treats, and the people you actually want around you." },
+  { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting with in-house food and sweets so showers feel thoughtful, easy, and worth remembering." },
+  { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, custom cookies, and guests of all ages." },
+  { id: "event-private", emoji: "🎲", title: "Reunions & Game Nights", description: "Perfect for reunions, game nights, and easygoing gatherings where the cooking and cleanup are handled for you." },
 ];
 
 const fallbackAmenities: AmenityItem[] = [
   { id: "amenity-tables", icon: "🪑", title: "Tables & Chairs Included", description: "The basics are already here so you can focus on planning the details that matter most." },
   { id: "amenity-av", icon: "🔊", title: "AV Ready", description: "Use the space for music, announcements, slideshows, and the little moments people gather around." },
-  { id: "amenity-kitchen", icon: "🍽️", title: "Full Kitchen Access", description: "Bring your own food, prep for guests, and keep the flow of the event feeling easy." },
+  { id: "amenity-kitchen", icon: "🍽️", title: "Licensed In-House Kitchen", description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather." },
   { id: "amenity-downtown", icon: "📍", title: "Downtown Ithaca Location", description: "A central location that makes it easy for local guests to find you and settle in." },
 ];
 
@@ -138,7 +138,7 @@ const fallbackUpcomingStrip = [
 const venueFacts = [
   { label: "Private Rental", value: "Full space for your group" },
   { label: "Guest Count", value: "Best for intimate to mid-size events" },
-  { label: "Included", value: "Tables, chairs, AV, kitchen access" },
+  { label: "Food", value: "In-house cooking and desserts" },
   { label: "Pricing", value: "Weekday rentals from $150" },
 ];
 
@@ -146,28 +146,32 @@ const pricingAnchors = [
   {
     title: "Weekday Gatherings",
     price: "From $150",
-    description: "A simple starting point for smaller weekday celebrations, meetings, and private dinners.",
+    description: "A simple starting point for smaller weekday celebrations, meetings, and private dinners with food quoted by need.",
   },
   {
     title: "Weekend Events",
     price: "From $250",
-    description: "Best for showers, birthdays, graduations, and larger family celebrations.",
+    description: "Best for showers, birthdays, graduations, and larger family celebrations where you want the hosting load handled.",
   },
   {
-    title: "Food & Dessert Add-Ons",
+    title: "Food, Cakes & Cookies",
     price: "Quoted by need",
-    description: "Ask about homemade food, cookies, dessert tables, or cafe favorites when you inquire.",
+    description: "Ask about homemade meals, desserts, customizable cakes and cookies, and rare direct-to-food printing for JPEG designs.",
   },
 ];
 
 const faqs = [
   {
-    question: "Can we bring our own food?",
-    answer: "Yes. The space is flexible, and there are no catering minimums. You can also ask about food or dessert options from The Gathering Hub.",
+    question: "Who handles the food?",
+    answer: "Heather handles the cooking in-house. The Gathering Hub is a State of Michigan licensed food facility, and the kitchen is not a shared guest kitchen.",
   },
   {
     question: "What is included with a rental?",
-    answer: "Tables, chairs, AV access, full kitchen access, and private use of the space are included with bookings.",
+    answer: "Tables, chairs, AV access, private use of the space, and quote-based food or dessert options are available for bookings.",
+  },
+  {
+    question: "Can you make custom desserts?",
+    answer: "Yes. The Gathering Hub can do celebratory and customizable cakes and cookies, including direct food printing from JPEG artwork on cakes, cookies, and other food items.",
   },
   {
     question: "How do we check availability?",
@@ -187,6 +191,18 @@ function eventSlugFor(title: string) {
   if (text.includes("life")) return "celebrations-of-life";
   if (text.includes("corporate") || text.includes("company")) return "corporate-events";
   return "private-events";
+}
+
+function publicAmenity(am: AmenityItem): AmenityItem {
+  const text = `${am.title} ${am.description}`.toLowerCase();
+  if (text.includes("kitchen")) {
+    return {
+      ...am,
+      title: "Licensed In-House Kitchen",
+      description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather.",
+    };
+  }
+  return am;
 }
 
 function sortUpcomingItems<T extends { date?: string }>(items: T[]) {
@@ -213,6 +229,7 @@ export default async function HomePage({
   const amenities = (content as { amenities?: AmenityItem[] }).amenities?.length
     ? ((content as { amenities?: AmenityItem[] }).amenities as AmenityItem[])
     : fallbackAmenities;
+  const publicAmenities = amenities.map(publicAmenity);
   const reviews = ((content as { reviews?: ReviewItem[] }).reviews ?? []) as ReviewItem[];
   const upcomingStrip = content.upcomingItems?.length
     ? sortUpcomingItems(content.upcomingItems).slice(0, 4).map((item) => ({
@@ -257,7 +274,7 @@ export default async function HomePage({
     },
     sameAs: safeFacebook && safeFacebook !== "#" ? [safeFacebook] : undefined,
     description:
-      "Private venue rental in downtown Ithaca for birthdays, baby showers, graduations, and special gatherings.",
+      "Private venue rental and in-house food for birthdays, baby showers, graduations, and special gatherings.",
   };
 
   return (
@@ -279,7 +296,7 @@ export default async function HomePage({
         <div className="hero-content">
           <div className="hero-badge">✨ Downtown Ithaca&rsquo;s Private Event Venue</div>
           <h1>Your People Deserve a <em>Beautiful Space</em></h1>
-          <p>Private venue rental for birthdays, baby showers, graduations, and every celebration worth doing right — in the heart of downtown Ithaca.</p>
+          <p>Private venue rental with in-house food, desserts, and custom cakes and cookies for celebrations worth doing right in downtown Ithaca.</p>
           <div className="hero-ctas">
             <a href="#contact" className="btn-primary">📅 Check Availability</a>
             <a href="#photos" className="btn-secondary">See the Space →</a>
@@ -287,7 +304,7 @@ export default async function HomePage({
           <div className="hero-trust-line">
             <span>✔ Fully private rental</span>
             <span>✔ Tables, chairs &amp; AV included</span>
-            <span>✔ No catering minimums</span>
+            <span>✔ Licensed in-house food facility</span>
           </div>
           <div className="hero-detail-grid">
             {venueFacts.map((fact) => (
@@ -304,7 +321,7 @@ export default async function HomePage({
         <div className="stat"><div className="num">5★</div><div className="lbl">Community Reviews</div></div>
         <div className="stat"><div className="num">Any</div><div className="lbl">Occasion Welcome</div></div>
         <div className="stat"><div className="num">DT</div><div className="lbl">Downtown Ithaca</div></div>
-        <div className="stat"><div className="num">Full</div><div className="lbl">AV & Kitchen</div></div>
+        <div className="stat"><div className="num">Food</div><div className="lbl">Handled In-House</div></div>
       </div>
 
       {/* UPCOMING STRIP IMAGE */}
@@ -335,8 +352,8 @@ export default async function HomePage({
         {reviewMode && <div className="review-badge">Events</div>}
         <div className="container">
           <div className="section-label">Event Types</div>
-          <h2 className="section-title">Any Occasion, Perfectly Hosted</h2>
-          <p className="section-sub">Whatever you&rsquo;re celebrating, we make the space work for you — so you can focus on the people, not the logistics.</p>
+          <h2 className="section-title">Any Occasion, Fully Hosted</h2>
+          <p className="section-sub">Whatever you&rsquo;re celebrating, Heather handles the cooking, desserts, setup details, and cleanup so you can sit and visit with your guests.</p>
           <div className="events-grid">
             {events.map((ev) => (
               <a key={ev.id} className="event-card" href={`/events/${eventSlugFor(ev.title)}`}>
@@ -359,7 +376,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">Pricing Guide</div>
           <h2 className="section-title">Simple Starting Points</h2>
-          <p className="section-sub">Every event is a little different, but these anchors help you know where to start before requesting a quote.</p>
+          <p className="section-sub">Every event is a little different, but these anchors help you know where to start before requesting a quote for the space, food, and desserts.</p>
           <div className="pricing-grid">
             {pricingAnchors.map((item) => (
               <div key={item.title} className="pricing-card">
@@ -369,7 +386,7 @@ export default async function HomePage({
               </div>
             ))}
           </div>
-          <p className="pricing-note">Final pricing depends on date, time, setup, food needs, and event size.</p>
+          <p className="pricing-note">Final pricing depends on date, time, setup, food needs, custom desserts, and event size.</p>
         </div>
       </section>
 
@@ -380,7 +397,7 @@ export default async function HomePage({
           <div className="photos-intro">
             <div className="section-label">The Space</div>
             <h2 className="section-title">A Space Worth Showing Off</h2>
-            <p className="section-sub">From dessert tables to cozy gatherings, this is the kind of space that helps people relax, celebrate, and stay awhile.</p>
+            <p className="section-sub">From dessert tables to cozy gatherings, this is the kind of space where guests can relax while the cooking and dishes are handled for them.</p>
           </div>
           <div className="photos-grid">
             {homepagePhotos.map((photo) => (
@@ -403,9 +420,9 @@ export default async function HomePage({
             <div>
               <div className="section-label">About Us</div>
               <h2 className="section-title">A Venue Made for Your Moments</h2>
-              <p className="section-sub">The Gathering Hub was created for real moments: celebrations that matter, events that feel effortless, and memories that last.</p>
+              <p className="section-sub">The Gathering Hub was created for real moments: celebrations that matter, homemade food that feels personal, and memories that last.</p>
               <p style={{ marginTop: 20, fontSize: 15, color: "var(--muted)", lineHeight: 1.7 }}>
-                Owned and operated right here in Ithaca, Michigan, we take pride in offering a space that feels both elegant and comfortable. We handle the space so you can focus on the people and the occasion.
+                Owned and operated right here in Ithaca, Michigan, we take pride in offering a space that feels both elegant and comfortable. Heather also handles the cooking, desserts, and cleanup so hosts can focus on the people and the occasion.
               </p>
               <div className="about-address">
                 <span style={{ display: "inline-flex", color: "var(--navy)" }}><LineIcon kind="pin" color="currentColor" size={20} stroke={1.9} /></span>
@@ -417,7 +434,7 @@ export default async function HomePage({
               </div>
               <div className="host-bio-card">
                 <strong>Hosted with care by Heather and Trevor</strong>
-                <span>Guests regularly mention the homemade food, warm service, and how easy it feels to gather here without setup stress.</span>
+                <span>Guests regularly mention the homemade food, warm service, and how easy it feels to gather without stirring potatoes, doing dishes, or worrying about the food.</span>
               </div>
             </div>
           </div>
@@ -429,9 +446,9 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">What&rsquo;s Included</div>
           <h2 className="section-title">The Whole Space Is Yours</h2>
-          <p className="section-sub">Every booking includes tables, chairs, AV, and full kitchen access. Just bring your people.</p>
+          <p className="section-sub">Every booking includes tables, chairs, AV, and private use of the space. Food is cooked in-house through Heather&rsquo;s licensed kitchen.</p>
           <div className="amenities-grid">
-            {amenities.map((am) => (
+            {publicAmenities.map((am) => (
               <div key={am.id} className="amenity-card">
                 <div className="amenity-icon">
                   <LineIcon kind={amenityIconFor(am.title, am.icon)} color="var(--gold-light)" size={34} stroke={1.7} />
@@ -486,7 +503,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">Get In Touch</div>
           <h2 className="section-title">Ready to Lock in Your Date?</h2>
-          <p className="section-sub">Most weekends fill fast. Use the form below with your event type, preferred date, guest count, and food needs — we&apos;ll get back to you quickly.</p>
+          <p className="section-sub">Most weekends fill fast. Use the form below with your event type, preferred date, guest count, and food or dessert needs — we&apos;ll get back to you quickly.</p>
           <QuoteForm safeEmail={safeEmail} />
           <div className="contact-cards">
             <a href={`tel:${safePhone.replace(/\D/g, "")}`} className="contact-card">

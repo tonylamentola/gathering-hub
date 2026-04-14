@@ -263,7 +263,7 @@ function fallbackVoiceProfile(business: ReturnType<typeof getBusinessProfile>) {
     tone: "Warm, practical, reassuring, neighborly, and lightly polished",
     audience: business.audience || "Local families and hosts planning events",
     approvedFacts: business.approvedFacts || "Use only confirmed venue details, event types, contact info, and location facts already on the site.",
-    avoidClaims: business.avoidClaims || "Do not invent pricing, packages, staff support, availability, catering, capacity, or guarantees. Do not oversell or sound like a commercial.",
+    avoidClaims: business.avoidClaims || "Do not invent pricing, packages, availability, catering, capacity, or guarantees. Do not say guests can use the kitchen. The kitchen is not shared; food is prepared in-house through Heather's licensed food facility. Do not oversell or sound like a commercial.",
     seasonalFocus: business.seasonalFocus || "Helpful seasonal planning ideas for local hosts",
     voiceProfile: "Write like a thoughtful 55-year-old small business owner who knows her community well. She sounds calm, capable, welcoming, and experienced. She gives practical advice, speaks with quiet confidence, and never shares personal life details.",
     writingDo: "Lead with something useful. Sound conversational but tidy. Use plain language, local context, and gentle confidence. Offer helpful planning guidance before any call to action. Keep the business feeling trustworthy, steady, and easy to work with.",
@@ -457,7 +457,7 @@ Suggest ONE blog topic that fits the business and the time of year.
 
 Rules:
 - Base the topic on seasonal customer intent, local event planning, or common venue questions.
-- Do not invent packages, services, staff, catering options, capacity, or availability promises.
+- Do not invent packages, services, staff, food options, capacity, or availability promises.
 - Avoid commitments that are not explicitly known.
 - Make it genuinely helpful, not generic fluff.
 - Do not make the post read like an ad. Helpful first, promotion second.

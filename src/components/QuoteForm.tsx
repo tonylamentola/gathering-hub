@@ -117,10 +117,11 @@ export default function QuoteForm({ safeEmail }: QuoteFormProps) {
         </div>
         <select value={foodNeeds} onChange={(e) => setFoodNeeds(e.target.value)} style={fieldStyle}>
           <option>Not sure yet</option>
-          <option>Venue only</option>
-          <option>Snacks or dessert table</option>
-          <option>Meal / cafe favorites</option>
-          <option>Bring our own food</option>
+          <option>Venue only for now</option>
+          <option>In-house meal</option>
+          <option>Dessert table</option>
+          <option>Custom cake or cookies</option>
+          <option>Food printing on cake or cookies</option>
           <option>Need help deciding</option>
         </select>
         <textarea

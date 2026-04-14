@@ -11,55 +11,55 @@ const eventPages = {
     eyebrow: "Baby Showers in Ithaca, MI",
     title: "A Warm, Easy Space for Baby Showers",
     description:
-      "Host a baby shower with room for gifts, dessert, photos, and the people who matter most in a fully private downtown Ithaca venue.",
+      "Host a baby shower with room for gifts, photos, homemade food, and custom desserts in a fully private downtown Ithaca venue.",
     price: "Weekend showers from $250",
-    bestFor: ["Gift tables and dessert displays", "Family photos and games", "Flexible food options"],
-    seoDescription: "Plan a baby shower at The Gathering Hub, a private downtown Ithaca, MI venue with tables, chairs, AV, kitchen access, and flexible food options.",
+    bestFor: ["Gift tables and dessert displays", "Family photos and games", "In-house food and custom sweets"],
+    seoDescription: "Plan a baby shower at The Gathering Hub, a private downtown Ithaca, MI venue with tables, chairs, AV, in-house food, and custom desserts.",
   },
   graduations: {
     eyebrow: "Graduation Parties in Ithaca, MI",
     title: "Celebrate the Graduate Without Hosting at Home",
     description:
-      "Give family and friends a comfortable private space for food, photos, and a relaxed open-house style graduation celebration.",
+      "Give family and friends a comfortable private space with homemade food, custom cookies, photos, and a relaxed open-house style graduation celebration.",
     price: "Graduation gatherings from $250",
     bestFor: ["Open-house flow", "Food and dessert tables", "Guests of all ages"],
-    seoDescription: "Book The Gathering Hub for graduation parties in Ithaca, MI with a private venue, flexible setup, kitchen access, tables, chairs, and AV.",
+    seoDescription: "Book The Gathering Hub for graduation parties in Ithaca, MI with a private venue, in-house food, custom desserts, tables, chairs, and AV.",
   },
   birthdays: {
     eyebrow: "Birthday Party Venue in Ithaca, MI",
     title: "A Private Birthday Party Space That Feels Special",
     description:
-      "From milestone birthdays to casual family celebrations, The Gathering Hub gives you a private space that is easier than hosting at home.",
+      "From milestone birthdays to casual family celebrations, The Gathering Hub gives you a private space with homemade food and custom cake or cookie options.",
     price: "Birthday rentals from $150",
-    bestFor: ["Milestone birthdays", "Dinner and dessert setups", "Decorations and photo moments"],
-    seoDescription: "Host a birthday party at The Gathering Hub, a private Ithaca, MI venue with tables, chairs, AV, kitchen access, and flexible setup.",
+    bestFor: ["Milestone birthdays", "Dinner and dessert setups", "Custom printed cakes and cookies"],
+    seoDescription: "Host a birthday party at The Gathering Hub, a private Ithaca, MI venue with tables, chairs, AV, in-house food, and custom desserts.",
   },
   "celebrations-of-life": {
     eyebrow: "Celebration of Life Venue in Ithaca, MI",
     title: "A Thoughtful Place to Gather With Family",
     description:
-      "A calm, private setting for sharing a meal, honoring memories, and spending time together without worrying about setup and cleanup.",
+      "A calm, private setting for sharing a homemade meal, honoring memories, and spending time together without worrying about setup, cooking, or cleanup.",
     price: "Private gatherings from $150",
     bestFor: ["Family meals", "Photo and memory tables", "Quiet, supportive gatherings"],
-    seoDescription: "Gather for a celebration of life at The Gathering Hub in Ithaca, MI, a private venue with flexible setup and food options.",
+    seoDescription: "Gather for a celebration of life at The Gathering Hub in Ithaca, MI, a private venue with in-house food, flexible setup, and cleanup handled.",
   },
   "corporate-events": {
     eyebrow: "Corporate Events in Ithaca, MI",
     title: "A Better Room for Work Gatherings",
     description:
-      "Use The Gathering Hub for team meals, customer appreciation nights, small meetings, workshops, and local business celebrations.",
+      "Use The Gathering Hub for team meals, customer appreciation nights, small meetings, workshops, and local business celebrations with food handled in-house.",
     price: "Weekday business rentals from $150",
     bestFor: ["Team lunches", "Workshops and meetings", "Customer appreciation events"],
-    seoDescription: "Book The Gathering Hub for corporate events, team lunches, workshops, and small business gatherings in downtown Ithaca, MI.",
+    seoDescription: "Book The Gathering Hub for corporate events, team lunches, workshops, and small business gatherings with in-house food in downtown Ithaca, MI.",
   },
   "private-events": {
     eyebrow: "Private Event Venue in Ithaca, MI",
     title: "Make the Whole Space Yours",
     description:
-      "For reunions, game nights, bridal showers, dinners, and community gatherings, the space adapts to the event you want to host.",
+      "For reunions, game nights, bridal showers, dinners, and community gatherings, the space and in-house food adapt to the event you want to host.",
     price: "Private rentals from $150",
     bestFor: ["Reunions and game nights", "Private dinners", "Community gatherings"],
-    seoDescription: "The Gathering Hub is a private event venue in downtown Ithaca, MI for reunions, dinners, showers, parties, and community gatherings.",
+    seoDescription: "The Gathering Hub is a private event venue in downtown Ithaca, MI for reunions, dinners, showers, parties, community gatherings, and in-house food.",
   },
 } as const;
 
@@ -127,7 +127,7 @@ export default async function EventLandingPage({ params }: PageProps) {
           </div>
           <div className="hero-detail-grid">
             <div className="hero-detail-card"><div>Pricing</div><strong>{page.price}</strong></div>
-            <div className="hero-detail-card"><div>Included</div><strong>Tables, chairs, AV, kitchen</strong></div>
+            <div className="hero-detail-card"><div>Included</div><strong>Tables, chairs, AV, food options</strong></div>
             <div className="hero-detail-card"><div>Use</div><strong>Fully private rental</strong></div>
             <div className="hero-detail-card"><div>Location</div><strong>Downtown Ithaca, MI</strong></div>
           </div>
@@ -138,13 +138,13 @@ export default async function EventLandingPage({ params }: PageProps) {
         <div className="container">
           <div className="section-label">Why It Works</div>
           <h2 className="section-title">Built Around the Way People Actually Gather</h2>
-          <p className="section-sub">You get a private space with the essentials handled, plus enough flexibility to make the event feel personal.</p>
+          <p className="section-sub">You get a private space with the essentials handled, plus homemade food and desserts that help the event feel personal.</p>
           <div className="events-grid">
             {page.bestFor.map((item) => (
               <div key={item} className="event-card">
                 <div className="event-card-body">
                   <h3>{item}</h3>
-                  <p>Tell us what you are planning, and we will help shape the setup around the people, food, timing, and feel of the day.</p>
+                  <p>Tell us what you are planning, and we will help shape the setup, food, timing, and desserts around the feel of the day.</p>
                 </div>
               </div>
             ))}
@@ -160,17 +160,17 @@ export default async function EventLandingPage({ params }: PageProps) {
             <div className="pricing-card">
               <div className="pricing-title">Starting Point</div>
               <div className="pricing-price">{page.price}</div>
-              <p>Final pricing depends on date, time, setup, food needs, and guest count.</p>
+              <p>Final pricing depends on date, time, setup, food needs, custom desserts, and guest count.</p>
             </div>
             <div className="pricing-card">
               <div className="pricing-title">Included</div>
               <div className="pricing-price">Full Space</div>
-              <p>Tables, chairs, AV, kitchen access, and private use are included with bookings.</p>
+              <p>Tables, chairs, AV, private use, and quote-based in-house food options are available with bookings.</p>
             </div>
             <div className="pricing-card">
               <div className="pricing-title">Food</div>
-              <div className="pricing-price">Flexible</div>
-              <p>Bring your own food or ask about homemade food, cookies, desserts, and cafe favorites.</p>
+              <div className="pricing-price">In-House</div>
+              <p>Ask about homemade meals, desserts, custom cakes and cookies, and rare direct-to-food printing from JPEG artwork.</p>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default async function EventLandingPage({ params }: PageProps) {
         <div className="container">
           <div className="section-label">Request a Quote</div>
           <h2 className="section-title">Check Your Date</h2>
-          <p className="section-sub">Send the event type, preferred date, guest count, and food needs so The Gathering Hub can follow up with a helpful quote.</p>
+          <p className="section-sub">Send the event type, preferred date, guest count, and food or dessert needs so The Gathering Hub can follow up with a helpful quote.</p>
           <QuoteForm safeEmail={safeEmail} />
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="/events" className="btn-secondary">Browse All Events</a>

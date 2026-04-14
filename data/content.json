@@ -36,25 +36,25 @@
       "id": "event-birthday",
       "emoji": "🎉",
       "title": "Birthday Parties",
-      "description": "A private space for birthday dinners, dessert tables, decorations, and the people you actually want around you."
+      "description": "A private space for birthday dinners, dessert tables, custom treats, and the people you actually want around you."
     },
     {
       "id": "event-baby",
       "emoji": "🍼",
       "title": "Baby Showers",
-      "description": "A welcoming downtown Ithaca setting for showers that feel thoughtful, easy, and worth remembering."
+      "description": "A welcoming downtown Ithaca setting with in-house food and sweets so showers feel thoughtful, easy, and worth remembering."
     },
     {
       "id": "event-grad",
       "emoji": "🎓",
       "title": "Graduation Celebrations",
-      "description": "Celebrate milestones with a space that works for family, food, photos, and guests of all ages."
+      "description": "Celebrate milestones with a space that works for family, food, photos, custom cookies, and guests of all ages."
     },
     {
       "id": "event-private",
       "emoji": "🥂",
       "title": "Private Gatherings",
-      "description": "Perfect for reunions, dinner parties, and special nights that need more warmth than a standard event room."
+      "description": "Perfect for reunions, dinner parties, and special nights where the cooking and cleanup are handled for you."
     }
   ],
   "amenities": [
@@ -73,8 +73,8 @@
     {
       "id": "amenity-kitchen",
       "icon": "🍽️",
-      "title": "Full Kitchen Access",
-      "description": "Bring your own food, prep for guests, and keep the flow of the event feeling easy."
+      "title": "Licensed In-House Kitchen",
+      "description": "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather."
     },
     {
       "id": "amenity-downtown",
@@ -364,9 +364,9 @@
       "slug": "how-to-plan-a-memorable-graduation-celebration-at-the-gathering-hub-this-summer",
       "title": "How to Plan a Memorable Graduation Celebration at The Gathering Hub This Summer",
       "excerpt": "Discover practical tips for hosting a memorable summer graduation party at The Gathering Hub. Learn how to use our amenities and location to create a warm, welcoming celebration for your graduate in Ithaca, MI.",
-      "body": "Summer is an exciting season for celebrating achievements, and graduation parties are a perfect way to honor your loved ones’ milestones. If you’re planning a graduation celebration this year in Ithaca, The Gathering Hub offers a warm and welcoming space to gather friends and family close to downtown. \n\nTiming is key when hosting a graduation party. Consider the typical graduation dates for your school and plan your event shortly after to keep the celebration fresh and convenient for guests. The Gathering Hub’s central location on S Pine River St makes it easy for attendees to find and access the venue.\n\nOne of the great benefits of The Gathering Hub is the inclusion of tables and chairs, helping you avoid extra rental hassle. Additionally, the AV-ready setup means you can easily incorporate slideshows, speeches, or music to personalize the experience. Full kitchen access is another advantage — whether you’re preparing food yourself, working with local caterers, or organizing a potluck, the kitchen resources simplify your event logistics.\n\nTo make the party truly special, think about decorations and layouts that reflect the graduate’s personality and achievements. This could range from themed decor to a memory wall or photo booth area.\n\nManaging guest lists and invitations is easier when you have a dedicated space that feels like home but is large enough for your community. The Gathering Hub’s atmosphere supports close gatherings that are both professional and heartfelt.\n\nIf you’re considering The Gathering Hub for your upcoming graduation celebration, it’s a good idea to reach out early to discuss your needs and tour the space. You can call (989) 400-2175 or email thegatheringhub2025@outlook.com with questions or to schedule a visit. Planning ahead will help ensure your summer graduation party is a memorable and joyful occasion for everyone involved.",
+      "body": "Summer is an exciting season for celebrating achievements, and graduation parties are a perfect way to honor your loved ones’ milestones. If you’re planning a graduation celebration this year in Ithaca, The Gathering Hub offers a warm and welcoming space to gather friends and family close to downtown. \n\nTiming is key when hosting a graduation party. Consider the typical graduation dates for your school and plan your event shortly after to keep the celebration fresh and convenient for guests. The Gathering Hub’s central location on S Pine River St makes it easy for attendees to find and access the venue.\n\nOne of the great benefits of The Gathering Hub is the inclusion of tables and chairs, helping you avoid extra rental hassle. Additionally, the AV-ready setup means you can easily incorporate slideshows, speeches, or music to personalize the experience. Food is another place the Gathering Hub can help: Heather handles the cooking in-house through a State of Michigan licensed food facility, with homemade meals, desserts, custom cakes and cookies, and rare direct-to-food printing available by quote.\n\nTo make the party truly special, think about decorations and layouts that reflect the graduate’s personality and achievements. This could range from themed decor to a memory wall, photo booth area, or custom printed cookies with a JPEG design.\n\nManaging guest lists and invitations is easier when you have a dedicated space that feels like home but is large enough for your community. The Gathering Hub’s atmosphere supports close gatherings that are both professional and heartfelt, and the in-house food support lets hosts sit with guests instead of cooking or doing dishes.\n\nIf you’re considering The Gathering Hub for your upcoming graduation celebration, it’s a good idea to reach out early to discuss your needs and tour the space. You can call (989) 400-2175 or email thegatheringhub2025@outlook.com with questions or to schedule a visit. Planning ahead will help ensure your summer graduation party is a memorable and joyful occasion for everyone involved.",
       "seoTitle": "How to Plan a Memorable Graduation Celebration at The Gathering Hub This Summer | The Gathering Hub",
-      "seoDescription": "Discover practical tips for hosting a memorable summer graduation party at The Gathering Hub. Learn how to use our amenities and location to create a warm, welcoming celebration for your graduate in Ithaca, MI.",
+      "seoDescription": "Discover practical tips for hosting a memorable summer graduation party at The Gathering Hub with in-house food, custom desserts, and a welcoming space in Ithaca, MI.",
       "publishedAt": "2026-04-09T16:00:00.000Z",
       "imageUrl": "/uploads/upload-1775709210263.png",
       "imageAspect": "square",

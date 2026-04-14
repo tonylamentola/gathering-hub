@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://gathering-hub-cms.vercel.app"),
   title: "The Gathering Hub | Event Venue in Ithaca, MI",
-  description: "The Gathering Hub is Ithaca Michigan's premier event venue for birthdays, baby showers, bridal showers, corporate events, and more. 121 S Pine River St.",
+  description: "The Gathering Hub is a private Ithaca, Michigan event venue with in-house homemade food, custom desserts, and rare food printing. 121 S Pine River St.",
   icons: {
     icon: "/images/gatheringhub-logo.jpg",
     shortcut: "/images/gatheringhub-logo.jpg",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "The Gathering Hub | Event Venue in Ithaca, MI",
-    description: "Private venue rental in downtown Ithaca for birthdays, baby showers, graduations, and special gatherings.",
+    description: "Private venue rental in downtown Ithaca with in-house homemade food, custom cakes, cookies, and event hosting help.",
     url: "https://gathering-hub-cms.vercel.app",
     siteName: "The Gathering Hub",
     images: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The Gathering Hub | Event Venue in Ithaca, MI",
-    description: "Private venue rental in downtown Ithaca for birthdays, baby showers, graduations, and special gatherings.",
+    description: "Private venue rental in downtown Ithaca with in-house homemade food, custom cakes, cookies, and event hosting help.",
     images: ["/images/hero-main.jpg"],
   },
 };
