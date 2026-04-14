@@ -191,7 +191,19 @@ section { padding: 90px 24px; }
 /* KITCHEN / LIFE AT THE HUB STRIP */
 .kitchen-strip { background: var(--cream); padding: 70px 24px; }
 .kitchen-header { margin-bottom: 36px; }
+.kitchen-strip .section-label { color: var(--navy); }
 .kitchen-strip .section-title { color: var(--navy-dark); }
+.kitchen-strip .btn-secondary {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+  box-shadow: 0 12px 26px rgba(36,49,117,0.18);
+}
+.kitchen-strip .btn-secondary:hover {
+  background: var(--navy-dark);
+  border-color: var(--navy-dark);
+  box-shadow: 0 14px 30px rgba(36,49,117,0.24);
+}
 .kitchen-scroll {
   display: flex; gap: 16px;
   overflow-x: auto; padding-bottom: 12px;
