@@ -90,6 +90,19 @@ export type SiteContent = {
   };
   reviews?: Array<{ id: string; stars: number; text: string; author: string }>;
   announcements?: Array<{ id: string; title: string; body: string; active: boolean }>;
+  inquiries?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    eventType: string;
+    preferredDate: string;
+    guestCount: string;
+    foodNeeds: string;
+    message: string;
+    createdAt: string;
+    status: "new" | "contacted" | "booked" | "closed";
+  }>;
 };
 
 function readLocalContent(): SiteContent {

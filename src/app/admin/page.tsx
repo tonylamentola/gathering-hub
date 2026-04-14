@@ -52,6 +52,7 @@ type ContentData = {
   flyerBudget?: { monthlyLimit: number; used: number; resetMonth: string; extraRequested?: boolean; requestNote?: string };
   reviews: Array<{ id: string; stars: number; text: string; author: string }>;
   announcements: Array<{ id: string; title: string; body: string; active: boolean }>;
+  inquiries?: Array<{ id: string; name: string; email: string; phone: string; eventType: string; preferredDate: string; guestCount: string; foodNeeds: string; message: string; createdAt: string; status: "new" | "contacted" | "booked" | "closed" }>;
   blogPosts: Array<{ id: string; slug: string; title: string; excerpt: string; body: string; seoTitle: string; seoDescription: string; publishedAt: string; imageUrl?: string; imageAspect?: ImageAspect; imageCrop?: ImageCrop }>;
   tokenBudget: { monthlyLimit: number; used: number; resetMonth: string };
 };
@@ -142,6 +143,7 @@ function normalizeContent(content: ContentData): ContentData {
     flyerBudget: normalizedFlyerBudget,
     reviews: content.reviews ?? [],
     announcements: content.announcements ?? [],
+    inquiries: content.inquiries ?? [],
     blogPosts: content.blogPosts ?? [],
     tokenBudget: content.tokenBudget ?? {
       monthlyLimit: 50000,
@@ -243,7 +245,7 @@ function AdminPageInner() {
   const [pw, setPw] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [pwError, setPwError] = useState("");
-  const [tab, setTab] = useState<"overview" | "blog" | "events" | "amenities" | "upcoming" | "reviews" | "announcements" | "menu" | "life">("blog");
+  const [tab, setTab] = useState<"overview" | "blog" | "events" | "amenities" | "upcoming" | "reviews" | "announcements" | "menu" | "life" | "inquiries">("blog");
   const [content, setContent] = useState<ContentData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -1324,9 +1326,11 @@ function AdminPageInner() {
   }).length;
   const monthlyBlogDraftLimit = 4;
   const activeUpdatesCount = content.announcements.filter((announcement) => announcement.active).length;
+  const inquiries = [...(content.inquiries ?? [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const tabs = [
     { id: "blog", label: "Blog" },
+    { id: "inquiries", label: `Inquiries${inquiries.length ? ` (${inquiries.length})` : ""}` },
     { id: "events", label: "Events" },
     { id: "amenities", label: "Amenities" },
     { id: "upcoming", label: "Upcoming" },
@@ -1896,6 +1900,57 @@ function AdminPageInner() {
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={() => editPost(post)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
                   <button onClick={() => deletePost(post.id)} style={dangerBtn}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "inquiries" && (
+          <div>
+            {renderSectionIntro(
+              "Quote Inquiries",
+              "Requests submitted from the website form show up here, newest first, so leads are not trapped in an email compose flow.",
+              <button onClick={() => openPublicPath("/#contact")} style={ghostBtn}>View Live Form</button>,
+              <>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Total inquiries</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{inquiries.length}</div>
+                </div>
+                <div style={usageCard}>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>New</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{inquiries.filter((item) => item.status === "new").length}</div>
+                </div>
+              </>,
+            )}
+            {inquiries.length === 0 && (
+              <div style={cardStyle}>
+                <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No quote requests yet.</div>
+                <p style={{ color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.6 }}>
+                  When someone submits the homepage inquiry form, their name, contact info, event type, date, guest count, and food needs will appear here.
+                </p>
+              </div>
+            )}
+            {inquiries.map((item) => (
+              <div key={item.id} style={{ ...cardStyle, marginBottom: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 700 }}>{item.name || "Unnamed inquiry"}</div>
+                    <div style={{ color: "#c9a84c", fontSize: 13, marginTop: 4 }}>{item.eventType || "Event type not listed"}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
+                    {item.createdAt ? new Date(item.createdAt).toLocaleString() : "Date unknown"}
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 14 }}>
+                  <div style={usageCard}><div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Preferred date</div><div style={{ color: "white", marginTop: 4 }}>{item.preferredDate || "Not provided"}</div></div>
+                  <div style={usageCard}><div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Guest count</div><div style={{ color: "white", marginTop: 4 }}>{item.guestCount || "Not provided"}</div></div>
+                  <div style={usageCard}><div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Food needs</div><div style={{ color: "white", marginTop: 4 }}>{item.foodNeeds || "Not provided"}</div></div>
+                </div>
+                {item.message && <p style={{ color: "rgba(255,255,255,0.68)", lineHeight: 1.65, marginBottom: 14 }}>{item.message}</p>}
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  {item.email && <a href={`mailto:${item.email}`} style={ghostBtn}>Email {item.email}</a>}
+                  {item.phone && <a href={`tel:${item.phone.replace(/\D/g, "")}`} style={ghostBtn}>Call {item.phone}</a>}
                 </div>
               </div>
             ))}

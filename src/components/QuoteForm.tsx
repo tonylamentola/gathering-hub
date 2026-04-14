@@ -8,24 +8,35 @@ type QuoteFormProps = {
 
 export default function QuoteForm({ safeEmail }: QuoteFormProps) {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [eventType, setEventType] = useState("Birthday Party");
   const [preferredDate, setPreferredDate] = useState("");
   const [guestCount, setGuestCount] = useState("Under 20");
+  const [foodNeeds, setFoodNeeds] = useState("Not sure yet");
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const subjectName = name.trim() || "Guest";
-    const body = [
-      `Name: ${name.trim() || ""}`,
-      `Event type: ${eventType}`,
-      `Preferred date: ${preferredDate || ""}`,
-      `Approximate guest count: ${guestCount}`,
-      `Message: ${message.trim() || ""}`,
-    ].join("\n");
+    setStatus("sending");
+    setError("");
 
-    const mailtoUrl = `mailto:${safeEmail}?subject=${encodeURIComponent(`Event Quote Request — ${subjectName}`)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, "_blank");
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, eventType, preferredDate, guestCount, foodNeeds, message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unable to send inquiry.");
+      setStatus("sent");
+      setMessage("");
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Unable to send inquiry.");
+    }
   }
 
   const fieldStyle: React.CSSProperties = {
@@ -55,33 +66,62 @@ export default function QuoteForm({ safeEmail }: QuoteFormProps) {
       }}
     >
       <div style={{ display: "grid", gap: 14 }}>
-        <input
-          type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={fieldStyle}
-        />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+          <input
+            type="text"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={fieldStyle}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={fieldStyle}
+          />
+          <input
+            type="tel"
+            placeholder="Phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            style={fieldStyle}
+          />
+        </div>
         <select value={eventType} onChange={(e) => setEventType(e.target.value)} style={fieldStyle}>
           <option>Birthday Party</option>
           <option>Baby Shower</option>
           <option>Graduation</option>
+          <option>Celebration of Life</option>
           <option>Bridal Shower</option>
+          <option>Corporate Event</option>
           <option>Private Dinner</option>
           <option>Community Event</option>
           <option>Other</option>
         </select>
-        <input
-          type="date"
-          value={preferredDate}
-          onChange={(e) => setPreferredDate(e.target.value)}
-          style={fieldStyle}
-        />
-        <select value={guestCount} onChange={(e) => setGuestCount(e.target.value)} style={fieldStyle}>
-          <option>Under 20</option>
-          <option>20–40</option>
-          <option>40–60</option>
-          <option>60+</option>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+          <input
+            type="date"
+            value={preferredDate}
+            onChange={(e) => setPreferredDate(e.target.value)}
+            style={fieldStyle}
+          />
+          <select value={guestCount} onChange={(e) => setGuestCount(e.target.value)} style={fieldStyle}>
+            <option>Under 20</option>
+            <option>20–40</option>
+            <option>40–60</option>
+            <option>60+</option>
+          </select>
+        </div>
+        <select value={foodNeeds} onChange={(e) => setFoodNeeds(e.target.value)} style={fieldStyle}>
+          <option>Not sure yet</option>
+          <option>Venue only</option>
+          <option>Snacks or dessert table</option>
+          <option>Meal / cafe favorites</option>
+          <option>Bring our own food</option>
+          <option>Need help deciding</option>
         </select>
         <textarea
           rows={3}
@@ -92,11 +132,21 @@ export default function QuoteForm({ safeEmail }: QuoteFormProps) {
         />
       </div>
       <div style={{ marginTop: 18, textAlign: "center" }}>
-        <button type="submit" className="btn-primary">
-          📅 Send Quote Request
+        <button type="submit" className="btn-primary" disabled={status === "sending"}>
+          {status === "sending" ? "Sending..." : "📅 Send Quote Request"}
         </button>
+        {status === "sent" && (
+          <div style={{ marginTop: 10, fontSize: 13, color: "#1f7a3a", fontWeight: 700 }}>
+            Request received. We&apos;ll follow up soon.
+          </div>
+        )}
+        {status === "error" && (
+          <div style={{ marginTop: 10, fontSize: 13, color: "#b91c1c", fontWeight: 700 }}>
+            {error} You can still email {safeEmail}.
+          </div>
+        )}
         <div style={{ marginTop: 10, fontSize: 12, color: "var(--muted)" }}>
-          This will open your email app with the details pre-filled.
+          Your details are sent directly to The Gathering Hub for follow-up.
         </div>
       </div>
     </form>

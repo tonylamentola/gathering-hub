@@ -135,6 +135,60 @@ const fallbackUpcomingStrip = [
   { id: "fallback-upcoming-3", title: "Featured Nights", description: "See what’s coming up next and what guests are talking about.", imageUrl: images.upcomingMain, imageAspect: "portrait" as const, date: "" },
 ];
 
+const venueFacts = [
+  { label: "Private Rental", value: "Full space for your group" },
+  { label: "Guest Count", value: "Best for intimate to mid-size events" },
+  { label: "Included", value: "Tables, chairs, AV, kitchen access" },
+  { label: "Pricing", value: "Weekday rentals from $150" },
+];
+
+const pricingAnchors = [
+  {
+    title: "Weekday Gatherings",
+    price: "From $150",
+    description: "A simple starting point for smaller weekday celebrations, meetings, and private dinners.",
+  },
+  {
+    title: "Weekend Events",
+    price: "From $250",
+    description: "Best for showers, birthdays, graduations, and larger family celebrations.",
+  },
+  {
+    title: "Food & Dessert Add-Ons",
+    price: "Quoted by need",
+    description: "Ask about homemade food, cookies, dessert tables, or cafe favorites when you inquire.",
+  },
+];
+
+const faqs = [
+  {
+    question: "Can we bring our own food?",
+    answer: "Yes. The space is flexible, and there are no catering minimums. You can also ask about food or dessert options from The Gathering Hub.",
+  },
+  {
+    question: "What is included with a rental?",
+    answer: "Tables, chairs, AV access, full kitchen access, and private use of the space are included with bookings.",
+  },
+  {
+    question: "How do we check availability?",
+    answer: "Use the inquiry form with your event type, preferred date, guest count, and food needs. That gives the best starting point for a quote.",
+  },
+  {
+    question: "Where are you located?",
+    answer: "The Gathering Hub is located at 121 S Pine River Street in downtown Ithaca, Michigan.",
+  },
+];
+
+function eventSlugFor(title: string) {
+  const text = title.toLowerCase();
+  if (text.includes("baby")) return "baby-showers";
+  if (text.includes("grad")) return "graduations";
+  if (text.includes("birthday")) return "birthdays";
+  if (text.includes("life")) return "celebrations-of-life";
+  if (text.includes("corporate") || text.includes("company")) return "corporate-events";
+  return "private-events";
+}
+
 function sortUpcomingItems<T extends { date?: string }>(items: T[]) {
   return [...items].sort((a, b) => {
     const aTime = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
@@ -235,6 +289,14 @@ export default async function HomePage({
             <span>✔ Tables, chairs &amp; AV included</span>
             <span>✔ No catering minimums</span>
           </div>
+          <div className="hero-detail-grid">
+            {venueFacts.map((fact) => (
+              <div key={fact.label} className="hero-detail-card">
+                <div>{fact.label}</div>
+                <strong>{fact.value}</strong>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -277,17 +339,37 @@ export default async function HomePage({
           <p className="section-sub">Whatever you&rsquo;re celebrating, we make the space work for you — so you can focus on the people, not the logistics.</p>
           <div className="events-grid">
             {events.map((ev) => (
-              <div key={ev.id} className="event-card">
+              <a key={ev.id} className="event-card" href={`/events/${eventSlugFor(ev.title)}`}>
                 <div className="event-card-icon">
                   <LineIcon kind={eventIconFor(ev.title, ev.emoji)} color="var(--gold-light)" size={44} stroke={1.7} />
                 </div>
                 <div className="event-card-body">
                   <h3>{ev.title}</h3>
                   <p>{ev.description}</p>
+                  <span className="event-card-link">Plan this event →</span>
                 </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className={`pricing-section ${reviewMode ? "review-section" : ""}`} id="pricing">
+        {reviewMode && <div className="review-badge">Pricing</div>}
+        <div className="container">
+          <div className="section-label">Pricing Guide</div>
+          <h2 className="section-title">Simple Starting Points</h2>
+          <p className="section-sub">Every event is a little different, but these anchors help you know where to start before requesting a quote.</p>
+          <div className="pricing-grid">
+            {pricingAnchors.map((item) => (
+              <div key={item.title} className="pricing-card">
+                <div className="pricing-title">{item.title}</div>
+                <div className="pricing-price">{item.price}</div>
+                <p>{item.description}</p>
               </div>
             ))}
           </div>
+          <p className="pricing-note">Final pricing depends on date, time, setup, food needs, and event size.</p>
         </div>
       </section>
 
@@ -332,6 +414,10 @@ export default async function HomePage({
                   Ithaca, MI 48847<br />
                   <a href={`tel:${safePhone.replace(/\D/g, "")}`} style={{ color: "var(--navy)", fontWeight: 600 }}>{safePhone}</a>
                 </div>
+              </div>
+              <div className="host-bio-card">
+                <strong>Hosted with care by Heather and Trevor</strong>
+                <span>Guests regularly mention the homemade food, warm service, and how easy it feels to gather here without setup stress.</span>
               </div>
             </div>
           </div>
@@ -378,12 +464,29 @@ export default async function HomePage({
         </section>
       )}
 
+      <section className={`faq-section ${reviewMode ? "review-section" : ""}`} id="faq">
+        {reviewMode && <div className="review-badge">FAQs</div>}
+        <div className="container">
+          <div className="section-label">Quick Answers</div>
+          <h2 className="section-title">Before You Ask</h2>
+          <p className="section-sub">The details most people want before they decide whether to reach out.</p>
+          <div className="faq-grid">
+            {faqs.map((faq) => (
+              <div key={faq.question} className="faq-card">
+                <h3>{faq.question}</h3>
+                <p>{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className={`contact-section ${reviewMode ? "review-section" : ""}`} id="contact">
         {reviewMode && <div className="review-badge">Contact</div>}
         <div className="container">
           <div className="section-label">Get In Touch</div>
           <h2 className="section-title">Ready to Lock in Your Date?</h2>
-          <p className="section-sub">Most weekends fill fast. To get a quote, just include your event type, preferred date, and guest count — we&apos;ll get back to you quickly.</p>
+          <p className="section-sub">Most weekends fill fast. Use the form below with your event type, preferred date, guest count, and food needs — we&apos;ll get back to you quickly.</p>
           <QuoteForm safeEmail={safeEmail} />
           <div className="contact-cards">
             <a href={`tel:${safePhone.replace(/\D/g, "")}`} className="contact-card">
@@ -410,12 +513,8 @@ export default async function HomePage({
             </a>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <a href={`mailto:${safeEmail}?subject=Event Booking Inquiry`} className="btn-primary" style={{ fontSize: 16, padding: "16px 40px" }}>
-              📅 Check Availability
-            </a>
-            <a href={`mailto:${safeEmail}?subject=Event%20Quote%20Request&body=Hi%20there%2C%0A%0AI%E2%80%99m%20interested%20in%20hosting%20an%20event%20at%20The%20Gathering%20Hub.%0A%0AEvent%20type%3A%20%0APreferred%20date%3A%20%0AGuest%20count%3A%20%0A%0AThanks%21`} className="btn-secondary" style={{ fontSize: 16, padding: "16px 32px" }}>
-              Request a Quote
-            </a>
+            <a href={`tel:${safePhone.replace(/\D/g, "")}`} className="btn-primary" style={{ fontSize: 16, padding: "16px 40px" }}>Call with Questions</a>
+            <a href="/events/baby-showers" className="btn-secondary" style={{ fontSize: 16, padding: "16px 32px" }}>Browse Event Ideas</a>
           </div>
         </div>
       </section>
