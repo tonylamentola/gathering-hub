@@ -1,5 +1,6 @@
 "use client";
 import Nav from "@/components/Nav";
+import Link from "next/link";
 import { useState } from "react";
 
 const photos = [
@@ -57,6 +58,31 @@ export default function MenuPage() {
         }
         .page-header h1 em { font-style: normal; color: var(--gold); }
         .page-header p { font-size: 17px; color: rgba(255,255,255,0.7); max-width: 500px; margin: 0 auto; }
+        .header-actions {
+          margin-top: 22px;
+          display: flex;
+          justify-content: center;
+        }
+        .header-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(201,168,76,0.65);
+          color: white;
+          text-decoration: none;
+          background: rgba(201,168,76,0.12);
+          font-size: 13px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 10px 18px;
+          border-radius: 999px;
+          transition: all 0.2s ease;
+        }
+        .header-btn:hover {
+          background: rgba(201,168,76,0.25);
+          border-color: var(--gold);
+        }
 
         .menu-section { padding: 70px 24px; background: var(--cream); }
         .section-title {
@@ -181,6 +207,9 @@ export default function MenuPage() {
       <div className="page-header">
         <h1>Our <em>Menu</em> & Gallery</h1>
         <p>Homemade food, beautiful moments, and a warm community — all under one roof.</p>
+        <div className="header-actions">
+          <Link className="header-btn" href="/menu/catering">View Full Catering Menu</Link>
+        </div>
       </div>
 
       <section className="menu-section">
