@@ -241,7 +241,7 @@ export default function CateringMenuPage() {
 
       {/* Header */}
       <div className="catering-header">
-        <img src="/uploads/gatheringhublogo.jpg" alt="The Gathering Hub" className="logo" />
+        <img src="/images/gatheringhub-logo.jpg" alt="The Gathering Hub" className="logo" />
         <p className="tagline">Everything served with care — buffet style, per person</p>
         <div className="header-rule"></div>
       </div>
