@@ -263,7 +263,7 @@ function fallbackVoiceProfile(business: ReturnType<typeof getBusinessProfile>) {
     tone: "Warm, practical, reassuring, neighborly, and lightly polished",
     audience: business.audience || "Local families and hosts planning events",
     approvedFacts: business.approvedFacts || "Use only confirmed venue details, event types, contact info, and location facts already on the site.",
-    avoidClaims: business.avoidClaims || "Do not invent pricing, packages, staff support, availability, catering, capacity, or guarantees. Do not oversell or sound like a commercial.",
+    avoidClaims: business.avoidClaims || "Do not invent pricing, packages, availability, catering, capacity, or guarantees. Do not say guests can use the kitchen. The kitchen is not shared; food is prepared in-house through Heather's licensed food facility. Do not oversell or sound like a commercial.",
     seasonalFocus: business.seasonalFocus || "Helpful seasonal planning ideas for local hosts",
     voiceProfile: "Write like a thoughtful 55-year-old small business owner who knows her community well. She sounds calm, capable, welcoming, and experienced. She gives practical advice, speaks with quiet confidence, and never shares personal life details.",
     writingDo: "Lead with something useful. Sound conversational but tidy. Use plain language, local context, and gentle confidence. Offer helpful planning guidance before any call to action. Keep the business feeling trustworthy, steady, and easy to work with.",
@@ -278,7 +278,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { content, title, action, regenerateMode, previousSuggestion } = body;
+    const { content, title, action, regenerateMode, previousSuggestion, instructions } = body;
 
     // Read token budget from KV (or fallback to file)
     const contentData = await getContentData();
@@ -457,7 +457,7 @@ Suggest ONE blog topic that fits the business and the time of year.
 
 Rules:
 - Base the topic on seasonal customer intent, local event planning, or common venue questions.
-- Do not invent packages, services, staff, catering options, capacity, or availability promises.
+- Do not invent packages, services, staff, food options, capacity, or availability promises.
 - Avoid commitments that are not explicitly known.
 - Make it genuinely helpful, not generic fluff.
 - Do not make the post read like an ad. Helpful first, promotion second.
@@ -506,7 +506,7 @@ Rules:
       return NextResponse.json({ error: "Token budget exceeded for this month" }, { status: 429 });
     }
 
-    const prompt = `You are a professional copywriter and SEO expert for The Gathering Hub, an event venue in Ithaca, Michigan.
+    const prompt = `You are an AI assistant helping ${business.siteName} improve customer-facing copy while staying truthful and on-brand.
 
 Voice rules:
 - Brand tone: ${business.tone}
@@ -515,7 +515,10 @@ Voice rules:
 - Writing should do: ${business.writingDo || "Be useful, clear, and trustworthy."}
 - Writing should avoid: ${business.writingAvoid || "Avoid hype and invented claims."}
 
-Task: Polish and improve the following blog post content. Make it engaging, warm, and professional. Optimize for local SEO (Ithaca, MI, event venue keywords) without sounding like a commercial.
+Task: Polish and improve the following content. Keep it warm, clear, and professional without inventing facts.
+
+Specific instructions:
+${instructions || "Improve readability, clarity, and tone while keeping all facts the same."}
 
 Title: ${title || "Blog Post"}
 Content: ${content}
@@ -527,28 +530,7 @@ Return ONLY a JSON object with these exact fields:
   "seoDescription": "Meta description for SEO, 150-160 characters"
 }`;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://gathering-hub-cms.vercel.app",
-        "X-Title": "The Gathering Hub CMS",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-4.1-mini",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      return NextResponse.json({ error: `OpenRouter error: ${err}` }, { status: 500 });
-    }
-
-    const data = await response.json();
+    const data = await generateJson(prompt, 700, 0.6);
     const raw_text = data.choices?.[0]?.message?.content || "";
 
     // Parse JSON from response

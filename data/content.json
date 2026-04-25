@@ -1,5 +1,26 @@
 {
   "error": "Failed to read content",
+  "settings": {
+    "siteName": "The Gathering Hub",
+    "phone": "(989) 400-2175",
+    "email": "thegatheringhub2025@outlook.com",
+    "address": "121 S Pine River St, Ithaca, MI 48847",
+    "facebook": "https://www.facebook.com/profile.php?id=61575818494848",
+    "mapsUrl": "https://maps.google.com/?q=121+S+Pine+River+St,+Ithaca,+MI+48847",
+    "stripeBillingUrl": "",
+    "billingPlan": "$50/month",
+    "billingStatus": "Draft",
+    "nextStep": "Confirm onboarding details and send first monthly billing link.",
+    "onboardingNotes": ""
+  },
+  "onboarding": {
+    "billingLinkReady": false,
+    "contractShared": false,
+    "hostingAnswered": false,
+    "photosReceived": false,
+    "portalWalkthroughDone": false,
+    "voiceReviewed": false
+  },
   "aiProfile": {
     "tone": "Warm, welcoming, professional, community-focused",
     "audience": "Families, local hosts, community organizers, and people planning private events in the Ithaca area",
@@ -10,21 +31,372 @@
     "writingDo": "",
     "writingAvoid": ""
   },
-  "events": [],
-  "amenities": [],
-  "reviews": [],
+  "events": [
+    {
+      "id": "event-birthday",
+      "emoji": "🎉",
+      "title": "Birthday Parties",
+      "description": "A private space for birthday dinners, dessert tables, custom treats, and the people you actually want around you."
+    },
+    {
+      "id": "event-baby",
+      "emoji": "🍼",
+      "title": "Baby Showers",
+      "description": "A welcoming downtown Ithaca setting with in-house food and sweets so showers feel thoughtful, easy, and worth remembering."
+    },
+    {
+      "id": "event-grad",
+      "emoji": "🎓",
+      "title": "Graduation Celebrations",
+      "description": "Celebrate milestones with a space that works for family, food, photos, custom cookies, and guests of all ages."
+    },
+    {
+      "id": "event-private",
+      "emoji": "🥂",
+      "title": "Private Gatherings",
+      "description": "Perfect for reunions, dinner parties, and special nights where the cooking and cleanup are handled for you."
+    }
+  ],
+  "amenities": [
+    {
+      "id": "amenity-tables",
+      "icon": "🪑",
+      "title": "Tables & Chairs Included",
+      "description": "The basics are already here so you can focus on planning the details that matter most."
+    },
+    {
+      "id": "amenity-av",
+      "icon": "🔊",
+      "title": "AV Ready",
+      "description": "Use the space for music, announcements, slideshows, and the little moments people gather around."
+    },
+    {
+      "id": "amenity-kitchen",
+      "icon": "🍽️",
+      "title": "Licensed In-House Kitchen",
+      "description": "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather."
+    },
+    {
+      "id": "amenity-downtown",
+      "icon": "📍",
+      "title": "Downtown Ithaca Location",
+      "description": "A central location that makes it easy for local guests to find you and settle in."
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "legacy-menu-1",
+      "name": "Fresh-Baked Cookies",
+      "description": "Warm homemade cookies fresh from the café oven.",
+      "imageUrl": "/uploads/1775364248235-pphenppbah.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-2",
+      "name": "Hub Bites Parmesan Bread",
+      "description": "A savory favorite that fits well with gatherings, lunches, and shared tables.",
+      "imageUrl": "/uploads/1775364596605-auu88h6cqgf.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-3",
+      "name": "Asian Zing Salad",
+      "description": "A fresh menu option with bold flavor and a lighter feel.",
+      "imageUrl": "/uploads/1775364755624-m02hojwg2w.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-4",
+      "name": "Raspberry Cheesecake",
+      "description": "A homemade dessert that feels special enough for celebrations and sweet finishes.",
+      "imageUrl": "/uploads/1775364755624-17c88k7fp79.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-5",
+      "name": "Dessert Assortment",
+      "description": "A sweet selection that works well for gatherings, parties, and coffee breaks.",
+      "imageUrl": "/uploads/1775364755625-6ydqx3vb01r.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-6",
+      "name": "Desserts To Go",
+      "description": "Homemade treats ready to take along for celebrations, gifts, or a simple sweet stop.",
+      "imageUrl": "/uploads/1775365063795-9a1ndlwdghs.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-7",
+      "name": "Chicken Noodle Soup",
+      "description": "A cozy café favorite with a homemade feel and simple comfort.",
+      "imageUrl": "/uploads/1775365063796-nkcommvfglh.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-8",
+      "name": "Hub Sub",
+      "description": "A filling sandwich option that feels easy, familiar, and satisfying.",
+      "imageUrl": "/uploads/1775365063796-0fwru35womi.png",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "legacy-menu-9",
+      "name": "Featured Homemade Dessert",
+      "description": "A rotating homemade dessert highlight for guests who want something sweet and special.",
+      "imageUrl": "/uploads/1775365063797-gompbh4stj.jpeg",
+      "imageAspect": "square",
+      "price": "",
+      "availability": ""
+    },
+    {
+      "id": "menu1775707114867",
+      "name": "Feeling Lucky?",
+      "description": "Enjoy our Shamrock Cheesecake—a delicious treat that’s better than any pot of gold!",
+      "category": "featured",
+      "imageUrl": "/uploads/upload-1775707004098.jpg",
+      "imageAspect": "landscape",
+      "imageCrop": {
+        "zoom": 1.35,
+        "x": 16.03366666666662,
+        "y": -26
+      },
+      "price": "",
+      "availability": "Out of season! See you next year!"
+    }
+  ],
+  "lifeAtHubPhotos": [
+    {
+      "id": "legacy-life-1",
+      "imageUrl": "/uploads/1775365063798-xp8ohwtk3b.jpeg",
+      "imageAspect": "landscape",
+      "caption": "A quiet moment in The Gathering Hub, filled with the warm light and thoughtful details that welcome our guests before each event begins.\n\nThis peaceful scene reflects the care we put into creating a comfortable and inviting space for every gathering in the heart of Ithaca.",
+      "imageCrop": {
+        "zoom": 1,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "legacy-life-2",
+      "imageUrl": "/uploads/1775365063800-w4x3jcou9hq.jpeg",
+      "imageAspect": "square",
+      "caption": "Life at The Gathering Hub begins with a warm welcome that instantly makes you feel at home. Whether you're here for a family gathering, a community event, or a private celebration, the friendly atmosphere invites connection and comfort.\n\nEvery visit brings a sense of belonging, where neighbors and friends come together to share moments and create lasting memories in the heart of Ithaca, MI.",
+      "imageCrop": {
+        "zoom": 1,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "legacy-life-4",
+      "imageUrl": "/uploads/1775365063797-t2nj2g2nwa.jpeg",
+      "imageAspect": "square",
+      "caption": "Life at The Hub is shaped by the people who gather here and the stories they bring. This space reflects the warmth, creativity, and community spirit of everyone who calls it a meeting place.\n\nFrom local families and hosts to community organizers, The Gathering Hub thrives on the connections made within its walls. It’s more than a venue—it’s a welcoming home for shared moments and meaningful events in Ithaca, MI.",
+      "imageCrop": {
+        "zoom": 1.2,
+        "x": -3.8499999999999943,
+        "y": -27.799999999999983
+      }
+    },
+    {
+      "id": "life1775702303007",
+      "imageUrl": "/uploads/upload-1775702257601.jpg",
+      "imageAspect": "landscape",
+      "imageCrop": {
+        "zoom": 1,
+        "x": 0,
+        "y": 0
+      },
+      "caption": "Life at The Gathering Hub is full of sweet community moments like our Easter Cookie Workshop.\n\nFamilies and friends came together to decorate cookies, share in the spirit of the season, and enjoy the kind of gathering that makes this space feel like home."
+    },
+    {
+      "id": "life1775702423170",
+      "imageUrl": "/uploads/upload-1775702349956.jpg",
+      "imageAspect": "portrait",
+      "imageCrop": {
+        "zoom": 1.2,
+        "x": 10.900000000000006,
+        "y": -10.083333333333343
+      },
+      "caption": "Life at The Gathering Hub means making room for festive moments like our Halloween Cookie Workshop.\n\nIt was a joy to see creativity and laughter fill the room as families and friends decorated spooky treats and shared a warm, welcoming local tradition together."
+    }
+  ],
+  "upcomingItems": [
+    {
+      "id": "upcoming-cookie-easter",
+      "title": "Spring Cookie Decorating Workshop",
+      "date": "2026-04-01",
+      "description": "Cookie decorating workshop with cash bar, good times, and delicious cookies at The Gathering Hub.",
+      "imageUrl": "/uploads/upcoming-cookie-easter.jpeg",
+      "imageAspect": "landscape"
+    },
+    {
+      "id": "upcoming-bingo-night",
+      "title": "Bingo Night",
+      "date": "2026-03-04",
+      "description": "Hosted by the Gratiot Action Association at The Gathering Hub.",
+      "imageUrl": "/uploads/upcoming-bingo-night.png",
+      "imageAspect": "square"
+    },
+    {
+      "id": "upcoming-cookie-adults-only",
+      "title": "Adults-Only Cookie Decorating Workshop",
+      "date": "2026-02-13",
+      "description": "An 18+ cookie decorating workshop with cash bar, good times, and delicious cookies.",
+      "imageUrl": "/uploads/upcoming-cookie-adults-only.jpg",
+      "imageAspect": "landscape",
+      "imageCrop": {
+        "zoom": 1.35,
+        "x": -3,
+        "y": -11
+      }
+    },
+    {
+      "id": "upcoming-cookie-valentine",
+      "title": "Valentine Cookie Decorating Workshop",
+      "date": "2026-02-10",
+      "description": "Turn sugar into love this Valentine’s Day with a cookie decorating workshop at The Gathering Hub.",
+      "imageUrl": "/uploads/upcoming-cookie-valentine.jpg",
+      "imageAspect": "landscape"
+    },
+    {
+      "id": "upcoming-painting-with-twist",
+      "title": "Painting With Twist",
+      "date": "2025-11-30",
+      "description": "Save the date for Painting With Twist at The Gathering Hub with potato bar, cash bar, and hosted fun.",
+      "imageUrl": "/uploads/upcoming-painting-with-twist.png",
+      "imageAspect": "portrait"
+    },
+    {
+      "id": "upcoming-cookie-thanksgiving",
+      "title": "Thanksgiving Cookie Decorating Workshop",
+      "description": "A seasonal cookie decorating workshop to sweeten your Thanksgiving table.",
+      "imageUrl": "/uploads/upcoming-cookie-thanksgiving.png",
+      "imageAspect": "square"
+    },
+    {
+      "id": "upcoming1775702145853",
+      "title": "Karaoke Party",
+      "date": "2026-02-06",
+      "description": "Free Admission Hosted by Burford Plumbing & Heating",
+      "imageUrl": "/uploads/upload-1775702061034.png",
+      "imageAspect": "square",
+      "imageCrop": {
+        "zoom": 1.05,
+        "x": 3.950000000000017,
+        "y": 0
+      }
+    },
+    {
+      "id": "upcoming1775702909552",
+      "title": "Line Dancing",
+      "date": "2026-04-28",
+      "description": "Join us at The Gathering Hub for an evening of line dancing! Whether you're new to line dancing or a seasoned mover, everyone is welcome to enjoy this fun, community-focused event.\n\nBring your friends and family for a lively night of music, movement, and connection right here in Ithaca, MI.",
+      "imageUrl": "/uploads/upload-1775702853763.jpg",
+      "imageAspect": "portrait",
+      "imageCrop": {
+        "zoom": 1,
+        "x": 0,
+        "y": 16
+      }
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-heather-l",
+      "stars": 5,
+      "text": "We held our mother’s celebration of life at The Gathering Hub, and everything was handled so well. The food was homemade and absolutely delicious. Not having to worry about setup or cleanup gave us more time to be with family and friends. The pricing was great too. Highly recommend for any event.",
+      "author": "Heather L."
+    },
+    {
+      "id": "review-trina-s",
+      "stars": 5,
+      "text": "The meal was excellent, and my family was very pleased. Everything was done so well, and the peanut butter cookies were heavenly. We had a great experience.",
+      "author": "Trina S."
+    },
+    {
+      "id": "review-krista-l",
+      "stars": 5,
+      "text": "We had an incredible experience hosting my husband’s birthday at The Gathering Hub. From the first interaction to the end of the event, Heather was supportive, attentive, and wonderful to work with. The scratch-made meal was outstanding, and the homemade bread was top-tier. Every detail was handled so well, and the whole event felt stress-free.",
+      "author": "Krista L."
+    },
+    {
+      "id": "review-leslie-s",
+      "stars": 5,
+      "text": "The Gathering Hub hosted our company Christmas party, and it was absolutely perfect. Heather and Trevor went above and beyond to accommodate our group. The atmosphere was welcoming, the service was excellent, and the food was outstanding. It was a truly memorable evening.",
+      "author": "Leslie S."
+    },
+    {
+      "id": "review-george-b",
+      "stars": 5,
+      "text": "Our Rotary Club of Ithaca met there for lunch, and it was a great experience. The lunch was excellent, the host was wonderful, and I would definitely recommend The Gathering Hub for your next event.",
+      "author": "George B."
+    }
+  ],
   "announcements": [
     {
-      "id": "ann1775458934315",
-      "title": "Spring Has Sprung!",
-      "body": "Spring is here! Celebrate your special occasions like birthdays and baby showers in our bright and flexible event space.",
+      "id": "ann1775709433965",
+      "title": "Graduation Parties!",
+      "body": "Planning a graduation party? The Gathering Hub is now accepting bookings to help you celebrate this special milestone. Reserve your date early to ensure a seamless and memorable event with your family and friends in Ithaca, MI.",
       "active": true
     }
   ],
-  "blogPosts": [],
+  "blogPosts": [
+    {
+      "id": "bp1775709246932",
+      "slug": "how-to-plan-a-memorable-graduation-celebration-at-the-gathering-hub-this-summer",
+      "title": "How to Plan a Memorable Graduation Celebration at The Gathering Hub This Summer",
+      "excerpt": "Discover practical tips for hosting a memorable summer graduation party at The Gathering Hub. Learn how to use our amenities and location to create a warm, welcoming celebration for your graduate in Ithaca, MI.",
+      "body": "Summer is an exciting season for celebrating achievements, and graduation parties are a perfect way to honor your loved ones’ milestones. If you’re planning a graduation celebration this year in Ithaca, The Gathering Hub offers a warm and welcoming space to gather friends and family close to downtown. \n\nTiming is key when hosting a graduation party. Consider the typical graduation dates for your school and plan your event shortly after to keep the celebration fresh and convenient for guests. The Gathering Hub’s central location on S Pine River St makes it easy for attendees to find and access the venue.\n\nOne of the great benefits of The Gathering Hub is the inclusion of tables and chairs, helping you avoid extra rental hassle. Additionally, the AV-ready setup means you can easily incorporate slideshows, speeches, or music to personalize the experience. Food is another place the Gathering Hub can help: Heather handles the cooking in-house through a State of Michigan licensed food facility, with homemade meals, desserts, custom cakes and cookies, and rare direct-to-food printing available by quote.\n\nTo make the party truly special, think about decorations and layouts that reflect the graduate’s personality and achievements. This could range from themed decor to a memory wall, photo booth area, or custom printed cookies with a JPEG design.\n\nManaging guest lists and invitations is easier when you have a dedicated space that feels like home but is large enough for your community. The Gathering Hub’s atmosphere supports close gatherings that are both professional and heartfelt, and the in-house food support lets hosts sit with guests instead of cooking or doing dishes.\n\nIf you’re considering The Gathering Hub for your upcoming graduation celebration, it’s a good idea to reach out early to discuss your needs and tour the space. You can call (989) 400-2175 or email thegatheringhub2025@outlook.com with questions or to schedule a visit. Planning ahead will help ensure your summer graduation party is a memorable and joyful occasion for everyone involved.",
+      "seoTitle": "How to Plan a Memorable Graduation Celebration at The Gathering Hub This Summer | The Gathering Hub",
+      "seoDescription": "Discover practical tips for hosting a memorable summer graduation party at The Gathering Hub with in-house food, custom desserts, and a welcoming space in Ithaca, MI.",
+      "publishedAt": "2026-04-09T16:00:00.000Z",
+      "imageUrl": "/uploads/upload-1775709210263.png",
+      "imageAspect": "square",
+      "imageCrop": {
+        "zoom": 1,
+        "x": -0.1357421875,
+        "y": 0
+      }
+    },
+    {
+      "id": "bp1775705229683",
+      "slug": "family-friendly-amenities-at-the-gathering-hub-in-ithaca-mi",
+      "title": "Family-Friendly Amenities at The Gathering Hub in Ithaca, MI",
+      "excerpt": "The Gathering Hub in Ithaca, MI offers family-friendly amenities, including baby changing stations, to make your visit comfortable and welcoming.",
+      "body": "Family is at the heart of everything we do at The Gathering Hub. We understand the importance of making every visit comfortable for you and your little ones. That’s why we provide a baby changing station to ensure a convenient and welcoming experience for families visiting us in Ithaca, MI.",
+      "seoTitle": "Family-Friendly Amenities at The Gathering Hub in Ithaca, MI | The Gathering Hub",
+      "seoDescription": "The Gathering Hub in Ithaca, MI offers family-friendly amenities, including baby changing stations, to make your visit comfortable and welcoming.",
+      "publishedAt": "2026-04-02T16:00:00.000Z",
+      "imageUrl": "/uploads/upload-1775705098897.jpg",
+      "imageAspect": "portrait",
+      "imageCrop": {
+        "zoom": 1.420001220703125,
+        "x": 29.811965811965813,
+        "y": -4.258852258852259
+      }
+    }
+  ],
   "tokenBudget": {
     "monthlyLimit": 50000,
-    "used": 1000,
+    "used": 17000,
     "resetMonth": "2026-04"
   }
 }

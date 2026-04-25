@@ -1,0 +1,252 @@
+import Nav from "@/components/Nav";
+import { getSiteContent } from "@/lib/content";
+import type { Metadata } from "next";
+
+const fallbackUpcoming = [
+  {
+    id: "fallback-upcoming-1",
+    title: "Bingo Night",
+    date: "",
+    time: "",
+    price: "",
+    details: "",
+    description: "Watch this space for upcoming bingo nights, community fun, and public happenings at The Gathering Hub.",
+    imageUrl: "",
+    imageAspect: "portrait" as const,
+  },
+];
+
+const fallbackLifePhotos = [
+  { id: "fallback-life-1", imageUrl: "/uploads/1775365063798-xp8ohwtk3b.jpeg", imageAspect: "landscape" as const, caption: "Our event venue ready for a memorable gathering." },
+  { id: "fallback-life-2", imageUrl: "/uploads/1775365063800-w4x3jcou9hq.jpeg", imageAspect: "landscape" as const, caption: "A warm welcome at The Gathering Hub in Ithaca." },
+  { id: "fallback-life-3", imageUrl: "/uploads/1775365063799-5g3cs93mz1w.jpeg", imageAspect: "landscape" as const, caption: "A fun night at the Hub with room for community events." },
+];
+
+export const metadata: Metadata = {
+  title: "Upcoming | The Gathering Hub - Ithaca, MI",
+  description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
+  alternates: {
+    canonical: "/upcoming",
+  },
+  openGraph: {
+    title: "Upcoming | The Gathering Hub - Ithaca, MI",
+    description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
+    url: "https://gathering-hub-cms.vercel.app/upcoming",
+    images: [{ url: "/images/upcoming-main.jpg", width: 1200, height: 630, alt: "Upcoming events at The Gathering Hub" }],
+  },
+};
+
+function getAspectRatioValue(aspect?: string) {
+  if (aspect === "square") return "1 / 1";
+  if (aspect === "portrait") return "4 / 5";
+  return "4 / 3";
+}
+
+function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
+  return {
+    objectPosition: `calc(50% + ${crop?.x ?? 0}px) calc(50% + ${crop?.y ?? 0}px)`,
+    transform: `scale(${crop?.zoom ?? 1})`,
+    transformOrigin: "center center",
+  };
+}
+
+function sortUpcomingItems<T extends { date?: string }>(items: T[]) {
+  return [...items].sort((a, b) => {
+    const aTime = a.date ? new Date(`${a.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    const bTime = b.date ? new Date(`${b.date}T00:00:00`).getTime() : Number.NEGATIVE_INFINITY;
+    return bTime - aTime;
+  });
+}
+
+function getEventStatus(date?: string) {
+  if (!date) return "Date To Be Announced";
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const eventTime = new Date(`${date}T00:00:00`).getTime();
+  return eventTime >= todayStart ? "Coming Up" : "Past Event";
+}
+
+function formatEventDate(date?: string) {
+  if (!date) return "";
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default async function UpcomingPage() {
+  const content = await getSiteContent();
+  const upcomingItems = content.upcomingItems?.length ? sortUpcomingItems(content.upcomingItems) : fallbackUpcoming;
+  const lifePhotos = (content.lifeAtHubPhotos?.length ? content.lifeAtHubPhotos : fallbackLifePhotos).map((photo) => ({
+    ...photo,
+    eyebrow: "Life at the Hub",
+    description: photo.caption,
+  }));
+
+  return (
+    <>
+      <Nav />
+      <style>{`
+        :root {
+          --navy: #243175;
+          --navy-dark: #1a2459;
+          --navy-light: #2d3d8a;
+          --gold: #c9a84c;
+          --cream: #faf8f4;
+        }
+        .page-header {
+          background: linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);
+          padding: 140px 24px 60px;
+          padding-top: calc(72px + 68px);
+          text-align: center;
+        }
+        .page-header h1 {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(32px, 5vw, 48px);
+          font-weight: 900;
+          color: white;
+          margin-bottom: 12px;
+        }
+        .page-header p { font-size: 17px; color: rgba(255,255,255,0.72); max-width: 560px; margin: 0 auto; }
+        .upcoming-section, .life-section { padding: 72px 24px; }
+        .upcoming-section { background: var(--cream); }
+        .life-section { background: white; }
+        .section-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--navy-dark);
+          text-align: center;
+          margin-bottom: 10px;
+        }
+        .section-sub {
+          text-align: center;
+          color: #64748b;
+          margin-bottom: 36px;
+          font-size: 15px;
+          max-width: 620px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .upcoming-grid, .life-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          max-width: 1140px;
+          margin: 0 auto;
+        }
+        .upcoming-card, .life-card {
+          background: white;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid rgba(36,49,117,0.1);
+          box-shadow: 0 8px 28px rgba(15,21,56,0.06);
+        }
+        .upcoming-image, .life-image {
+          width: 100%;
+          aspect-ratio: 4/3;
+          object-fit: cover;
+          display: block;
+        }
+        .upcoming-body, .life-body { padding: 18px; }
+        .eyebrow {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin-bottom: 8px;
+        }
+        .upcoming-title, .life-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--navy-dark);
+          margin-bottom: 8px;
+        }
+        .upcoming-date {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--gold);
+          margin-bottom: 10px;
+        }
+        .eyebrow.past {
+          color: #8b5e16;
+        }
+        .upcoming-copy, .life-copy {
+          font-size: 14px;
+          color: #334155;
+          line-height: 1.65;
+        }
+      `}</style>
+
+      <div className="page-header">
+        <h1>Upcoming at the Hub</h1>
+        <p>See what’s coming up next at The Gathering Hub, from bingo nights and public happenings to community events and featured moments.</p>
+        <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.82)", fontSize: 12, fontWeight: 600 }}>
+          Updated with current happenings
+        </div>
+      </div>
+
+      <section className="upcoming-section">
+        <h2 className="section-title">What’s Happening at the Hub</h2>
+        <p className="section-sub">This is the easy place for guests to spot bingo, karaoke, special nights, flyers, and public happenings.</p>
+        <div className="upcoming-grid">
+          {upcomingItems.map((item) => (
+            <div key={item.id} className="upcoming-card">
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="upcoming-image"
+                  loading="lazy"
+                  style={{
+                    aspectRatio: getAspectRatioValue(item.imageAspect),
+                    ...getCropStyle((item as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop),
+                  }}
+                />
+              )}
+              <div className="upcoming-body">
+                <div className={`eyebrow ${getEventStatus(item.date) === "Past Event" ? "past" : ""}`}>{getEventStatus(item.date)}</div>
+                <div className="upcoming-title">{item.title}</div>
+                {item.date && <div className="upcoming-date">{formatEventDate(item.date)}</div>}
+                {(item.time || item.price) && (
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+                    {[item.time, item.price].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+                <div className="upcoming-copy">{item.description}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="life-section">
+        <h2 className="section-title">Life at the Hub</h2>
+        <p className="section-sub">A look at the atmosphere, people, and warm community moments that make the space feel special.</p>
+        <div className="life-grid">
+          {lifePhotos.map((photo) => (
+            <div key={photo.id} className="life-card">
+              <img
+                src={photo.imageUrl}
+                alt={photo.caption}
+                className="life-image"
+                loading="lazy"
+                style={{
+                  aspectRatio: getAspectRatioValue(photo.imageAspect),
+                  ...getCropStyle((photo as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop),
+                }}
+              />
+              <div className="life-body">
+                <div className="eyebrow">{photo.eyebrow || "Life at the Hub"}</div>
+                <div className="life-copy">{photo.description || photo.caption}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}

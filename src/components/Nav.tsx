@@ -1,28 +1,54 @@
 "use client";
-import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Nav() {
   const [navOpen, setNavOpen] = useState(false);
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    if (href.startsWith("/#")) return pathname === "/";
+    return pathname === href;
+  }
+
+  function handleNavClick() {
+    setNavOpen(false);
+  }
+
   return (
     <nav>
-      <Link href="/" className="nav-logo">
+      <a href="/" className="nav-logo">
+        <img
+          src="/images/gatheringhub-logo.jpg"
+          alt="The Gathering Hub logo"
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: "50%",
+            objectFit: "cover",
+            flexShrink: 0,
+            border: "2px solid rgba(255,255,255,0.16)",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.16)",
+          }}
+        />
         <div className="nav-logo-text">
           <div className="name">The Gathering Hub</div>
           <div className="sub">Ithaca, Michigan</div>
         </div>
-      </Link>
+      </a>
       <button className="hamburger" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">
         <span /><span /><span />
       </button>
       <ul className={`nav-links${navOpen ? " open" : ""}`}>
-        <li><Link href="/">Home</Link></li>
-        <li><Link href="/#events">Events</Link></li>
-        <li><Link href="/#about">About</Link></li>
-        <li><Link href="/menu">Menu & Gallery</Link></li>
-        <li><Link href="/menu/catering">Catering Menu</Link></li>
-        <li><Link href="/blog">Blog</Link></li>
-        <li><Link href="/#contact" className="nav-cta">Book Now</Link></li>
+        <li><a href="/" onClick={handleNavClick} className={isActive("/") ? "active" : ""}>Home</a></li>
+        <li><a href="/#events" onClick={handleNavClick} className={isActive("/#events") ? "active" : ""}>Events</a></li>
+        <li><a href="/upcoming" onClick={handleNavClick} className={isActive("/upcoming") ? "active" : ""}>Upcoming</a></li>
+        <li><a href="/#about" onClick={handleNavClick} className={isActive("/#about") ? "active" : ""}>About</a></li>
+        <li><a href="/menu" onClick={handleNavClick} className={isActive("/menu") ? "active" : ""}>Menu</a></li>
+        <li><a href="/menu/catering" onClick={handleNavClick} className={isActive("/menu/catering") ? "active" : ""}>Catering</a></li>
+        <li><a href="/blog" onClick={handleNavClick} className={isActive("/blog") ? "active" : ""}>Blog</a></li>
+        <li><a href="/#contact" onClick={handleNavClick} className="nav-cta">Book Now</a></li>
       </ul>
     </nav>
   );

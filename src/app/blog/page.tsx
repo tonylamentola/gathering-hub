@@ -1,28 +1,19 @@
 import Nav from "@/components/Nav";
-import content from "../../../data/content.json";
 import Link from "next/link";
 import type { Metadata } from "next";
-
-type BlogPost = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  publishedAt: string;
-};
-
-type SiteSettings = {
-  facebook?: string;
-};
+import { getSiteContent, BlogPost, SiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Blog | The Gathering Hub",
   description: "Event planning tips, venue news, and inspiration from The Gathering Hub in Ithaca, MI.",
 };
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const content = await getSiteContent();
   const posts = (content.blogPosts ?? []) as BlogPost[];
-  const settings = ((content as unknown as { settings?: SiteSettings }).settings ?? {}) as SiteSettings;
+  const settings = (content.settings ?? {}) as SiteSettings;
 
   return (
     <>
@@ -41,6 +32,27 @@ export default function BlogPage() {
             <div className="blog-grid">
               {posts.map((post) => (
                 <div key={post.id} className="blog-card">
+                  {post.imageUrl && (
+                    <div
+                      style={{
+                        width: "100%",
+                        aspectRatio: post.imageAspect === "portrait" ? "4 / 5" : post.imageAspect === "square" ? "1 / 1" : "16 / 9",
+                        overflow: "hidden",
+                        background: "#efe5d3",
+                      }}
+                    >
+                      <img
+                        src={post.imageUrl}
+                        alt={post.title}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className="blog-card-body">
                     <div className="blog-date">{new Date(post.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
                     <h2>{post.title}</h2>

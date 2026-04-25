@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { kv, CONTENT_KEY } from "@/lib/kv";
+import { kv, CONTENT_KEY, CONTENT_BACKUP_PREFIX } from "@/lib/kv";
 
 const CONTENT_PATH = path.join(process.cwd(), "data", "content.json");
 const ADMIN_PASSWORD = "GatheringHub2026!";
@@ -20,14 +20,27 @@ function isAuthed(req: NextRequest): boolean {
 
 export async function GET() {
   try {
-    // Try KV first
-    const kvData = await kv.get(CONTENT_KEY);
-    if (kvData) {
-      return NextResponse.json(kvData);
-    }
-    // Fallback to static content.json (build-time file)
     const raw = readFileSync(CONTENT_PATH, "utf8");
-    return NextResponse.json(JSON.parse(raw));
+    const localContent = JSON.parse(raw);
+
+    const hasKvConfig =
+      !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
+
+    if (hasKvConfig) {
+      try {
+        const kvData = await kv.get(CONTENT_KEY);
+        if (kvData) {
+          // KV is authoritative once written — do NOT merge with file.
+          // Merging causes deleted items to ghost back from the file.
+          return NextResponse.json(kvData);
+        }
+      } catch {
+        // KV unavailable — fall through to local file.
+      }
+    }
+
+    // No KV data yet — use local file as seed.
+    return NextResponse.json(localContent);
   } catch {
     return NextResponse.json({ error: "Failed to read content" }, { status: 500 });
   }
@@ -40,6 +53,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     try {
+      try {
+        const existing = await kv.get(CONTENT_KEY);
+        if (existing) {
+          await kv.set(`${CONTENT_BACKUP_PREFIX}${Date.now()}`, existing);
+        }
+      } catch {
+        // Ignore backup failures and still attempt primary save.
+      }
       await kv.set(CONTENT_KEY, body);
     } catch {
       // Local/dev fallback so the portal remains editable without KV.

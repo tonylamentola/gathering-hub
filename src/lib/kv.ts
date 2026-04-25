@@ -6,3 +6,4 @@ export const kv = createClient({
 });
 
 export const CONTENT_KEY = 'gathering-hub:content';
+export const CONTENT_BACKUP_PREFIX = 'gathering-hub:content:backup:';
