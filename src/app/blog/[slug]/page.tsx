@@ -89,7 +89,7 @@ export default async function BlogPostPage({ params }: Props) {
       </section>
 
       <footer>
-        <div>© 2025 The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847</div>
+        <div>© 2026 The Gathering Hub · 121 S Pine River St, Ithaca, MI 48847</div>
         <div style={{ display: "flex", gap: 20 }}>
           <a href="tel:9894002175">(989) 400-2175</a>
           <a href="mailto:thegatheringhub2025@outlook.com">Email</a>

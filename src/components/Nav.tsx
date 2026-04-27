@@ -37,10 +37,16 @@ export default function Nav() {
           <div className="sub">Ithaca, Michigan</div>
         </div>
       </a>
-      <button className="hamburger" onClick={() => setNavOpen(!navOpen)} aria-label="Menu">
+      <button
+        className="hamburger"
+        onClick={() => setNavOpen(!navOpen)}
+        aria-label="Menu"
+        aria-controls="primary-navigation"
+        aria-expanded={navOpen}
+      >
         <span /><span /><span />
       </button>
-      <ul className={`nav-links${navOpen ? " open" : ""}`}>
+      <ul id="primary-navigation" className={`nav-links${navOpen ? " open" : ""}`}>
         <li><a href="/" onClick={handleNavClick} className={isActive("/") ? "active" : ""}>Home</a></li>
         <li><a href="/#events" onClick={handleNavClick} className={isActive("/#events") ? "active" : ""}>Events</a></li>
         <li><a href="/upcoming" onClick={handleNavClick} className={isActive("/upcoming") ? "active" : ""}>Upcoming</a></li>

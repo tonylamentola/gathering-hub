@@ -374,7 +374,7 @@ section { padding: 90px 24px; }
 .faq-card p { color: var(--muted); font-size: 14px; line-height: 1.65; }
 
 /* CONTACT */
-.contact-section { background: linear-gradient(180deg, rgba(250,248,244,0) 0%, rgba(15,21,56,0.06) 5%, var(--navy-dark) 14%); text-align: center; }
+.contact-section { background: var(--navy-dark); text-align: center; }
 .contact-section .section-title { color: white; }
 .contact-section .section-label { color: var(--gold-light); }
 .contact-section .section-sub { color: rgba(255,255,255,0.6); margin: 0 auto 40px; }

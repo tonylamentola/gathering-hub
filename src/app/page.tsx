@@ -572,7 +572,9 @@ export default async function HomePage({
           __html: `
         document.querySelectorAll('a[href^="#"]').forEach(a => {
           a.addEventListener('click', e => {
-            const target = document.querySelector(a.getAttribute('href'));
+            const href = a.getAttribute('href');
+            if (!href || href === '#') return;
+            const target = document.querySelector(href);
             if (target) {
               e.preventDefault();
               window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth' });
