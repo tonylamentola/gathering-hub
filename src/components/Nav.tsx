@@ -8,7 +8,7 @@ export default function Nav() {
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
-    if (href.startsWith("/#")) return pathname === "/";
+    if (href.startsWith("/#")) return false;
     return pathname === href;
   }
 

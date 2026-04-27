@@ -136,27 +136,27 @@ const fallbackUpcomingStrip = [
 ];
 
 const venueFacts = [
-  { label: "Private Rental", value: "Full space for your group" },
-  { label: "Guest Count", value: "Best for intimate to mid-size events" },
-  { label: "Food", value: "In-house cooking and desserts" },
-  { label: "Pricing", value: "Weekday rentals from $150" },
+  { label: "Capacity", value: "Comfortable seating for up to 100" },
+  { label: "Hours", value: "Available daily, 7 AM to 11 PM" },
+  { label: "Included", value: "Setup, cleanup, linens & service ware" },
+  { label: "Pricing", value: "Private events from $75/hr" },
 ];
 
 const pricingAnchors = [
   {
-    title: "Weekday Gatherings",
-    price: "From $150",
-    description: "A simple starting point for smaller weekday celebrations, meetings, and private dinners with food quoted by need.",
+    title: "Non-Profit Groups",
+    price: "$50/hr",
+    description: "Community and non-profit business groups can reserve the space by the hour, or book the full day for $350.",
   },
   {
-    title: "Weekend Events",
-    price: "From $250",
-    description: "Best for showers, birthdays, graduations, and larger family celebrations where you want the hosting load handled.",
+    title: "Private & Business Events",
+    price: "$75/hr",
+    description: "Private individual events and business groups can reserve by the hour, or book the full day for $525.",
   },
   {
-    title: "Food, Cakes & Cookies",
-    price: "Quoted by need",
-    description: "Ask about homemade meals, desserts, customizable cakes and cookies, and rare direct-to-food printing for JPEG designs.",
+    title: "After Reserved Time",
+    price: "$75",
+    description: "Additional time after the reservation ends is billed per 30 minutes, so hosts can plan the schedule clearly.",
   },
 ];
 
@@ -167,11 +167,31 @@ const faqs = [
   },
   {
     question: "What is included with a rental?",
-    answer: "Tables, chairs, AV access, private use of the space, and quote-based food or dessert options are available for bookings.",
+    answer: "Room setup, cleanup, trash removal, tables, chairs, black linen tablecloths, service ware, Wi-Fi, video display, and a superior sound system are included.",
+  },
+  {
+    question: "How many guests can The Gathering Hub seat?",
+    answer: "The space can comfortably seat up to 100 guests.",
+  },
+  {
+    question: "What are the rental hours?",
+    answer: "The Gathering Hub is available every day from 7:00 AM to 11:00 PM.",
+  },
+  {
+    question: "Can we bring outside food?",
+    answer: "Outside food may be approved by request. The Gathering Hub also offers appetizers, breakfast, lunch, dinner, desserts, custom cakes and cookies, beverages, and cocktail options.",
   },
   {
     question: "Can you make custom desserts?",
     answer: "Yes. The Gathering Hub can do celebratory and customizable cakes and cookies, including direct food printing from JPEG artwork on cakes, cookies, and other food items.",
+  },
+  {
+    question: "How do cancellations work?",
+    answer: "Reservations are confirmed when the usage fee is received. The usage fee is returned if cancellation is made at least two weeks before the event.",
+  },
+  {
+    question: "Are decorations allowed?",
+    answer: "Decorations are welcome when they follow fire safety guidelines. Wall or ceiling attachments need approval, and confetti or similar items are not allowed.",
   },
   {
     question: "How do we check availability?",
@@ -296,7 +316,7 @@ export default async function HomePage({
         <div className="hero-content">
           <div className="hero-badge">✨ Downtown Ithaca&rsquo;s Private Event Venue</div>
           <h1>Your People Deserve a <em>Beautiful Space</em></h1>
-          <p>Private venue rental with in-house food, desserts, and custom cakes and cookies for celebrations worth doing right in downtown Ithaca.</p>
+          <p>Private venue rental with in-house food, desserts, custom cakes and cookies, setup, cleanup, and comfortable seating for up to 100 guests in downtown Ithaca.</p>
           <div className="hero-ctas">
             <a href="#contact" className="btn-primary">📅 Check Availability</a>
             <a href="#photos" className="btn-secondary">See the Space →</a>
@@ -376,7 +396,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">Pricing Guide</div>
           <h2 className="section-title">Simple Starting Points</h2>
-          <p className="section-sub">Every event is a little different, but these anchors help you know where to start before requesting a quote for the space, food, and desserts.</p>
+          <p className="section-sub">Clear rental rates for the space, with food, desserts, beverages, and cocktail options available for your event.</p>
           <div className="pricing-grid">
             {pricingAnchors.map((item) => (
               <div key={item.title} className="pricing-card">
@@ -386,7 +406,7 @@ export default async function HomePage({
               </div>
             ))}
           </div>
-          <p className="pricing-note">Final pricing depends on date, time, setup, food needs, custom desserts, and event size.</p>
+          <p className="pricing-note">Full-day rentals are $350 for non-profit groups and $525 for private or business events. Your reservation is confirmed once the usage fee is received.</p>
         </div>
       </section>
 
@@ -446,7 +466,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">What&rsquo;s Included</div>
           <h2 className="section-title">The Whole Space Is Yours</h2>
-          <p className="section-sub">Every booking includes tables, chairs, AV, and private use of the space. Food is cooked in-house through Heather&rsquo;s licensed kitchen.</p>
+          <p className="section-sub">Every booking includes setup, cleanup, trash removal, tables, chairs, black linen tablecloths, service ware, Wi-Fi, video display, and sound. Food is cooked in-house through Heather&rsquo;s licensed kitchen.</p>
           <div className="amenities-grid">
             {publicAmenities.map((am) => (
               <div key={am.id} className="amenity-card">
