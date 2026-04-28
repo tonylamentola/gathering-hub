@@ -72,9 +72,53 @@ function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
   };
 }
 
-function shortText(text?: string) {
+const galleryCopy: Record<string, { title: string; caption: string }> = {
+  "legacy-life-1": {
+    title: "Welcoming Venue Details",
+    caption: "Warm light, thoughtful details, and a comfortable setting greet guests before each event begins.",
+  },
+  "legacy-life-2": {
+    title: "A Warm Community Welcome",
+    caption: "A friendly, flexible space where family, friends, and neighbors can settle in and feel at home.",
+  },
+  "legacy-life-4": {
+    title: "Community Gathering Space",
+    caption: "A polished downtown venue shaped by the families, hosts, and local groups who gather here.",
+  },
+  life1775702303007: {
+    title: "Easter Cookie Workshop",
+    caption: "Families and friends came together for a sweet seasonal workshop filled with decorating, laughter, and color.",
+  },
+  life1775702423170: {
+    title: "Halloween Cookie Workshop",
+    caption: "A festive workshop with spooky treats, creative decorating, and plenty of room for friends to gather.",
+  },
+};
+
+function firstSentence(text?: string) {
   if (!text) return "";
-  return text.length > 180 ? `${text.slice(0, 177)}...` : text;
+  return text.split(/\n|\.(\s|$)/)[0]?.trim() || text.trim();
+}
+
+function getGalleryTitle(photo: GalleryPhoto) {
+  if (galleryCopy[photo.id]) return galleryCopy[photo.id].title;
+  const title = photo.title || photo.name;
+  if (title && title !== "The Gathering Hub") return title;
+
+  const caption = firstSentence(photo.caption || photo.description);
+  if (/easter/i.test(caption)) return "Easter Cookie Workshop";
+  if (/halloween/i.test(caption)) return "Halloween Cookie Workshop";
+  if (/cookie/i.test(caption)) return "Cookie Workshop";
+  if (/warm welcome|feel at home/i.test(caption)) return "A Warm Welcome";
+  if (/community/i.test(caption)) return "Community Moments";
+  if (/quiet moment|warm light|details/i.test(caption)) return "Venue Details";
+  return "Life at the Hub";
+}
+
+function getGalleryCaption(photo: GalleryPhoto) {
+  if (galleryCopy[photo.id]) return galleryCopy[photo.id].caption;
+  const caption = photo.caption || photo.description || "";
+  return firstSentence(caption);
 }
 
 export default async function GalleryPage() {
@@ -191,6 +235,7 @@ export default async function GalleryPage() {
           font-size: 14px;
           color: #475569;
           line-height: 1.55;
+          margin: 0;
         }
         .cta-section { padding: 70px 24px; background: white; text-align: center; }
         .cta-actions {
@@ -239,8 +284,8 @@ export default async function GalleryPage() {
         </p>
         <div className="gallery-grid">
           {galleryPhotos.map((photo) => {
-            const title = photo.title || photo.name || "The Gathering Hub";
-            const caption = shortText(photo.caption || photo.description);
+            const title = getGalleryTitle(photo);
+            const caption = getGalleryCaption(photo);
             return (
               <article key={photo.id} className="gallery-card">
                 {photo.imageUrl && (
