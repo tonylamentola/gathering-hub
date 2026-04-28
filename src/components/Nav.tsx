@@ -51,8 +51,8 @@ export default function Nav() {
         <li><a href="/#events" onClick={handleNavClick} className={isActive("/#events") ? "active" : ""}>Events</a></li>
         <li><a href="/upcoming" onClick={handleNavClick} className={isActive("/upcoming") ? "active" : ""}>Upcoming</a></li>
         <li><a href="/#about" onClick={handleNavClick} className={isActive("/#about") ? "active" : ""}>About</a></li>
-        <li><a href="/menu" onClick={handleNavClick} className={isActive("/menu") ? "active" : ""}>Menu</a></li>
-        <li><a href="/menu/catering" onClick={handleNavClick} className={isActive("/menu/catering") ? "active" : ""}>Catering</a></li>
+        <li><a href="/menu" onClick={handleNavClick} className={isActive("/menu") ? "active" : ""}>Gallery</a></li>
+        <li><a href="/menu/catering" onClick={handleNavClick} className={isActive("/menu/catering") ? "active" : ""}>Menu</a></li>
         <li><a href="/blog" onClick={handleNavClick} className={isActive("/blog") ? "active" : ""}>Blog</a></li>
         <li><a href="/#contact" onClick={handleNavClick} className="nav-cta">Book Now</a></li>
       </ul>

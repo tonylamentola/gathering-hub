@@ -2,56 +2,59 @@ import Nav from "@/components/Nav";
 import { getSiteContent } from "@/lib/content";
 import type { Metadata } from "next";
 
-const fallbackMenuItems = [
+type GalleryPhoto = {
+  id: string;
+  title?: string;
+  name?: string;
+  caption?: string;
+  description?: string;
+  imageUrl?: string;
+  imageAspect?: string;
+  imageCrop?: { zoom?: number; x?: number; y?: number };
+};
+
+const fallbackGalleryPhotos: GalleryPhoto[] = [
   {
-    id: "fallback-menu-1",
-    name: "Fresh-Baked Cookies",
-    description: "Warm homemade cookies fresh from the café oven.",
-    imageUrl: "/uploads/1775364248235-pphenppbah.jpeg",
-    imageAspect: "square" as const,
-    price: "",
-    availability: "",
+    id: "fallback-gallery-1",
+    title: "Downtown Ithaca Venue",
+    caption: "The Gathering Hub storefront and event space in downtown Ithaca.",
+    imageUrl: "/images/hero-main.jpg",
+    imageAspect: "landscape",
   },
   {
-    id: "fallback-menu-2",
-    name: "Hub Bites Parmesan Bread",
-    description: "A savory favorite that fits well with gatherings, lunches, and shared tables.",
-    imageUrl: "/uploads/1775364596605-auu88h6cqgf.jpeg",
-    imageAspect: "square" as const,
-    price: "",
-    availability: "",
+    id: "fallback-gallery-2",
+    title: "Welcoming Interior",
+    caption: "A warm, flexible space for showers, birthdays, graduations, dinners, and community gatherings.",
+    imageUrl: "/images/venue-interior.jpg",
+    imageAspect: "landscape",
   },
   {
-    id: "fallback-menu-3",
-    name: "Signature Sub",
-    description: "A hearty house favorite with a hand-crafted feel and plenty of flavor.",
-    imageUrl: "/uploads/1775364755623-ze97r4xwh0m.jpeg",
-    imageAspect: "square" as const,
-    price: "",
-    availability: "",
+    id: "fallback-gallery-3",
+    title: "Food And Desserts",
+    caption: "Homemade food and desserts prepared in-house through Heather's licensed kitchen.",
+    imageUrl: "/images/kitchen.jpg",
+    imageAspect: "landscape",
   },
   {
-    id: "fallback-menu-4",
-    name: "Raspberry Cheesecake",
-    description: "A homemade dessert that feels special enough for celebrations and sweet finishes.",
-    imageUrl: "/uploads/1775364755624-17c88k7fp79.jpeg",
-    imageAspect: "square" as const,
-    price: "",
-    availability: "",
+    id: "fallback-gallery-4",
+    title: "A Place To Gather",
+    caption: "A comfortable setting for guests to settle in, visit, and celebrate.",
+    imageUrl: "/images/about-ribbon.jpg",
+    imageAspect: "landscape",
   },
 ];
 
 export const metadata: Metadata = {
-  title: "Menu | The Gathering Hub - Ithaca, MI",
-  description: "Browse homemade favorites, custom cakes, cookies, desserts, and featured food from The Gathering Hub in downtown Ithaca, Michigan.",
+  title: "Photo Gallery | The Gathering Hub - Ithaca, MI",
+  description: "Browse photos of The Gathering Hub venue, food, desserts, and event moments in downtown Ithaca, Michigan.",
   alternates: {
     canonical: "/menu",
   },
   openGraph: {
-    title: "Menu | The Gathering Hub - Ithaca, MI",
-    description: "Browse homemade favorites, custom cakes, cookies, desserts, and featured food from The Gathering Hub in downtown Ithaca, Michigan.",
+    title: "Photo Gallery | The Gathering Hub - Ithaca, MI",
+    description: "Browse photos of The Gathering Hub venue, food, desserts, and event moments in downtown Ithaca, Michigan.",
     url: "https://gathering-hub-cms.vercel.app/menu",
-    images: [{ url: "/images/cookies-tray.jpg", width: 1200, height: 630, alt: "Cookies from The Gathering Hub" }],
+    images: [{ url: "/images/hero-main.jpg", width: 1200, height: 630, alt: "The Gathering Hub in Ithaca, Michigan" }],
   },
 };
 
@@ -69,42 +72,26 @@ function getCropStyle(crop?: { zoom?: number; x?: number; y?: number }) {
   };
 }
 
-function inferMenuCategory(item: { name: string; description: string; category?: string }) {
-  if (item.category === "featured" || item.category === "cafe" || item.category === "sweets") return item.category;
-  const text = `${item.name} ${item.description}`.toLowerCase();
-  if (/(cookie|cheesecake|dessert|sweet|treat|brownie|cupcake|pie|cake)/.test(text)) return "sweets";
-  if (/(soup|salad|sub|sandwich|bread|lunch|cafe|bite)/.test(text)) return "cafe";
-  return "featured";
+function shortText(text?: string) {
+  if (!text) return "";
+  return text.length > 180 ? `${text.slice(0, 177)}...` : text;
 }
 
-const menuSections = [
-  {
-    id: "featured",
-    title: "Featured Food",
-    sub: "Homemade dishes and event favorites that let hosts visit with guests instead of cooking and cleaning.",
-    label: "Featured Food",
-  },
-  {
-    id: "cafe",
-    title: "Cafe Favorites",
-    sub: "Soups, subs, and savory staples that make a lunch stop — or a long gathering — feel easy and satisfying.",
-    label: "Cafe Favorites",
-  },
-  {
-    id: "sweets",
-    title: "Sweet Treats",
-    sub: "Homemade cookies, cheesecakes, celebratory cakes, and customizable sweets worth planning your visit around.",
-    label: "Sweet Treats",
-  },
-] as const;
-
-export default async function MenuPage() {
+export default async function GalleryPage() {
   const content = await getSiteContent();
-  const menuItems = content.menuItems?.length ? content.menuItems : fallbackMenuItems;
-  const categorized = menuSections.map((section) => ({
-    ...section,
-    items: menuItems.filter((item) => inferMenuCategory(item) === section.id),
-  })).filter((section) => section.items.length > 0);
+  const lifePhotos = (content.lifeAtHubPhotos?.length ? content.lifeAtHubPhotos : fallbackGalleryPhotos) as GalleryPhoto[];
+  const foodPhotos: GalleryPhoto[] = (content.menuItems ?? [])
+    .filter((item) => item.imageUrl)
+    .slice(0, 6)
+    .map((item) => ({
+      id: `food-${item.id}`,
+      title: item.name,
+      caption: item.description,
+      imageUrl: item.imageUrl,
+      imageAspect: item.imageAspect,
+      imageCrop: (item as GalleryPhoto).imageCrop,
+    }));
+  const galleryPhotos: GalleryPhoto[] = [...lifePhotos, ...foodPhotos];
 
   return (
     <>
@@ -123,24 +110,35 @@ export default async function MenuPage() {
         body { font-family: 'Inter', sans-serif; color: #1a1a2e; background: #fff; }
 
         .page-header {
-          background: linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 55%, var(--navy-light) 100%);
-          padding: 140px 24px 60px;
+          background: linear-gradient(160deg, rgba(26,36,89,0.9) 0%, rgba(36,49,117,0.82) 58%, rgba(45,61,138,0.76) 100%), url(/images/hero-main.jpg) center/cover;
+          padding: 140px 24px 64px;
           padding-top: calc(72px + 68px);
           text-align: center;
         }
         .page-header h1 {
           font-family: 'Playfair Display', serif;
-          font-size: clamp(32px, 5vw, 48px);
-          font-weight: 900; color: white; margin-bottom: 12px;
+          font-size: clamp(32px, 5vw, 52px);
+          font-weight: 900;
+          color: white;
+          margin-bottom: 12px;
         }
         .page-header h1 em { font-style: normal; color: var(--gold); }
-        .page-header p { font-size: 17px; color: rgba(255,255,255,0.7); max-width: 500px; margin: 0 auto; }
+        .page-header p {
+          font-size: 17px;
+          color: rgba(255,255,255,0.76);
+          max-width: 620px;
+          margin: 0 auto;
+          line-height: 1.65;
+        }
 
-        .menu-section { padding: 70px 24px; background: var(--cream); }
+        .gallery-section { padding: 70px 24px; background: var(--cream); }
         .section-title {
           font-family: 'Playfair Display', serif;
-          font-size: 32px; font-weight: 700; color: var(--navy-dark);
-          text-align: center; margin-bottom: 10px;
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--navy-dark);
+          text-align: center;
+          margin-bottom: 10px;
         }
         .section-sub {
           text-align: center;
@@ -151,111 +149,130 @@ export default async function MenuPage() {
           line-height: 1.65;
         }
 
-        .menu-grid {
-          display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 20px; max-width: 1100px; margin: 0 auto;
+        .gallery-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+          max-width: 1120px;
+          margin: 0 auto;
         }
-        .menu-card {
-          background: white; border-radius: 14px; overflow: hidden;
-          border: 1px solid rgba(36,49,117,0.1); transition: all 0.25s;
+        .gallery-card {
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
+          border: 1px solid rgba(36,49,117,0.1);
+          transition: transform 0.25s, box-shadow 0.25s;
           box-shadow: 0 2px 12px rgba(0,0,0,0.04);
         }
-        .menu-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(36,49,117,0.12); }
-        .menu-card-img {
-          width: 100%; aspect-ratio: 4/3; object-fit: cover;
+        .gallery-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 36px rgba(36,49,117,0.12);
+        }
+        .gallery-img-wrap {
+          width: 100%;
+          overflow: hidden;
+          background: #e8eaf4;
           border-bottom: 3px solid var(--gold);
         }
-        .menu-card-body { padding: 18px; }
-        .menu-card-body p { font-size: 14px; color: #1a1a2e; line-height: 1.5; }
-        .menu-card-cat {
-          display: inline-block; font-size: 11px; font-weight: 600;
-          color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em;
-          margin-bottom: 6px;
+        .gallery-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
-        .gallery-section { padding: 70px 24px; background: white; }
+        .gallery-card-body { padding: 18px; }
+        .gallery-card-body strong {
+          display: block;
+          color: var(--navy-dark);
+          margin-bottom: 6px;
+          font-size: 16px;
+        }
+        .gallery-card-body p {
+          font-size: 14px;
+          color: #475569;
+          line-height: 1.55;
+        }
+        .cta-section { padding: 70px 24px; background: white; text-align: center; }
+        .cta-actions {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .cta-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 48px;
+          padding: 0 22px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #243175 0%, #1a2459 100%);
+          color: white;
+          text-decoration: none;
+          font-weight: 700;
+          box-shadow: 0 12px 26px rgba(36,49,117,0.18);
+        }
+        .cta-button.secondary {
+          background: white;
+          color: var(--navy-dark);
+          border: 1px solid rgba(36,49,117,0.18);
+          box-shadow: none;
+        }
         footer {
-          background: #0f1538; color: rgba(255,255,255,0.4);
-          padding: 28px 40px; text-align: center; font-size: 12px;
+          background: #0f1538;
+          color: rgba(255,255,255,0.4);
+          padding: 28px 40px;
+          text-align: center;
+          font-size: 12px;
         }
       `}</style>
 
       <div className="page-header">
-        <h1>Our <em>Menu</em></h1>
-        <p>Homemade food, custom desserts, and event-friendly favorites prepared in-house by Heather.</p>
-        <div style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.82)", fontSize: 12, fontWeight: 600 }}>
-          Recently updated menu highlights
-        </div>
+        <h1>Photo <em>Gallery</em></h1>
+        <p>A look at the space, food, desserts, and gathering moments that make The Gathering Hub feel warm, polished, and easy to settle into.</p>
       </div>
 
-      <section className="menu-section">
-        <h2 className="section-title">Homemade & Fresh</h2>
+      <section className="gallery-section">
+        <h2 className="section-title">A Space Worth Showing Off</h2>
         <p className="section-sub">
-          Everything on the menu is made in-house through The Gathering Hub&rsquo;s licensed food facility. From warm cookies to hearty favorites, Heather handles the cooking so hosts can enjoy their guests.
+          Photos from the venue, kitchen, featured food, and life at the Hub.
         </p>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          {categorized.map((section, index) => (
-            <div key={section.id} style={{ marginBottom: index === categorized.length - 1 ? 0 : 48 }}>
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <div style={{ color: "var(--gold)", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>{section.label}</div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: "var(--navy-dark)", marginBottom: 10 }}>{section.title}</h3>
-                <p style={{ color: "#64748b", fontSize: 15, maxWidth: 560, margin: "0 auto", textAlign: "center" }}>{section.sub}</p>
-              </div>
-              <div className="menu-grid">
-                {section.items.map((item) => (
-                  <div key={item.id} className="menu-card">
-                    {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="menu-card-img"
-                        loading="lazy"
-                        style={{
-                          aspectRatio: getAspectRatioValue(item.imageAspect),
-                          ...getCropStyle((item as { imageCrop?: { zoom?: number; x?: number; y?: number } }).imageCrop),
-                        }}
-                      />
-                    )}
-                    <div className="menu-card-body">
-                      <div className="menu-card-cat">{section.label}</div>
-                      <div style={{ fontWeight: 700, color: "var(--navy-dark)", marginBottom: 6 }}>{item.name}</div>
-                      <p>{item.description}</p>
-                      {(item.price || item.availability) && (
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                          {item.price && <span>{item.price}</span>}
-                          {item.availability && <span>{item.availability}</span>}
-                        </div>
-                      )}
-                    </div>
+        <div className="gallery-grid">
+          {galleryPhotos.map((photo) => {
+            const title = photo.title || photo.name || "The Gathering Hub";
+            const caption = shortText(photo.caption || photo.description);
+            return (
+              <article key={photo.id} className="gallery-card">
+                {photo.imageUrl && (
+                  <div
+                    className="gallery-img-wrap"
+                    style={{ aspectRatio: getAspectRatioValue(photo.imageAspect) }}
+                  >
+                    <img
+                      src={photo.imageUrl}
+                      alt={title}
+                      className="gallery-img"
+                      loading="lazy"
+                      style={getCropStyle(photo.imageCrop)}
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                )}
+                <div className="gallery-card-body">
+                  <strong>{title}</strong>
+                  {caption && <p>{caption}</p>}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section className="gallery-section">
-        <h2 className="section-title">See What’s Happening</h2>
-        <p className="section-sub" style={{ maxWidth: 560, margin: "0 auto 40px", textAlign: "center" }}>Looking for photos, flyers, or community happenings? Visit Upcoming at the Hub.</p>
-        <div style={{ textAlign: "center" }}>
-          <a
-            href="/upcoming"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: 48,
-              padding: "0 22px",
-              borderRadius: 999,
-              background: "linear-gradient(135deg, #243175 0%, #1a2459 100%)",
-              color: "white",
-              textDecoration: "none",
-              fontWeight: 700,
-              boxShadow: "0 12px 26px rgba(36,49,117,0.18)",
-            }}
-          >
-            Visit Upcoming at the Hub →
-          </a>
+      <section className="cta-section">
+        <h2 className="section-title">Planning Food For An Event?</h2>
+        <p className="section-sub">The food menu now lives with the catering options for showers, parties, dinners, and private events.</p>
+        <div className="cta-actions">
+          <a href="/menu/catering" className="cta-button">View Menu</a>
+          <a href="/#contact" className="cta-button secondary">Book Now</a>
         </div>
       </section>
 

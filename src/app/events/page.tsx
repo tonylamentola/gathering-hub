@@ -20,13 +20,13 @@ const fallbackEvents: EventItem[] = [
   { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, custom treats, and the people you actually want around you." },
   { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting with in-house food and sweets so showers feel thoughtful, easy, and worth remembering." },
   { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, custom cookies, and guests of all ages." },
-  { id: "event-private", emoji: "🥂", title: "Private Gatherings", description: "Perfect for reunions, dinner parties, and special nights where the cooking and cleanup are handled for you." },
+  { id: "event-private", emoji: "🥂", title: "Private Gatherings", description: "Perfect for reunions, dinner parties, and special nights with food, setup, and cleanup support handled for you." },
 ];
 
 const fallbackAmenities: AmenityItem[] = [
   { id: "amenity-tables", icon: "🪑", title: "Tables & Chairs Included", description: "The basics are already here so you can focus on planning the details that matter most." },
   { id: "amenity-av", icon: "🔊", title: "AV Ready", description: "Use the space for music, announcements, slideshows, and the little moments people gather around." },
-  { id: "amenity-kitchen", icon: "🍽️", title: "Licensed In-House Kitchen", description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather." },
+  { id: "amenity-kitchen", icon: "🍽️", title: "Licensed In-House Kitchen", description: "Food is prepared in-house through Heather's licensed kitchen, with Trevor helping on setup, cleanup, and bar service." },
   { id: "amenity-downtown", icon: "📍", title: "Downtown Ithaca Location", description: "A central location that makes it easy for local guests to find you and settle in." },
 ];
 
@@ -58,7 +58,7 @@ export default async function EventsPage() {
     return {
       ...am,
       title: "Licensed In-House Kitchen",
-      description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather.",
+      description: "Food is prepared in-house through Heather's licensed kitchen, with Trevor helping on setup, cleanup, and bar service.",
     };
   });
   const settings = content.settings ?? {};

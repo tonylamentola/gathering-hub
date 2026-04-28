@@ -28,13 +28,13 @@ const fallbackEvents: EventItem[] = [
   { id: "event-birthday", emoji: "🎉", title: "Birthday Parties", description: "A private space for birthday dinners, dessert tables, custom treats, and the people you actually want around you." },
   { id: "event-baby", emoji: "🍼", title: "Baby Showers", description: "A welcoming downtown Ithaca setting with in-house food and sweets so showers feel thoughtful, easy, and worth remembering." },
   { id: "event-grad", emoji: "🎓", title: "Graduation Celebrations", description: "Celebrate milestones with a space that works for family, food, photos, custom cookies, and guests of all ages." },
-  { id: "event-private", emoji: "🎲", title: "Reunions & Game Nights", description: "Perfect for reunions, game nights, and easygoing gatherings where the cooking and cleanup are handled for you." },
+  { id: "event-private", emoji: "🎲", title: "Reunions & Game Nights", description: "Perfect for reunions, game nights, and easygoing gatherings with food, setup, and cleanup support handled for you." },
 ];
 
 const fallbackAmenities: AmenityItem[] = [
   { id: "amenity-tables", icon: "🪑", title: "Tables & Chairs Included", description: "The basics are already here so you can focus on planning the details that matter most." },
   { id: "amenity-av", icon: "🔊", title: "AV Ready", description: "Use the space for music, announcements, slideshows, and the little moments people gather around." },
-  { id: "amenity-kitchen", icon: "🍽️", title: "Licensed In-House Kitchen", description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather." },
+  { id: "amenity-kitchen", icon: "🍽️", title: "Licensed In-House Kitchen", description: "Food is prepared in-house through Heather's licensed kitchen, with Trevor helping on setup, cleanup, and bar service." },
   { id: "amenity-downtown", icon: "📍", title: "Downtown Ithaca Location", description: "A central location that makes it easy for local guests to find you and settle in." },
 ];
 
@@ -163,7 +163,7 @@ const pricingAnchors = [
 const faqs = [
   {
     question: "Who handles the food?",
-    answer: "Heather handles the cooking in-house. The Gathering Hub is a State of Michigan licensed food facility, and the kitchen is not a shared guest kitchen.",
+    answer: "Heather handles the cooking in-house through The Gathering Hub's State of Michigan licensed food facility. Trevor helps with setup, cleanup, and bar service, but the kitchen is Heather's licensed food facility.",
   },
   {
     question: "What is included with a rental?",
@@ -219,7 +219,7 @@ function publicAmenity(am: AmenityItem): AmenityItem {
     return {
       ...am,
       title: "Licensed In-House Kitchen",
-      description: "The Gathering Hub is a State of Michigan licensed food facility, with cooking handled in-house by Heather.",
+      description: "Food is prepared in-house through Heather's licensed kitchen, with Trevor helping on setup, cleanup, and bar service.",
     };
   }
   return am;
@@ -373,7 +373,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">Event Types</div>
           <h2 className="section-title">Any Occasion, Fully Hosted</h2>
-          <p className="section-sub">Whatever you&rsquo;re celebrating, Heather handles the cooking, desserts, setup details, and cleanup so you can sit and visit with your guests.</p>
+          <p className="section-sub">Whatever you&rsquo;re celebrating, Heather prepares the food and desserts while Heather and Trevor help with setup, cleanup, bar service, and hosting details so you can sit and visit with your guests.</p>
           <div className="events-grid">
             {events.map((ev) => (
               <a key={ev.id} className="event-card" href={`/events/${eventSlugFor(ev.title)}`}>
@@ -417,7 +417,7 @@ export default async function HomePage({
           <div className="photos-intro">
             <div className="section-label">The Space</div>
             <h2 className="section-title">A Space Worth Showing Off</h2>
-            <p className="section-sub">From dessert tables to cozy gatherings, this is the kind of space where guests can relax while the cooking and dishes are handled for them.</p>
+            <p className="section-sub">From dessert tables to cozy gatherings, this is the kind of space where guests can relax while food, setup, and cleanup support are handled for them.</p>
           </div>
           <div className="photos-grid">
             {homepagePhotos.map((photo) => (
@@ -442,7 +442,7 @@ export default async function HomePage({
               <h2 className="section-title">A Venue Made for Your Moments</h2>
               <p className="section-sub">The Gathering Hub was created for real moments: celebrations that matter, homemade food that feels personal, and memories that last.</p>
               <p style={{ marginTop: 20, fontSize: 15, color: "var(--muted)", lineHeight: 1.7 }}>
-                Owned and operated right here in Ithaca, Michigan, we take pride in offering a space that feels both elegant and comfortable. Heather also handles the cooking, desserts, and cleanup so hosts can focus on the people and the occasion.
+                Owned and operated right here in Ithaca, Michigan, we take pride in offering a space that feels both elegant and comfortable. Heather prepares the food and desserts through her licensed kitchen, and Trevor helps with setup, cleanup, bar service, and event support so hosts can focus on the people and the occasion.
               </p>
               <div className="about-address">
                 <span style={{ display: "inline-flex", color: "var(--navy)" }}><LineIcon kind="pin" color="currentColor" size={20} stroke={1.9} /></span>
@@ -454,7 +454,7 @@ export default async function HomePage({
               </div>
               <div className="host-bio-card">
                 <strong>Hosted with care by Heather and Trevor</strong>
-                <span>Guests regularly mention the homemade food, warm service, and how easy it feels to gather without stirring potatoes, doing dishes, or worrying about the food.</span>
+                <span>Guests regularly mention the homemade food, warm service, and how easy it feels to gather when Heather has the kitchen covered and Trevor is helping the event run smoothly.</span>
               </div>
             </div>
           </div>
@@ -466,7 +466,7 @@ export default async function HomePage({
         <div className="container">
           <div className="section-label">What&rsquo;s Included</div>
           <h2 className="section-title">The Whole Space Is Yours</h2>
-          <p className="section-sub">Every booking includes setup, cleanup, trash removal, tables, chairs, black linen tablecloths, service ware, Wi-Fi, video display, and sound. Food is cooked in-house through Heather&rsquo;s licensed kitchen.</p>
+          <p className="section-sub">Every booking includes setup, cleanup, trash removal, tables, chairs, black linen tablecloths, service ware, Wi-Fi, video display, and sound. Food is prepared in-house through Heather&rsquo;s licensed kitchen, with Trevor helping on setup, cleanup, and bar service.</p>
           <div className="amenities-grid">
             {publicAmenities.map((am) => (
               <div key={am.id} className="amenity-card">

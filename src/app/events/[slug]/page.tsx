@@ -12,7 +12,7 @@ const eventPages = {
     title: "A Warm, Easy Space for Baby Showers",
     description:
       "Host a baby shower with room for gifts, photos, homemade food, and custom desserts in a fully private downtown Ithaca venue.",
-    price: "Weekend showers from $250",
+    price: "$75/hr or $525/day",
     bestFor: ["Gift tables and dessert displays", "Family photos and games", "In-house food and custom sweets"],
     seoDescription: "Plan a baby shower at The Gathering Hub, a private downtown Ithaca, MI venue with tables, chairs, AV, in-house food, and custom desserts.",
   },
@@ -21,7 +21,7 @@ const eventPages = {
     title: "Celebrate the Graduate Without Hosting at Home",
     description:
       "Give family and friends a comfortable private space with homemade food, custom cookies, photos, and a relaxed open-house style graduation celebration.",
-    price: "Graduation gatherings from $250",
+    price: "$75/hr or $525/day",
     bestFor: ["Open-house flow", "Food and dessert tables", "Guests of all ages"],
     seoDescription: "Book The Gathering Hub for graduation parties in Ithaca, MI with a private venue, in-house food, custom desserts, tables, chairs, and AV.",
   },
@@ -30,7 +30,7 @@ const eventPages = {
     title: "A Private Birthday Party Space That Feels Special",
     description:
       "From milestone birthdays to casual family celebrations, The Gathering Hub gives you a private space with homemade food and custom cake or cookie options.",
-    price: "Birthday rentals from $150",
+    price: "$75/hr or $525/day",
     bestFor: ["Milestone birthdays", "Dinner and dessert setups", "Custom printed cakes and cookies"],
     seoDescription: "Host a birthday party at The Gathering Hub, a private Ithaca, MI venue with tables, chairs, AV, in-house food, and custom desserts.",
   },
@@ -39,7 +39,7 @@ const eventPages = {
     title: "A Thoughtful Place to Gather With Family",
     description:
       "A calm, private setting for sharing a homemade meal, honoring memories, and spending time together without worrying about setup, cooking, or cleanup.",
-    price: "Private gatherings from $150",
+    price: "$75/hr or $525/day",
     bestFor: ["Family meals", "Photo and memory tables", "Quiet, supportive gatherings"],
     seoDescription: "Gather for a celebration of life at The Gathering Hub in Ithaca, MI, a private venue with in-house food, flexible setup, and cleanup handled.",
   },
@@ -48,7 +48,7 @@ const eventPages = {
     title: "A Better Room for Work Gatherings",
     description:
       "Use The Gathering Hub for team meals, customer appreciation nights, small meetings, workshops, and local business celebrations with food handled in-house.",
-    price: "Weekday business rentals from $150",
+    price: "$75/hr or $525/day",
     bestFor: ["Team lunches", "Workshops and meetings", "Customer appreciation events"],
     seoDescription: "Book The Gathering Hub for corporate events, team lunches, workshops, and small business gatherings with in-house food in downtown Ithaca, MI.",
   },
@@ -57,7 +57,7 @@ const eventPages = {
     title: "Make the Whole Space Yours",
     description:
       "For reunions, game nights, bridal showers, dinners, and community gatherings, the space and in-house food adapt to the event you want to host.",
-    price: "Private rentals from $150",
+    price: "$75/hr or $525/day",
     bestFor: ["Reunions and game nights", "Private dinners", "Community gatherings"],
     seoDescription: "The Gathering Hub is a private event venue in downtown Ithaca, MI for reunions, dinners, showers, parties, community gatherings, and in-house food.",
   },
