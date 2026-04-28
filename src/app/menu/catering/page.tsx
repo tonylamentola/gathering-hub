@@ -33,7 +33,7 @@ export default function CateringMenuPage() {
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Source Sans 3', Arial, sans-serif; background: var(--cream); color: var(--body-text); }
+        body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--body-text); }
 
         /* ── Header ── */
         .catering-header {
@@ -82,7 +82,7 @@ export default function CateringMenuPage() {
           background: none;
           border: none;
           color: #8A93B8;
-          font-family: 'Source Sans 3', Arial, sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 0.85rem;
           letter-spacing: 0.1em;
           text-transform: uppercase;
@@ -162,7 +162,7 @@ export default function CateringMenuPage() {
           line-height: 1.6;
         }
         .item-price {
-          font-family: 'Source Sans 3', Arial, sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 1.05rem;
           font-weight: 600;
           color: var(--brand-blue);
@@ -173,7 +173,7 @@ export default function CateringMenuPage() {
         /* Simple item */
         .menu-item.simple { margin-bottom: 0.8rem; }
         .menu-item.simple .item-name {
-          font-family: 'Source Sans 3', Arial, sans-serif;
+          font-family: 'Inter', sans-serif;
           font-weight: 400;
           font-size: 0.95rem;
         }
@@ -195,7 +195,7 @@ export default function CateringMenuPage() {
           letter-spacing: 0.18em;
           text-transform: uppercase;
           color: var(--gold);
-          font-family: 'Source Sans 3', Arial, sans-serif;
+          font-family: 'Inter', sans-serif;
           font-weight: 600;
           margin-bottom: 0.5rem;
         }
@@ -221,7 +221,7 @@ export default function CateringMenuPage() {
           margin: 2rem 0 0.3rem;
         }
         .drink-cat-sub { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.8rem; }
-        .drink-cat-price { text-align: center; font-family: 'Source Sans 3', Arial, sans-serif; font-size: 1.3rem; font-weight: 600; color: var(--brand-blue); margin-bottom: 1rem; }
+        .drink-cat-price { text-align: center; font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 600; color: var(--brand-blue); margin-bottom: 1rem; }
         .drink-rule { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
 
         /* ── Footer ── */
