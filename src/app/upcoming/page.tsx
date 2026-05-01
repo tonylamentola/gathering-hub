@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Upcoming | The Gathering Hub - Ithaca, MI",
     description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
-    url: "https://gathering-hub-cms.vercel.app/upcoming",
+    url: "https://thegatheringhub.biz/upcoming",
     images: [{ url: "/images/upcoming-main.jpg", width: 1200, height: 630, alt: "Upcoming events at The Gathering Hub" }],
   },
 };

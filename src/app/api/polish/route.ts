@@ -87,7 +87,7 @@ async function openRouterJsonRequest(prompt: string, maxTokens: number, temperat
     headers: {
       "Authorization": `Bearer ${OPENROUTER_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://gathering-hub-cms.vercel.app",
+      "HTTP-Referer": "https://thegatheringhub.biz",
       "X-Title": "The Gathering Hub CMS",
     },
     body: JSON.stringify({

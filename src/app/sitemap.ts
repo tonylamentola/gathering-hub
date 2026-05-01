@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSiteContent } from "@/lib/content";
 
-const BASE_URL = "https://gathering-hub-cms.vercel.app";
+const BASE_URL = "https://thegatheringhub.biz";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const content = await getSiteContent();

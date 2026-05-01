@@ -274,7 +274,7 @@ export default async function HomePage({
   const safeEmail = settings.email || "thegatheringhub2025@outlook.com";
   const safeFacebook = settings.facebook?.trim() || "";
   const safeMapsUrl = settings.mapsUrl || "https://maps.google.com/?q=121+S+Pine+River+St,+Ithaca,+MI+48847";
-  const siteUrl = "https://gathering-hub-cms.vercel.app";
+  const siteUrl = "https://thegatheringhub.biz";
 
   const localBusinessJsonLd = {
     "@context": "https://schema.org",

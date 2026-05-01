@@ -4,7 +4,7 @@ import { getSiteContent } from "@/lib/content";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-const BASE_URL = "https://gathering-hub-cms.vercel.app";
+const BASE_URL = "https://thegatheringhub.biz";
 
 const eventPages = {
   "baby-showers": {
