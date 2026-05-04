@@ -75,8 +75,13 @@ function formatEventDate(date?: string) {
   });
 }
 
-export default async function UpcomingPage() {
-  const content = await getSiteContent();
+export default async function UpcomingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ preview?: string }>;
+}) {
+  const params = (await searchParams) || {};
+  const content = await getSiteContent(params.preview === "draft" ? "draft" : "published");
   const upcomingItems = content.upcomingItems?.length ? sortUpcomingItems(content.upcomingItems) : fallbackUpcoming;
   const lifePhotos = (content.lifeAtHubPhotos?.length ? content.lifeAtHubPhotos : fallbackLifePhotos).map((photo) => ({
     ...photo,

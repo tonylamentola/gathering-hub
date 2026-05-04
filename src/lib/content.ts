@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import path from "path";
-import { kv, CONTENT_KEY } from "@/lib/kv";
+import { kv, CONTENT_DRAFT_KEY, CONTENT_KEY, CONTENT_PUBLISHED_KEY } from "@/lib/kv";
 
 const CONTENT_PATH = path.join(process.cwd(), "data", "content.json");
 
@@ -110,14 +110,20 @@ function readLocalContent(): SiteContent {
   return JSON.parse(raw) as SiteContent;
 }
 
-export async function getSiteContent(): Promise<SiteContent> {
+export async function getSiteContent(mode: "published" | "draft" = "published"): Promise<SiteContent> {
   const hasKvConfig = !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
   const localContent = readLocalContent();
 
   if (hasKvConfig) {
     try {
-      const kvData = await kv.get<SiteContent>(CONTENT_KEY);
-      if (kvData) return kvData;
+      if (mode === "draft") {
+        const draftData = await kv.get<SiteContent>(CONTENT_DRAFT_KEY);
+        if (draftData) return draftData;
+      }
+      const publishedData = await kv.get<SiteContent>(CONTENT_PUBLISHED_KEY);
+      if (publishedData) return publishedData;
+      const legacyData = await kv.get<SiteContent>(CONTENT_KEY);
+      if (legacyData) return legacyData;
     } catch {
       // Fallback for local/dev or missing KV.
     }

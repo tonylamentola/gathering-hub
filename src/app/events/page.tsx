@@ -44,8 +44,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function EventsPage() {
-  const content = await getSiteContent();
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ preview?: string }>;
+}) {
+  const params = (await searchParams) || {};
+  const content = await getSiteContent(params.preview === "draft" ? "draft" : "published");
   const events = ((content as { events?: EventItem[] }).events?.length
     ? (content as { events?: EventItem[] }).events
     : fallbackEvents) as EventItem[];

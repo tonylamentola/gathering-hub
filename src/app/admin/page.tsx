@@ -331,6 +331,8 @@ function AdminPageInner() {
   const [lifeEditorMsg, setLifeEditorMsg] = useState("");
   const [polishingUpcomingId, setPolishingUpcomingId] = useState<string | null>(null);
   const [upcomingEditorMsg, setUpcomingEditorMsg] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [publishMsg, setPublishMsg] = useState("");
   const navRef = useRef<HTMLDivElement>(null);
 
   function openPublicPath(pathname: string) {
@@ -368,9 +370,9 @@ function AdminPageInner() {
 
   async function loadContent() {
     try {
-      const res = await fetch("/api/content");
+      const res = await fetch("/api/content?mode=draft");
       const data = await res.json();
-      setContent(normalizeContent(data));
+      setContent(normalizeContent(data.content ?? data));
     } catch {
       console.error("Failed to load content");
     }
@@ -445,7 +447,7 @@ function AdminPageInner() {
       });
       if (res.ok) {
         setContent(updated);
-        setSaveMsg("✅ Saved successfully!");
+        setSaveMsg("Draft saved. Preview it before posting live.");
       } else {
         setSaveMsg("❌ Save failed. Please try again.");
       }
@@ -454,6 +456,32 @@ function AdminPageInner() {
     }
     setSaving(false);
     setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  async function publishContent() {
+    if (publishing) return;
+    const confirmed = window.confirm("Post these draft changes live to the website?");
+    if (!confirmed) return;
+
+    setPublishing(true);
+    setPublishMsg("");
+    try {
+      const token = getAuthToken();
+      const res = await fetch("/api/content/publish", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setPublishMsg("Posted live. Guests will see the updated site now.");
+      } else {
+        setPublishMsg(data.error || "Publish failed. Draft is still saved.");
+      }
+    } catch {
+      setPublishMsg("Publish failed. Draft is still saved.");
+    }
+    setPublishing(false);
+    setTimeout(() => setPublishMsg(""), 6000);
   }
 
   // Generic polish helper
@@ -1539,6 +1567,7 @@ function AdminPageInner() {
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {saveMsg && <span style={{ fontSize: 13 }}>{saveMsg}</span>}
+          {publishMsg && <span style={{ fontSize: 13, color: publishMsg.includes("Posted") ? "#4ade80" : "#f87171" }}>{publishMsg}</span>}
           <span style={{
             background: tokenPct > 30 ? "rgba(201,168,76,0.12)" : "rgba(248,113,113,0.12)",
             color: tokenPct > 30 ? "#f3d57b" : "#f87171",
@@ -1551,7 +1580,20 @@ function AdminPageInner() {
           }}>
             AI helps left: {aiActionsRemaining} / {monthlyAiActions}
           </span>
-          <a href="/" target="_blank" style={{ color: "#c9a84c", fontSize: 13, textDecoration: "none" }}>View Site →</a>
+          <button
+            onClick={() => openPublicPath("/preview")}
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", color: "#f3d57b", borderRadius: 6, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}
+          >
+            Preview Draft
+          </button>
+          <button
+            onClick={publishContent}
+            disabled={publishing || saving}
+            style={{ background: "linear-gradient(135deg, #d4b25b 0%, #b88f33 100%)", border: 0, color: "#10172f", borderRadius: 6, padding: "7px 14px", cursor: publishing || saving ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 800, opacity: publishing || saving ? 0.65 : 1 }}
+          >
+            {publishing ? "Posting..." : "Post Live"}
+          </button>
+          <a href="/" target="_blank" style={{ color: "#c9a84c", fontSize: 13, textDecoration: "none" }}>View Live Site</a>
           <button
             onClick={handleSignOut}
             style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", borderRadius: 6, padding: "6px 14px", cursor: "pointer", fontSize: 13 }}
@@ -1627,10 +1669,10 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               "Help & Stats",
-              "This is the support view. Use it when you want a quick pulse on the site, your AI usage, or a reminder of where each kind of content belongs.",
+              "Save as much as you want here first. When the draft looks right, preview it, then post it live with one confirmation.",
               <>
-                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>
-                <button onClick={() => setTab("blog")} style={btnStyle}>Write New</button>
+                <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Draft</button>
+                <button onClick={publishContent} style={btnStyle} disabled={publishing || saving}>{publishing ? "Posting..." : "Post Live"}</button>
               </>,
               <>
                 <div style={usageCard}>
@@ -1669,16 +1711,20 @@ function AdminPageInner() {
             <div style={cardStyle}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 18 }}>
                 <button onClick={() => setTab("blog")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Start Here</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Write or generate a new post</span>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Post Update</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Write or generate site news</span>
                 </button>
-                <button onClick={() => setTab("events")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Bookings</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Refresh event ideas</span>
+                <button onClick={() => setTab("upcoming")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Add Event</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Add date, price, and flyer</span>
                 </button>
                 <button onClick={() => setTab("announcements")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Homepage</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Post a quick update</span>
+                </button>
+                <button onClick={() => setTab("upcoming")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Make Poster</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Generate or upload a flyer</span>
                 </button>
                 <button onClick={() => setTab("menu")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Menu</span>
@@ -1688,9 +1734,9 @@ function AdminPageInner() {
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Life at the Hub</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Manage photos and captions</span>
                 </button>
-                <button onClick={() => openPublicPath("/")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Live Site</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Preview what guests see</span>
+                <button onClick={() => openPublicPath("/preview")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Preview Draft</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Check before guests see it</span>
                 </button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginBottom: 18 }}>
@@ -1911,7 +1957,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Quote Inquiries",
               "Requests submitted from the website form show up here, newest first, so leads are not trapped in an email compose flow.",
-              <button onClick={() => openPublicPath("/#contact")} style={ghostBtn}>View Live Form</button>,
+                <button onClick={() => openPublicPath("/preview#contact")} style={ghostBtn}>Preview Draft Form</button>,
               <>
                 <div style={usageCard}>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Total inquiries</div>
@@ -1971,7 +2017,7 @@ function AdminPageInner() {
                 >
                   {suggestingPost ? "Thinking..." : "Generate New"}
                 </button>
-                <button onClick={() => openPublicPath("/blog")} style={ghostBtn}>View Live Blog</button>
+                <button onClick={() => openPublicPath("/preview/blog")} style={ghostBtn}>Preview Draft Blog</button>
               </>,
               <>
                 <div style={usageCard}>
@@ -2156,7 +2202,7 @@ function AdminPageInner() {
 
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button onClick={saveBlogPost} style={btnStyle} disabled={saving}>
-                      {saving ? "Saving..." : editingPost ? "Save Changes" : "Publish Post"}
+                      {saving ? "Saving..." : editingPost ? "Save Draft Changes" : "Save Draft Post"}
                     </button>
                     <button
                       onClick={handlePolish}
@@ -2218,7 +2264,7 @@ function AdminPageInner() {
                 >
                   {suggestingEvents ? "Gathering ideas..." : eventSuggestions.length > 0 ? "Rotate Ideas" : "Generate Event Ideas"}
                 </button>
-                <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>
+                <button onClick={() => openPublicPath("/preview/events")} style={ghostBtn}>Preview Draft Events</button>
               </>,
               <div style={usageCard}>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Idea refreshes left</div>
@@ -2267,7 +2313,7 @@ function AdminPageInner() {
               </div>
               {eventEditorMsg && <div style={{ fontSize: 12, color: eventEditorMsg.startsWith("✅") ? "#4ade80" : eventEditorMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{eventEditorMsg}</div>}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addEvent} style={btnStyle}>{editingEventId ? "Save Changes" : "Save Event Idea"}</button>
+                <button onClick={addEvent} style={btnStyle}>{editingEventId ? "Save Draft Changes" : "Save Draft Event Idea"}</button>
                 {editingEventId && <button onClick={() => { setNewEvent({ title: "", emoji: "🎉", description: "" }); setEditingEventId(null); setEventEditorMsg(""); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2298,7 +2344,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Amenities",
               "Edit the included features people see on the site, like tables, chairs, AV, in-house food, and location benefits.",
-              <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>,
+              <button onClick={() => openPublicPath("/preview/events")} style={ghostBtn}>Preview Draft Events</button>,
             )}
 
             <div style={cardStyle}>
@@ -2314,7 +2360,7 @@ function AdminPageInner() {
                 onChange={(e) => setNewAmenity({ ...newAmenity, description: e.target.value })}
               />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addAmenity} style={btnStyle}>{editingAmenityId ? "Save Changes" : "Save Amenity"}</button>
+                <button onClick={addAmenity} style={btnStyle}>{editingAmenityId ? "Save Draft Changes" : "Save Draft Amenity"}</button>
                 {editingAmenityId && <button onClick={() => { setNewAmenity({ title: "", icon: "✨", description: "" }); setEditingAmenityId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2348,7 +2394,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Upcoming at the Hub",
               "Use this for public happenings like bingo, karaoke, trivia, cornhole, or special nights you want people to notice right away.",
-              <button onClick={() => openPublicPath("/upcoming")} style={ghostBtn}>View Upcoming</button>,
+              <button onClick={() => openPublicPath("/preview/upcoming")} style={ghostBtn}>Preview Draft Upcoming</button>,
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <div style={usageCard}>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Upcoming items</div>
@@ -2487,13 +2533,13 @@ function AdminPageInner() {
                       />
                     </label>
                     {upcomingPhotoMsg && <span style={{ fontSize: 12, color: upcomingPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{upcomingPhotoMsg}</span>}
-                    {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the item to keep it on the site.</span>}
+                    {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the draft item, preview it, then post live when ready.</span>}
                   </div>
                 </div>
               )}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {(flyerMode === "upload" || !!newUpcoming.imageUrl) && (
-                  <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Changes" : "Save Upcoming Item"}</button>
+                  <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Draft Changes" : "Save Draft Event"}</button>
                 )}
                 {editingUpcomingId && <button onClick={() => { setNewUpcoming({ title: "", date: "", time: "", price: "", details: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP }); setFlyerStyleNote(""); setFlyerMsg(""); setFlyerDraftUrl(""); setFlyerAdjustNote(""); setFlyerChangesUsed(0); setFlyerMode("generate"); setEditingUpcomingId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
@@ -2544,7 +2590,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Reviews",
               "Keep the best social proof on the site. Add a new review, remove outdated ones, and keep this section current.",
-              <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>,
+              <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Draft Site</button>,
             )}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{editingReviewId ? "Edit Review" : "Add New Review"}</h3>
@@ -2563,7 +2609,7 @@ function AdminPageInner() {
               />
               <input style={inputStyle} placeholder="Author name (e.g. Facebook Reviewer)" value={newReview.author} onChange={(e) => setNewReview({ ...newReview, author: e.target.value })} />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addReview} style={btnStyle}>{editingReviewId ? "Save Changes" : "Add Review"}</button>
+                <button onClick={addReview} style={btnStyle}>{editingReviewId ? "Save Draft Changes" : "Save Draft Review"}</button>
                 {editingReviewId && <button onClick={() => { setNewReview({ stars: 5, text: "", author: "" }); setEditingReviewId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2598,7 +2644,7 @@ function AdminPageInner() {
                 >
                   {suggestingAnnouncements ? "Writing..." : "Generate Notice"}
                 </button>
-                <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Homepage</button>
+                <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Homepage Draft</button>
               </>,
               <div style={usageCard}>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Notice refreshes left</div>
@@ -2649,7 +2695,7 @@ function AdminPageInner() {
                 <label htmlFor="active" style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>Active on homepage</label>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addAnnouncement} style={btnStyle}>{editingAnnouncementId ? "Save Changes" : "Save Quick Update"}</button>
+                <button onClick={addAnnouncement} style={btnStyle}>{editingAnnouncementId ? "Save Draft Changes" : "Save Draft Update"}</button>
                 {editingAnnouncementId && <button onClick={() => { setNewAnnouncement({ title: "", body: "", active: true }); setEditingAnnouncementId(null); setAnnouncementEditorMsg(""); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2739,7 +2785,7 @@ function AdminPageInner() {
                   {newMenuItem.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the menu item to keep it.</span>}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addMenuItem} style={btnStyle}>{editingMenuItemId ? "Save Changes" : "Save Menu Item"}</button>
+                <button onClick={addMenuItem} style={btnStyle}>{editingMenuItemId ? "Save Draft Changes" : "Save Draft Menu Item"}</button>
                 {editingMenuItemId && <button onClick={() => { setNewMenuItem({ name: "", description: "", category: "featured", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" }); setEditingMenuItemId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2785,7 +2831,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Life at the Hub",
               "Manage atmosphere photos and captions for the public gallery. This is the place for people, venue moments, and the feel of the business, not dated public events.",
-              <button onClick={() => openPublicPath("/upcoming")} style={ghostBtn}>View Upcoming & Life</button>,
+              <button onClick={() => openPublicPath("/preview/upcoming")} style={ghostBtn}>Preview Draft Upcoming & Life</button>,
               <div style={usageCard}>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Photos live</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{(content.lifeAtHubPhotos ?? []).length}</div>
@@ -2828,7 +2874,7 @@ function AdminPageInner() {
                 {newLifePhoto.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the photo to keep it in the gallery.</span>}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addLifePhoto} style={btnStyle}>{editingLifePhotoId ? "Save Changes" : "Save Photo"}</button>
+                <button onClick={addLifePhoto} style={btnStyle}>{editingLifePhotoId ? "Save Draft Changes" : "Save Draft Photo"}</button>
                 {editingLifePhotoId && <button onClick={() => { setNewLifePhoto({ imageUrl: "", imageAspect: "landscape", imageCrop: DEFAULT_CROP, caption: "" }); setEditingLifePhotoId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>

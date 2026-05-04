@@ -236,11 +236,11 @@ function sortUpcomingItems<T extends { date?: string }>(items: T[]) {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ guide?: string }>;
+  searchParams?: Promise<{ guide?: string; preview?: string }>;
 }) {
   const params = (await searchParams) || {};
   const reviewMode = params.guide === "1";
-  const content = await getSiteContent();
+  const content = await getSiteContent(params.preview === "draft" ? "draft" : "published");
 
   const settings = content.settings ?? {};
   const events = (content as { events?: EventItem[] }).events?.length
