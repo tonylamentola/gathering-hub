@@ -71,6 +71,11 @@ type PostRegenerateMode = "fresh" | "new_topic" | "more_polished" | "more_friend
 type BlogWorkflowMode = "closed" | "choose" | "ai" | "human";
 type BlogAiTopicMode = "pick" | "own" | "suggest";
 type BlogPictureMode = "none" | "generate" | "upload";
+type AiIssue = {
+  area: string;
+  message: string;
+  details?: string;
+};
 type EventSuggestion = {
   emoji: string;
   title: string;
@@ -253,6 +258,9 @@ function AdminPageInner() {
   const [content, setContent] = useState<ContentData | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [aiIssue, setAiIssue] = useState<AiIssue | null>(null);
+  const [aiIssueMsg, setAiIssueMsg] = useState("");
+  const [sendingAiIssue, setSendingAiIssue] = useState(false);
 
   // Blog editor state
   const [blogTitle, setBlogTitle] = useState("");
@@ -493,6 +501,59 @@ function AdminPageInner() {
     setTimeout(() => setPublishMsg(""), 6000);
   }
 
+  function showAiIssue(area: string, message: string, details?: string) {
+    setAiIssue({ area, message, details });
+    setAiIssueMsg("");
+  }
+
+  async function sendAiIssueReport() {
+    if (!aiIssue || !content) return;
+    setSendingAiIssue(true);
+    setAiIssueMsg("Sending...");
+    try {
+      const token = getAuthToken();
+      const res = await fetch("/api/ai-error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({
+          ...aiIssue,
+          siteName: content.settings.siteName,
+          pageUrl: typeof window !== "undefined" ? window.location.href : "",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setAiIssueMsg("Email sent to Tony.");
+      } else {
+        setAiIssueMsg(`Could not send email: ${data.error || "email service is not configured"}`);
+      }
+    } catch {
+      setAiIssueMsg("Could not send email. Check the connection.");
+    } finally {
+      setSendingAiIssue(false);
+    }
+  }
+
+  function renderAiIssue(area?: string) {
+    if (!aiIssue || (area && aiIssue.area !== area)) return null;
+    return (
+      <div style={{ margin: "12px 0 16px", padding: 14, borderRadius: 14, border: "1px solid rgba(248,113,113,0.28)", background: "rgba(248,113,113,0.08)" }}>
+        <div style={{ color: "#fecaca", fontWeight: 800, marginBottom: 4 }}>AI needs Tony</div>
+        <div style={{ color: "rgba(255,255,255,0.74)", fontSize: 13, lineHeight: 1.5, marginBottom: 10 }}>
+          {aiIssue.message}
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <button type="button" onClick={sendAiIssueReport} disabled={sendingAiIssue} style={ghostBtn}>
+            {sendingAiIssue ? "Sending..." : "Send error to Tony"}
+          </button>
+          {aiIssueMsg && (
+            <span style={{ fontSize: 12, color: aiIssueMsg.includes("sent") ? "#4ade80" : "#fca5a5" }}>{aiIssueMsg}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // Generic polish helper
   async function polishText(text: string, tokenCost: number, instructions?: string, customTitle?: string): Promise<string | null> {
     if (!content) return null;
@@ -505,13 +566,20 @@ function AdminPageInner() {
       body: JSON.stringify({ content: text, title: customTitle, instructions, action: "polish" }),
     });
     const data = await res.json();
-    if (data.polishedContent) {
+    if (res.ok && data.polishedContent && data.source !== "fallback") {
       const updated = {
         ...content,
         tokenBudget: { ...content.tokenBudget, used: content.tokenBudget.used + tokenCost },
       };
       setContent(updated);
       return data.polishedContent;
+    }
+    if (data.aiError || data.source === "fallback") {
+      showAiIssue(
+        customTitle || "AI polish",
+        "AI is not connected right now, so I did not replace this with template copy.",
+        data.reason || data.error || "The polish endpoint did not return a real AI result.",
+      );
     }
     return null;
   }
@@ -533,7 +601,7 @@ function AdminPageInner() {
         body: JSON.stringify({ content: blogBody, title: blogTitle }),
       });
       const data = await res.json();
-      if (data.polishedContent) {
+      if (res.ok && data.polishedContent && data.source !== "fallback") {
         setBlogBody(data.polishedContent);
         if (data.seoTitle) setBlogTitle(data.seoTitle.replace(" | The Gathering Hub", ""));
         if (data.seoDescription) setBlogExcerpt(data.seoDescription);
@@ -545,10 +613,16 @@ function AdminPageInner() {
         await saveContent(updated);
         setPolishMsg("✅ AI polish complete!");
       } else {
-        setPolishMsg("❌ Polish failed: " + (data.error || "Unknown error"));
+        const message = data.aiError || data.source === "fallback"
+          ? "AI is not connected right now, so I did not replace this with template copy."
+          : `Polish failed: ${data.error || "Unknown error"}`;
+        setPolishMsg(`❌ ${message}`);
+        showAiIssue("Blog polish", message, data.reason || data.error || "No real AI polish result returned.");
       }
-    } catch {
-      setPolishMsg("❌ Polish failed. Check your connection.");
+    } catch (err) {
+      const message = "Polish failed. Check your connection.";
+      setPolishMsg(`❌ ${message}`);
+      showAiIssue("Blog polish", message, err instanceof Error ? err.message : String(err));
     }
     setPolishing(false);
     setTimeout(() => setPolishMsg(""), 5000);
@@ -623,7 +697,7 @@ function AdminPageInner() {
         }),
       });
       const data = await res.json();
-      if (data.suggestion?.title) {
+      if (res.ok && data.suggestion?.title && data.source !== "fallback") {
         setPostSuggestion(data.suggestion);
         setPostSuggestionTitle(data.suggestion.title);
         setPostSuggestionOpen(true);
@@ -635,10 +709,16 @@ function AdminPageInner() {
         setContent(updated);
         setPostSuggestMsg("");
       } else {
-        setPostSuggestMsg("❌ Suggestion failed: " + (data.error || "Unknown error"));
+        const message = data.aiError || data.source === "fallback"
+          ? "AI blog writing is not connected right now, so I did not create a template draft."
+          : `Suggestion failed: ${data.error || "Unknown error"}`;
+        setPostSuggestMsg(`❌ ${message}`);
+        showAiIssue("Blog writer", message, data.reason || data.error || "No real AI blog draft returned.");
       }
-    } catch {
-      setPostSuggestMsg("❌ Failed. Check your connection.");
+    } catch (err) {
+      const message = "Blog writing failed. Check your connection.";
+      setPostSuggestMsg(`❌ ${message}`);
+      showAiIssue("Blog writer", message, err instanceof Error ? err.message : String(err));
     }
     setSuggestingPost(false);
   }
@@ -682,14 +762,20 @@ function AdminPageInner() {
         }),
       });
       const data = await res.json();
-      if (res.ok && data.url) {
+      if (res.ok && data.url && !data.fallbackReason && data.model !== "local-svg-flyer") {
         setBlogImageUrl(data.url);
         setBlogPhotoMsg("✅ Image ready.");
       } else {
-        setBlogPhotoMsg(`❌ Image failed: ${data.error || "Unknown error"}`);
+        const message = data.aiError || data.fallbackReason || data.model === "local-svg-flyer"
+          ? "AI image generation is not connected right now, so I did not create a template image."
+          : `Image failed: ${data.error || "Unknown error"}`;
+        setBlogPhotoMsg(`❌ ${message}`);
+        showAiIssue("Blog image", message, data.reason || data.error || data.fallbackReason || "No real AI image returned.");
       }
-    } catch {
-      setBlogPhotoMsg("❌ Image failed. Check your connection.");
+    } catch (err) {
+      const message = "Image failed. Check your connection.";
+      setBlogPhotoMsg(`❌ ${message}`);
+      showAiIssue("Blog image", message, err instanceof Error ? err.message : String(err));
     }
     setGeneratingBlogImage(false);
     setTimeout(() => setBlogPhotoMsg(""), 4000);
@@ -1144,7 +1230,7 @@ function AdminPageInner() {
         }),
       });
       const data = await res.json();
-      if (res.ok && data.url) {
+      if (res.ok && data.url && !data.fallbackReason && data.model !== "local-svg-flyer") {
         setFlyerDraftUrl(data.url);
         setFlyerMode("generate");
         if (mode === "fresh") {
@@ -1166,10 +1252,16 @@ function AdminPageInner() {
         if (mode === "adjust") setFlyerAdjustNote("");
         setFlyerMsg("✅ Flyer ready to review.");
       } else {
-        setFlyerMsg(`❌ Flyer failed: ${data.error || "Unknown error"}`);
+        const message = data.aiError || data.fallbackReason || data.model === "local-svg-flyer"
+          ? "AI flyer generation is not connected right now, so I did not create a template flyer."
+          : `Flyer failed: ${data.error || "Unknown error"}`;
+        setFlyerMsg(`❌ ${message}`);
+        showAiIssue("Flyer generator", message, data.reason || data.error || data.fallbackReason || "No real AI flyer returned.");
       }
-    } catch {
-      setFlyerMsg("❌ Flyer failed. Check your connection.");
+    } catch (err) {
+      const message = "Flyer failed. Check your connection.";
+      setFlyerMsg(`❌ ${message}`);
+      showAiIssue("Flyer generator", message, err instanceof Error ? err.message : String(err));
     } finally {
       setGeneratingFlyer(false);
     }
@@ -2303,16 +2395,6 @@ function AdminPageInner() {
                 </button>
                 <button onClick={() => openPublicPath("/preview/blog")} style={ghostBtn}>Preview Draft Blog</button>
               </>,
-              <>
-                <div style={usageCard}>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Blog posts this month</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} / {monthlyBlogDraftLimit}</div>
-                </div>
-                <div style={usageCard}>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>AI help left</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
-                </div>
-              </>,
             )}
 
             {(blogWorkflowMode !== "closed" || editingPost || postSuggestionOpen) && (
@@ -2351,6 +2433,9 @@ function AdminPageInner() {
                     <span style={{ fontSize: 12, color: "#f3d57b", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>AI Help Me Write It</span>
                     <strong style={{ fontSize: 20, color: "#fff" }}>Get a guided draft</strong>
                     <span style={{ color: "rgba(255,255,255,0.58)", lineHeight: 1.5 }}>Use a topic you have, or let AI suggest a locally relevant one.</span>
+                    <span style={{ marginTop: "auto", fontSize: 12, color: "rgba(255,255,255,0.48)" }}>
+                      {Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} of {monthlyBlogDraftLimit} monthly AI drafts used
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -2410,6 +2495,7 @@ function AdminPageInner() {
               {postSuggestMsg && (
                 <div style={{ fontSize: 13, color: postSuggestMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 16 }}>{postSuggestMsg}</div>
               )}
+              {renderAiIssue("Blog writer")}
               {suggestingPost && (
                 <div style={{ marginBottom: 18 }}>
                   <div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden", marginBottom: 8 }}>
@@ -2598,6 +2684,7 @@ function AdminPageInner() {
                           )}
                           {blogPhotoMsg && <span style={{ fontSize: 12, color: blogPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{blogPhotoMsg}</span>}
                         </div>
+                        {renderAiIssue("Blog image")}
                       </>
                     )}
                   </div>
@@ -2627,10 +2714,8 @@ function AdminPageInner() {
                       </button>
                     )}
                   </div>
-                  <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-                    Monthly AI help left: <strong style={{ color: "#c9a84c" }}>{aiActionsRemaining}</strong> of {monthlyAiActions}
-                  </div>
                   {polishMsg && <div style={{ marginTop: 12, fontSize: 14, color: polishMsg.startsWith("✅") ? "#4ade80" : polishMsg.startsWith("✨") ? "#c9a84c" : "#f87171" }}>{polishMsg}</div>}
+                  {renderAiIssue("Blog polish")}
                 </>
               )}
             </div>
@@ -2931,6 +3016,7 @@ function AdminPageInner() {
                     </div>
                   )}
                   {flyerMsg && <div style={{ fontSize: 12, color: flyerMsg.startsWith("✅") || flyerMsg.startsWith("🤖") ? "#4ade80" : flyerMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{flyerMsg}</div>}
+                  {renderAiIssue("Flyer generator")}
                 </div>
               ) : (
                 <div style={{ marginBottom: 14, padding: 16, borderRadius: 16, border: "1px solid rgba(97,111,182,0.22)", background: "linear-gradient(180deg, rgba(97,111,182,0.08) 0%, rgba(97,111,182,0.03) 100%)" }}>

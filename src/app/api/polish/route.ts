@@ -146,105 +146,6 @@ async function generateJson(prompt: string, maxTokens: number, temperature: numb
   throw new Error("No AI provider key configured");
 }
 
-function fallbackEventSuggestions(business: ReturnType<typeof getBusinessProfile>, season: string) {
-  const seasonalTitle =
-    season === "spring" ? "Spring Showers & Celebrations" :
-    season === "summer" ? "Summer Gatherings" :
-    season === "fall" ? "Fall Parties & Reunions" :
-    "Winter Celebrations";
-
-  return [
-    {
-      title: seasonalTitle,
-      description: `A timely page update focused on ${season} events people may be planning around ${business.siteName}.`,
-    },
-    {
-      title: "Family Milestone Events",
-      description: "Highlight birthdays, reunions, showers, and other gatherings the venue can host without implying extra services.",
-    },
-    {
-      title: "Community Meetups & Private Rentals",
-      description: "Speak to clubs, workshops, and private gatherings in a way that stays broad and believable.",
-    },
-  ];
-}
-
-function fallbackAnnouncementSuggestions(business: ReturnType<typeof getBusinessProfile>, season: string) {
-  return [
-    { text: `Planning a ${season} event in Ithaca? Reach out to ${business.siteName} to ask about upcoming dates.` },
-    { text: `We’re updating the site with fresh event inspiration for the ${season} season. Check back for new ideas and venue updates.` },
-    { text: `If you’re organizing a birthday, shower, reunion, or community gathering, our team would love to hear what you’re planning.` },
-  ];
-}
-
-function fallbackBlogSuggestion(business: ReturnType<typeof getBusinessProfile>, season: string) {
-  const localArea = business.location.includes("Ithaca") ? "Ithaca, Michigan" : business.location;
-  const keywordPhrase =
-    season === "spring" ? "spring event venue in Ithaca, Michigan" :
-    season === "summer" ? "summer event venue in Ithaca, Michigan" :
-    season === "fall" ? "fall event venue in Ithaca, Michigan" :
-    "winter event venue in Ithaca, Michigan";
-  const title =
-    season === "spring" ? `How to Plan a Spring Event in Ithaca, Michigan` :
-    season === "summer" ? `How to Plan a Summer Gathering in Ithaca, Michigan` :
-    season === "fall" ? `How to Plan a Fall Event in Ithaca, Michigan` :
-    `How to Plan a Winter Gathering in Ithaca, Michigan`;
-
-  return {
-    title,
-    outline: [
-      `Why ${season} gatherings need a clear venue plan`,
-      "Questions to ask before booking a local event space",
-      "What guests appreciate most at a private event venue",
-      `How to contact ${business.siteName} for your next gathering`,
-    ],
-    seoTitle: `${title} | ${business.siteName} ${localArea}`,
-    seoDescription: `Looking for a ${keywordPhrase}? Use these simple planning tips to choose the right space, ask better questions, and host a smoother gathering in ${localArea}.`,
-    fullDraft: `${title}
-
-Planning a ${season} gathering in ${localArea} can feel exciting and a little overwhelming at the same time. Between choosing a date, thinking about guest comfort, and finding a space that feels right for the occasion, it helps to start with a simple plan. At ${business.siteName}, we know many hosts are looking for a welcoming place to bring people together in the ${business.location} area.
-
-One of the best first steps is deciding what kind of experience you want your guests to have. Some gatherings feel best when they are relaxed and intimate, while others need a little more room to celebrate, reconnect, or mark a milestone. Thinking about the mood of the event early makes it easier to choose the right setup and ask better questions as you plan.
-
-It also helps to make a short checklist before you reach out to any event venue in Ithaca, Michigan. Consider your preferred date, your general guest count, the type of event you are planning, and any must-haves that matter most to you. Having those basics ready can make the next conversation much smoother and help you compare your options with more confidence.
-
-${business.approvedFacts ? `For ${business.siteName}, a few important points we can confidently share are: ${business.approvedFacts}\n\n` : ""}${business.seasonalFocus ? `Right now, one seasonal focus worth keeping in mind is ${business.seasonalFocus}. That can shape the kind of atmosphere, timing, and event details you choose to emphasize as you plan.\n\n` : ""}If you are starting to think through your next gathering, choosing a local event venue that feels comfortable, flexible, and easy for guests to reach can make a big difference. ${business.siteName} would love to hear what you have in mind and help you take the next step.`,
-    whyThisFits: `This topic matches seasonal search intent, includes local SEO language, and stays within confirmed facts about ${business.siteName}.`,
-  };
-}
-
-function fallbackBlogSuggestionForTopic(
-  business: ReturnType<typeof getBusinessProfile>,
-  season: string,
-  topic?: string,
-) {
-  const trimmedTopic = topic?.trim();
-  if (!trimmedTopic) return fallbackBlogSuggestion(business, season);
-  const localArea = business.location.includes("Ithaca") ? "Ithaca, Michigan" : business.location;
-  const title = trimmedTopic.replace(/\s+/g, " ").replace(/[.!?]+$/, "");
-  return {
-    title,
-    outline: [
-      "Start with the reason this topic matters to local hosts",
-      "Share practical planning points guests should think through",
-      `Connect the topic back to gatherings at ${business.siteName}`,
-      "Close with a gentle invitation to reach out",
-    ],
-    seoTitle: `${title} | ${business.siteName} ${localArea}`,
-    seoDescription: `Helpful local event planning guidance from ${business.siteName} in ${localArea}, written for hosts planning a gathering with confidence.`,
-    fullDraft: `${title}
-
-Planning around ${trimmedTopic.toLowerCase()} can feel easier when you start with the basics: the kind of gathering you want, the people you are inviting, and the details that will make guests feel comfortable. For hosts in ${localArea}, a clear plan can make the whole event feel calmer from the beginning.
-
-Think about your guest count, your timing, and the parts of the day that matter most. Some events need space for gifts, desserts, photos, or an easy open-house flow. Others need a comfortable setup where guests can settle in, visit, and enjoy the time together without everything feeling rushed.
-
-${business.siteName} is built for bringing people together in a warm, practical way. If you are thinking through a gathering, start with the date, the feel of the day, and the details you already know. From there, it is much easier to ask good questions and shape the event around what your guests will actually need.
-
-If you are planning something soon, reach out and share what you have in mind. A simple conversation is often the best place to begin.`,
-    whyThisFits: `This uses the customer's topic, adds local Ithaca-area SEO context, and keeps the copy helpful instead of overly salesy.`,
-  };
-}
-
 function normalizeTopicTitle(title: string) {
   return title
     .toLowerCase()
@@ -292,54 +193,6 @@ function fallbackVoiceProfile(business: ReturnType<typeof getBusinessProfile>) {
     writingDo: "Lead with something useful. Sound conversational but tidy. Use plain language, local context, and gentle confidence. Offer helpful planning guidance before any call to action. Keep the business feeling trustworthy, steady, and easy to work with.",
     writingAvoid: "Avoid hype, hard selling, exaggerated promises, trendy slang, and generic marketing fluff. Do not sound pushy, flashy, or overly polished. Do not make the venue sound bigger, fancier, or more full-service than confirmed facts support.",
   };
-}
-
-function sentenceCase(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return trimmed;
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-}
-
-function localPolishText(value: string, instructions?: string) {
-  const raw = value.replace(/\r\n/g, "\n").trim();
-  if (!raw) return raw;
-  const paragraphs = raw
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
-
-  const polished = paragraphs.map((paragraph) => {
-    let next = paragraph
-      .replace(/\binfo\b/gi, "details")
-      .replace(/\bbook now\b/gi, "reach out to book")
-      .replace(/\bASAP\b/g, "as soon as you can")
-      .replace(/\s+([,.!?])/g, "$1");
-    next = sentenceCase(next);
-    if (!/[.!?]$/.test(next)) next += ".";
-    return next;
-  });
-
-  const joined = polished.join("\n\n");
-  const wantsShort = instructions?.toLowerCase().includes("short") || instructions?.toLowerCase().includes("flyer");
-  if (wantsShort && joined.length > 260) {
-    return `${joined.slice(0, 257).replace(/\s+\S*$/, "")}.`;
-  }
-  return joined;
-}
-
-function localSeoTitle(title: string | undefined, business: ReturnType<typeof getBusinessProfile>) {
-  const base = title?.trim() || business.siteName;
-  if (base.toLowerCase().includes("the gathering hub")) return base;
-  return `${base} | ${business.siteName}`;
-}
-
-function localSeoDescription(content: string, business: ReturnType<typeof getBusinessProfile>) {
-  const cleaned = content.replace(/\s+/g, " ").trim();
-  const base = cleaned || `Learn more about planning your next gathering with ${business.siteName}.`;
-  const withLocation = base.toLowerCase().includes("ithaca")
-    ? base
-    : `${base} Contact ${business.siteName} in Ithaca, MI.`;
-  return withLocation.slice(0, 158).replace(/\s+\S*$/, "");
 }
 
 export async function POST(req: NextRequest) {
@@ -435,6 +288,7 @@ No markdown.`;
 Known business facts:
 - Existing event types: ${business.eventTitles.join(", ") || "none listed"}
 - Known amenities: ${business.amenityTitles.join(", ") || "none listed"}
+- Current season: ${season}
 
 Task:
 Suggest 3 event ideas the site could talk about next.
@@ -446,15 +300,22 @@ Rules:
 - Return ONLY a JSON array of objects with keys: title, description.
 - No markdown.`;
       let suggestions;
-      let source = "ai";
+      const source = "ai";
       try {
         const data = await generateJson(prompt, 600, 0.8);
         const rawText = data.choices?.[0]?.message?.content || "[]";
         const arrMatch = rawText.match(/\[[\s\S]*\]/);
         suggestions = arrMatch ? JSON.parse(arrMatch[0]) : [];
-      } catch {
-        suggestions = fallbackEventSuggestions(business, season);
-        source = "fallback";
+      } catch (err) {
+        return NextResponse.json(
+          {
+            error: "AI suggestions are not connected right now.",
+            aiError: true,
+            reportable: true,
+            reason: err instanceof Error ? err.message : String(err),
+          },
+          { status: 503 },
+        );
       }
       tokenBudget.used += TOKENS_PER_SUGGESTION;
       contentData.tokenBudget = tokenBudget;
@@ -474,6 +335,7 @@ Known business facts:
 - Existing event types: ${business.eventTitles.join(", ") || "none listed"}
 - Known amenities: ${business.amenityTitles.join(", ") || "none listed"}
 - Current active announcements: ${business.activeAnnouncementTitles.join(", ") || "none listed"}
+- Current season: ${season}
 
 Task:
 Suggest 3 timely site announcements.
@@ -485,15 +347,22 @@ Rules:
 - Return ONLY a JSON array of objects with keys: text.
 - No markdown.`;
       let suggestions;
-      let source = "ai";
+      const source = "ai";
       try {
         const data = await generateJson(prompt, 400, 0.8);
         const rawText = data.choices?.[0]?.message?.content || "[]";
         const arrMatch = rawText.match(/\[[\s\S]*\]/);
         suggestions = arrMatch ? JSON.parse(arrMatch[0]) : [];
-      } catch {
-        suggestions = fallbackAnnouncementSuggestions(business, season);
-        source = "fallback";
+      } catch (err) {
+        return NextResponse.json(
+          {
+            error: "AI announcement suggestions are not connected right now.",
+            aiError: true,
+            reportable: true,
+            reason: err instanceof Error ? err.message : String(err),
+          },
+          { status: 503 },
+        );
       }
       tokenBudget.used += TOKENS_PER_SUGGESTION;
       contentData.tokenBudget = tokenBudget;
@@ -520,6 +389,7 @@ Known business facts:
 - Approved facts: ${business.approvedFacts || "none provided"}
 - Avoid claims: ${business.avoidClaims || "none provided"}
 - Seasonal priorities: ${business.seasonalFocus || "none provided"}
+- Current season: ${season}
 - Voice character: ${business.voiceProfile || "none provided"}
 - Writing should do: ${business.writingDo || "none provided"}
 - Writing should avoid: ${business.writingAvoid || "none provided"}
@@ -544,29 +414,37 @@ Rules:
 { "title": string, "outline": [string], "seoTitle": string, "seoDescription": string, "fullDraft": string, "whyThisFits": string }
 - No markdown.`;
       let suggestion;
-      let source = "ai";
+      const source = "ai";
       try {
         const data = await generateJson(prompt, 800, 0.7);
         const rawText = data.choices?.[0]?.message?.content || "{}";
         const objMatch = rawText.match(/\{[\s\S]*\}/);
         suggestion = objMatch ? JSON.parse(objMatch[0]) : {};
-      } catch {
-        suggestion = fallbackBlogSuggestionForTopic(business, season, wantsUserTopic ? userTopic : undefined);
-        source = "fallback";
+      } catch (err) {
+        return NextResponse.json(
+          {
+            error: "AI blog writing is not connected right now.",
+            aiError: true,
+            reportable: true,
+            reason: err instanceof Error ? err.message : String(err),
+          },
+          { status: 503 },
+        );
       }
       if (suggestion?.title && isTooSimilarTopic(String(suggestion.title), [
         ...existingBlogTitles,
         String(previousSuggestion?.title || ""),
       ].filter(Boolean))) {
         if (regenerateMode === "new_topic") {
-          suggestion = {
-            ...fallbackBlogSuggestion(business, season),
-            title: `Questions to Ask Before Booking an Event Venue in ${business.location.includes("Ithaca") ? "Ithaca, Michigan" : business.location}`,
-            seoTitle: `Questions to Ask Before Booking an Event Venue | ${business.siteName}`,
-            seoDescription: `Use these practical questions to compare event venues and plan a smoother gathering with confidence in ${business.location}.`,
-            whyThisFits: `This alternative avoids repeating recent blog topics and still targets local event-planning search intent.`,
-          };
-          source = "fallback";
+          return NextResponse.json(
+            {
+              error: "AI returned a topic too similar to an existing post.",
+              aiError: true,
+              reportable: true,
+              reason: "The requested retry still duplicated recent blog content.",
+            },
+            { status: 502 },
+          );
         }
       }
       tokenBudget.used += TOKENS_PER_POST_SUGGESTION;
@@ -610,21 +488,23 @@ Return ONLY a JSON object with these exact fields:
       seoTitle?: string;
       seoDescription?: string;
     };
-    let source = "ai";
+    const source = "ai";
     try {
       const data = await generateJson(prompt, 700, 0.6);
       const raw_text = data.choices?.[0]?.message?.content || "";
       const jsonMatch = raw_text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("Could not parse AI response");
       parsed = JSON.parse(jsonMatch[0]);
-    } catch {
-      const polishedContent = localPolishText(String(content || ""), instructions);
-      parsed = {
-        polishedContent,
-        seoTitle: localSeoTitle(title, business),
-        seoDescription: localSeoDescription(polishedContent, business),
-      };
-      source = "fallback";
+    } catch (err) {
+      return NextResponse.json(
+        {
+          error: "AI polish is not connected right now.",
+          aiError: true,
+          reportable: true,
+          reason: err instanceof Error ? err.message : String(err),
+        },
+        { status: 503 },
+      );
     }
 
     // Deduct tokens from budget and save to KV
