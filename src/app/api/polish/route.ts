@@ -213,6 +213,38 @@ ${business.approvedFacts ? `For ${business.siteName}, a few important points we 
   };
 }
 
+function fallbackBlogSuggestionForTopic(
+  business: ReturnType<typeof getBusinessProfile>,
+  season: string,
+  topic?: string,
+) {
+  const trimmedTopic = topic?.trim();
+  if (!trimmedTopic) return fallbackBlogSuggestion(business, season);
+  const localArea = business.location.includes("Ithaca") ? "Ithaca, Michigan" : business.location;
+  const title = trimmedTopic.replace(/\s+/g, " ").replace(/[.!?]+$/, "");
+  return {
+    title,
+    outline: [
+      "Start with the reason this topic matters to local hosts",
+      "Share practical planning points guests should think through",
+      `Connect the topic back to gatherings at ${business.siteName}`,
+      "Close with a gentle invitation to reach out",
+    ],
+    seoTitle: `${title} | ${business.siteName} ${localArea}`,
+    seoDescription: `Helpful local event planning guidance from ${business.siteName} in ${localArea}, written for hosts planning a gathering with confidence.`,
+    fullDraft: `${title}
+
+Planning around ${trimmedTopic.toLowerCase()} can feel easier when you start with the basics: the kind of gathering you want, the people you are inviting, and the details that will make guests feel comfortable. For hosts in ${localArea}, a clear plan can make the whole event feel calmer from the beginning.
+
+Think about your guest count, your timing, and the parts of the day that matter most. Some events need space for gifts, desserts, photos, or an easy open-house flow. Others need a comfortable setup where guests can settle in, visit, and enjoy the time together without everything feeling rushed.
+
+${business.siteName} is built for bringing people together in a warm, practical way. If you are thinking through a gathering, start with the date, the feel of the day, and the details you already know. From there, it is much easier to ask good questions and shape the event around what your guests will actually need.
+
+If you are planning something soon, reach out and share what you have in mind. A simple conversation is often the best place to begin.`,
+    whyThisFits: `This uses the customer's topic, adds local Ithaca-area SEO context, and keeps the copy helpful instead of overly salesy.`,
+  };
+}
+
 function normalizeTopicTitle(title: string) {
   return title
     .toLowerCase()
@@ -317,7 +349,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { content, title, action, regenerateMode, previousSuggestion, instructions } = body;
+    const { content, title, action, regenerateMode, previousSuggestion, instructions, topic, topicMode } = body;
 
     // Read token budget from KV (or fallback to file)
     const contentData = await getContentData();
@@ -474,6 +506,8 @@ Rules:
       if (remaining < TOKENS_PER_POST_SUGGESTION) {
         return NextResponse.json({ error: "Token budget exceeded for this month" }, { status: 429 });
       }
+      const userTopic = typeof topic === "string" ? topic.trim() : "";
+      const wantsUserTopic = topicMode === "user_topic" && userTopic;
       const prompt = `You are planning one practical blog topic for ${business.siteName}, an event venue in ${business.location}.
 Today is ${now.toDateString()}.
 
@@ -492,7 +526,9 @@ Known business facts:
 - Recent blog topics already used: ${existingBlogTitles.slice(0, 12).join(" | ") || "none yet"}
 
 Task:
-Suggest ONE blog topic that fits the business and the time of year.
+${wantsUserTopic
+  ? `Turn this requested topic into ONE helpful, locally relevant blog post: "${userTopic}". Research-style reasoning should consider local SEO intent for Ithaca, Michigan, seasonal event planning, and what customers might search before booking an event space.`
+  : "Suggest ONE blog topic that fits the business, the time of year, and local interest around Ithaca, Michigan. Consider community happenings, seasonal planning needs, school/family milestones, and topics that could promote the business without sounding like an ad."}
 
 Rules:
 - Base the topic on seasonal customer intent, local event planning, or common venue questions.
@@ -515,7 +551,7 @@ Rules:
         const objMatch = rawText.match(/\{[\s\S]*\}/);
         suggestion = objMatch ? JSON.parse(objMatch[0]) : {};
       } catch {
-        suggestion = fallbackBlogSuggestion(business, season);
+        suggestion = fallbackBlogSuggestionForTopic(business, season, wantsUserTopic ? userTopic : undefined);
         source = "fallback";
       }
       if (suggestion?.title && isTooSimilarTopic(String(suggestion.title), [

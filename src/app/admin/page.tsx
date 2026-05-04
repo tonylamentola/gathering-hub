@@ -68,6 +68,9 @@ type PostSuggestion = {
 };
 
 type PostRegenerateMode = "fresh" | "new_topic" | "more_polished" | "more_friendly";
+type BlogWorkflowMode = "closed" | "choose" | "ai" | "human";
+type BlogAiTopicMode = "pick" | "own" | "suggest";
+type BlogPictureMode = "none" | "generate" | "upload";
 type EventSuggestion = {
   emoji: string;
   title: string;
@@ -268,6 +271,11 @@ function AdminPageInner() {
   const [postRegenerateMode, setPostRegenerateMode] = useState<PostRegenerateMode>("fresh");
   const [postRetryMenuOpen, setPostRetryMenuOpen] = useState(false);
   const [postSuggestProgress, setPostSuggestProgress] = useState(0);
+  const [blogWorkflowMode, setBlogWorkflowMode] = useState<BlogWorkflowMode>("closed");
+  const [blogAiTopicMode, setBlogAiTopicMode] = useState<BlogAiTopicMode>("pick");
+  const [blogTopicInput, setBlogTopicInput] = useState("");
+  const [blogPictureMode, setBlogPictureMode] = useState<BlogPictureMode>("none");
+  const [generatingBlogImage, setGeneratingBlogImage] = useState(false);
   const [buildingVoice, setBuildingVoice] = useState(false);
   const [voiceMsg, setVoiceMsg] = useState("");
   const [voiceToolsOpen, setVoiceToolsOpen] = useState(false);
@@ -546,7 +554,34 @@ function AdminPageInner() {
     setTimeout(() => setPolishMsg(""), 5000);
   }
 
-  async function handleSuggestPost(mode: PostRegenerateMode = "fresh") {
+  function resetBlogEditor() {
+    setBlogTitle("");
+    setBlogBody("");
+    setBlogExcerpt("");
+    setBlogPublishDate(new Date().toISOString().slice(0, 10));
+    setBlogImageUrl("");
+    setBlogImageAspect("landscape");
+    setBlogImageCrop(DEFAULT_CROP);
+    setEditingPost(null);
+    setPostSuggestion(null);
+    setPostSuggestionOpen(false);
+    setPostRetryMenuOpen(false);
+    setPostSuggestMsg("");
+    setBlogTopicInput("");
+    setBlogAiTopicMode("pick");
+    setBlogPictureMode("none");
+  }
+
+  function startNewBlogPost() {
+    resetBlogEditor();
+    setBlogWorkflowMode("choose");
+  }
+
+  async function handleSuggestPost(
+    mode: PostRegenerateMode = "fresh",
+    topicOverride = blogTopicInput,
+    topicModeOverride: "user_topic" | "local_ideas" = blogAiTopicMode === "own" ? "user_topic" : "local_ideas",
+  ) {
     if (!content) return;
     const remaining = content.tokenBudget.monthlyLimit - content.tokenBudget.used;
     if (remaining < TOKENS_PER_POST_SUGGESTION) {
@@ -575,6 +610,8 @@ function AdminPageInner() {
           content: "The Gathering Hub, event venue, Ithaca MI",
           action: "suggest_post",
           regenerateMode: mode,
+          topic: topicOverride,
+          topicMode: topicModeOverride,
           previousSuggestion: postSuggestion
             ? {
                 title: postSuggestionTitle || postSuggestion.title,
@@ -619,6 +656,43 @@ function AdminPageInner() {
     setPostSuggestion(null);
     setPostSuggestMsg("");
     setPostRetryMenuOpen(false);
+    setBlogWorkflowMode("ai");
+    setBlogPictureMode("none");
+  }
+
+  async function generateBlogImage() {
+    if (!blogTitle.trim()) {
+      setBlogPhotoMsg("❌ Add a title first.");
+      return;
+    }
+    setGeneratingBlogImage(true);
+    setBlogPhotoMsg("Generating image...");
+    try {
+      const token = getAuthToken();
+      const res = await fetch("/api/flyer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: blogTitle,
+          description: blogExcerpt || blogBody.slice(0, 220),
+          details: blogBody.slice(0, 500),
+          aspect: blogImageAspect,
+          siteName: content?.settings.siteName || "The Gathering Hub",
+          styleNote: "Create a polished blog feature image, not a text-heavy poster. Make it warm, local, and event-venue appropriate.",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setBlogImageUrl(data.url);
+        setBlogPhotoMsg("✅ Image ready.");
+      } else {
+        setBlogPhotoMsg(`❌ Image failed: ${data.error || "Unknown error"}`);
+      }
+    } catch {
+      setBlogPhotoMsg("❌ Image failed. Check your connection.");
+    }
+    setGeneratingBlogImage(false);
+    setTimeout(() => setBlogPhotoMsg(""), 4000);
   }
 
   function saveBlogPost() {
@@ -657,6 +731,8 @@ function AdminPageInner() {
     setPostSuggestion(null);
     setPostSuggestionOpen(false);
     setPostRetryMenuOpen(false);
+    setBlogWorkflowMode("closed");
+    setBlogPictureMode("none");
   }
 
   function editPost(post: ContentData["blogPosts"][0]) {
@@ -668,6 +744,8 @@ function AdminPageInner() {
     setBlogImageAspect(post.imageAspect || "landscape");
     setBlogImageCrop(post.imageCrop || DEFAULT_CROP);
     setEditingPost(post.id);
+    setBlogWorkflowMode("human");
+    setBlogPictureMode(post.imageUrl ? "upload" : "none");
     setTab("blog");
   }
 
@@ -1377,6 +1455,9 @@ function AdminPageInner() {
   const monthlyBlogDraftLimit = 4;
   const activeUpdatesCount = content.announcements.filter((announcement) => announcement.active).length;
   const inquiries = [...(content.inquiries ?? [])].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedBlogPosts = [...content.blogPosts].sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+  );
 
   const tabs = [
     { id: "blog", label: "Blog" },
@@ -2209,14 +2290,16 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               editingPost ? "Edit Blog Post" : "Blog",
-              "Write a post yourself, generate a starting draft with AI, or polish what you already wrote before publishing it.",
+              "Start with the plus button. Choose AI help or write it yourself, then add a picture only if you want one.",
               <>
                 <button
-                  onClick={() => handleSuggestPost("fresh")}
-                  disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION}
-                  style={aiBtn}
+                  type="button"
+                  onClick={startNewBlogPost}
+                  style={{ ...btnStyle, borderRadius: 999, width: 44, height: 44, padding: 0, fontSize: 24, lineHeight: 1 }}
+                  title="New blog post"
+                  aria-label="New blog post"
                 >
-                  {suggestingPost ? "Thinking..." : "Generate New"}
+                  +
                 </button>
                 <button onClick={() => openPublicPath("/preview/blog")} style={ghostBtn}>Preview Draft Blog</button>
               </>,
@@ -2231,10 +2314,99 @@ function AdminPageInner() {
                 </div>
               </>,
             )}
-            <div style={cardStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 12, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Need help getting started? Use AI to make a first draft, then edit it in your own voice.</span>
+
+            {(blogWorkflowMode !== "closed" || editingPost || postSuggestionOpen) && (
+            <div className="admin-card" style={cardStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 18 }}>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>
+                    {editingPost ? "Edit Post" : "New Blog Post"}
+                  </h3>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.56)", margin: 0, lineHeight: 1.55 }}>
+                    One step at a time. Pick how you want to start, then review before saving the draft.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetBlogEditor();
+                    setBlogWorkflowMode("closed");
+                  }}
+                  style={ghostBtn}
+                >
+                  Close
+                </button>
               </div>
+
+              {blogWorkflowMode === "choose" && !editingPost && (
+                <div className="flyer-method-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBlogWorkflowMode("ai");
+                      setBlogAiTopicMode("pick");
+                    }}
+                    style={{ ...ghostBtn, minHeight: 118, alignItems: "flex-start", flexDirection: "column", textAlign: "left", padding: 18, gap: 8 }}
+                  >
+                    <span style={{ fontSize: 12, color: "#f3d57b", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>AI Help Me Write It</span>
+                    <strong style={{ fontSize: 20, color: "#fff" }}>Get a guided draft</strong>
+                    <span style={{ color: "rgba(255,255,255,0.58)", lineHeight: 1.5 }}>Use a topic you have, or let AI suggest a locally relevant one.</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBlogWorkflowMode("human");
+                      setPostSuggestionOpen(false);
+                      setPostSuggestion(null);
+                    }}
+                    style={{ ...ghostBtn, minHeight: 118, alignItems: "flex-start", flexDirection: "column", textAlign: "left", padding: 18, gap: 8 }}
+                  >
+                    <span style={{ fontSize: 12, color: "#a8f0cf", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>I&rsquo;ll Write It Myself</span>
+                    <strong style={{ fontSize: 20, color: "#fff" }}>Blank editor</strong>
+                    <span style={{ color: "rgba(255,255,255,0.58)", lineHeight: 1.5 }}>Write naturally first, then use AI to clean it up and optimize SEO.</span>
+                  </button>
+                </div>
+              )}
+
+              {blogWorkflowMode === "ai" && !postSuggestionOpen && !blogBody && !editingPost && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.68)", fontWeight: 700, marginBottom: 10 }}>Do you already have a topic?</div>
+                  <div className="flyer-method-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                    <button
+                      type="button"
+                      onClick={() => setBlogAiTopicMode("own")}
+                      style={{ ...ghostBtn, minHeight: 76, flexDirection: "column", alignItems: "flex-start", textAlign: "left", padding: 14, background: blogAiTopicMode === "own" ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.03)" }}
+                    >
+                      <strong>I have a topic</strong>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.56)" }}>AI will make it local and SEO-friendly.</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBlogAiTopicMode("suggest")}
+                      style={{ ...ghostBtn, minHeight: 76, flexDirection: "column", alignItems: "flex-start", textAlign: "left", padding: 14, background: blogAiTopicMode === "suggest" ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.03)" }}
+                    >
+                      <strong>Come up with one</strong>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.56)" }}>AI will look for useful local angles.</span>
+                    </button>
+                  </div>
+                  {blogAiTopicMode === "own" && (
+                    <input
+                      style={inputStyle}
+                      placeholder="Example: tips for planning a graduation open house"
+                      value={blogTopicInput}
+                      onChange={(e) => setBlogTopicInput(e.target.value)}
+                    />
+                  )}
+                  <button
+                    onClick={() => handleSuggestPost("fresh", blogTopicInput, blogAiTopicMode === "own" ? "user_topic" : "local_ideas")}
+                    disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION || blogAiTopicMode === "pick" || (blogAiTopicMode === "own" && !blogTopicInput.trim())}
+                    style={btnStyle}
+                  >
+                    {suggestingPost ? "Thinking..." : blogAiTopicMode === "own" ? "Research & Draft This Topic" : "Suggest Local Post Ideas"}
+                  </button>
+                </div>
+              )}
+
               {postSuggestMsg && (
                 <div style={{ fontSize: 13, color: postSuggestMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 16 }}>{postSuggestMsg}</div>
               )}
@@ -2341,7 +2513,7 @@ function AdminPageInner() {
                 </div>
               )}
 
-              {(!postSuggestionOpen || editingPost || blogTitle || blogBody || blogExcerpt) && (
+              {(blogWorkflowMode === "human" || editingPost || blogTitle || blogBody || blogExcerpt) && (
                 <>
                   <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Post Title</label>
                   <input style={inputStyle} placeholder="e.g. 5 Tips for Planning a Baby Shower" value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} />
@@ -2365,40 +2537,69 @@ function AdminPageInner() {
                     onChange={(e) => setBlogBody(e.target.value)}
                   />
 
-                  <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 6 }}>Blog Photo</label>
-                  {renderAspectPicker(blogImageAspect, setBlogImageAspect)}
-                  {renderImagePreview("blog-draft", blogImageUrl, blogImageAspect, blogImageCrop, setBlogImageCrop, "Upload a blog photo to preview the crop")}
-                  {blogImageUrl && renderCropControls(blogImageCrop, setBlogImageCrop)}
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
-                    <label style={{ ...ghostBtn, cursor: uploadingBlogPhoto ? "wait" : "pointer" }}>
-                      {uploadingBlogPhoto ? "Uploading..." : "Upload Blog Photo"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          const url = await uploadImage(file, "blog");
-                          if (url) setBlogImageUrl(url);
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                    {blogImageUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBlogImageUrl("");
-                          setBlogImageAspect("landscape");
-                          setBlogImageCrop(DEFAULT_CROP);
-                        }}
-                        style={ghostBtn}
-                      >
-                        Remove Photo
-                      </button>
+                  <div style={{ margin: "18px 0", padding: 16, borderRadius: 16, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.72)", fontWeight: 700, marginBottom: 10 }}>Would you like to add a picture?</div>
+                    <div className="flyer-method-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: blogPictureMode === "none" ? 0 : 14 }}>
+                      {[
+                        ["none", "No picture", "Keep this text-only."],
+                        ["generate", "Generate one", "Use the post to make an image."],
+                        ["upload", "Upload one", "Use your own photo."],
+                      ].map(([mode, label, helper]) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setBlogPictureMode(mode as BlogPictureMode)}
+                          style={{ ...ghostBtn, minHeight: 76, flexDirection: "column", alignItems: "flex-start", textAlign: "left", padding: 12, background: blogPictureMode === mode ? "rgba(201,168,76,0.18)" : "rgba(255,255,255,0.03)" }}
+                        >
+                          <strong>{label}</strong>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.54)", lineHeight: 1.35 }}>{helper}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {blogPictureMode !== "none" && (
+                      <>
+                        {renderAspectPicker(blogImageAspect, setBlogImageAspect)}
+                        {renderImagePreview("blog-draft", blogImageUrl, blogImageAspect, blogImageCrop, setBlogImageCrop, blogPictureMode === "generate" ? "Generate an image to preview it here" : "Upload a blog photo to preview the crop")}
+                        {blogImageUrl && renderCropControls(blogImageCrop, setBlogImageCrop)}
+                        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
+                          {blogPictureMode === "generate" ? (
+                            <button type="button" onClick={generateBlogImage} disabled={generatingBlogImage || !blogTitle.trim()} style={aiBtn}>
+                              {generatingBlogImage ? "Generating..." : "Generate Picture"}
+                            </button>
+                          ) : (
+                            <label style={{ ...ghostBtn, cursor: uploadingBlogPhoto ? "wait" : "pointer" }}>
+                              {uploadingBlogPhoto ? "Uploading..." : "Upload Blog Photo"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const url = await uploadImage(file, "blog");
+                                  if (url) setBlogImageUrl(url);
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                          )}
+                          {blogImageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBlogImageUrl("");
+                                setBlogImageAspect("landscape");
+                                setBlogImageCrop(DEFAULT_CROP);
+                              }}
+                              style={ghostBtn}
+                            >
+                              Remove Photo
+                            </button>
+                          )}
+                          {blogPhotoMsg && <span style={{ fontSize: 12, color: blogPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{blogPhotoMsg}</span>}
+                        </div>
+                      </>
                     )}
-                    {blogPhotoMsg && <span style={{ fontSize: 12, color: blogPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{blogPhotoMsg}</span>}
                   </div>
 
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -2419,7 +2620,7 @@ function AdminPageInner() {
                     </button>
                     {editingPost && (
                       <button
-                        onClick={() => { setBlogTitle(""); setBlogBody(""); setBlogExcerpt(""); setEditingPost(null); }}
+                        onClick={() => { resetBlogEditor(); setBlogWorkflowMode("closed"); }}
                         style={ghostBtn}
                       >
                         Cancel Edit
@@ -2433,10 +2634,11 @@ function AdminPageInner() {
                 </>
               )}
             </div>
+            )}
 
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>All Posts</h3>
-            {content.blogPosts.length === 0 && <p style={{ color: "rgba(255,255,255,0.4)" }}>No posts yet.</p>}
-            {content.blogPosts.map((post) => (
+            {sortedBlogPosts.length === 0 && <p style={{ color: "rgba(255,255,255,0.4)" }}>No posts yet.</p>}
+            {sortedBlogPosts.map((post) => (
               <div key={post.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
                 <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
                   <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
