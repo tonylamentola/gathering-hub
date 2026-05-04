@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: post.seoTitle || post.title,
       description: post.seoDescription || post.excerpt,
       type: "article",
+      images: [{ url: "/images/gatheringhub-logo.jpg", width: 2048, height: 2047, alt: "The Gathering Hub logo" }],
     },
   };
 }

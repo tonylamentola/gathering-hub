@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Upcoming | The Gathering Hub - Ithaca, MI",
     description: "See upcoming public happenings, special nights, and featured events at The Gathering Hub in downtown Ithaca, Michigan.",
     url: "https://thegatheringhub.biz/upcoming",
-    images: [{ url: "/images/upcoming-main.jpg", width: 1200, height: 630, alt: "Upcoming events at The Gathering Hub" }],
+    images: [{ url: "/images/gatheringhub-logo.jpg", width: 2048, height: 2047, alt: "The Gathering Hub logo" }],
   },
 };
 

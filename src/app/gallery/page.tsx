@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "Photo Gallery | The Gathering Hub - Ithaca, MI",
     description: "Browse photos of The Gathering Hub venue, food, desserts, and event moments in downtown Ithaca, Michigan.",
     url: "https://thegatheringhub.biz/gallery",
-    images: [{ url: "/images/hero-main.jpg", width: 1200, height: 630, alt: "The Gathering Hub in Ithaca, Michigan" }],
+    images: [{ url: "/images/gatheringhub-logo.jpg", width: 2048, height: 2047, alt: "The Gathering Hub logo" }],
   },
 };
 

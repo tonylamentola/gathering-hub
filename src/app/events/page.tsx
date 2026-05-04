@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     title: "Events | The Gathering Hub - Ithaca, MI",
     description: "Book The Gathering Hub for birthdays, baby showers, bridal showers, corporate events, homemade food, and custom desserts in Ithaca, Michigan.",
     url: "https://thegatheringhub.biz/events",
-    images: [{ url: "/images/hero-main.jpg", width: 1200, height: 630, alt: "The Gathering Hub in Ithaca, Michigan" }],
+    images: [{ url: "/images/gatheringhub-logo.jpg", width: 2048, height: 2047, alt: "The Gathering Hub logo" }],
   },
 };
 

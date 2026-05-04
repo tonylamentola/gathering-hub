@@ -1,10 +1,32 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteTitle = "The Gathering Hub | Event Venue in Ithaca, MI";
+const siteDescription =
+  "The Gathering Hub is a private Ithaca, Michigan event venue with in-house homemade food, custom desserts, and rare food printing. 121 S Pine River St.";
+const socialImage = {
+  url: "/images/gatheringhub-logo.jpg",
+  width: 2048,
+  height: 2047,
+  alt: "The Gathering Hub logo",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://thegatheringhub.biz"),
-  title: "The Gathering Hub | Event Venue in Ithaca, MI",
-  description: "The Gathering Hub is a private Ithaca, Michigan event venue with in-house homemade food, custom desserts, and rare food printing. 121 S Pine River St.",
+  applicationName: "The Gathering Hub",
+  title: {
+    default: siteTitle,
+    template: "%s | The Gathering Hub",
+  },
+  description: siteDescription,
+  keywords: [
+    "The Gathering Hub",
+    "Ithaca Michigan event venue",
+    "Ithaca MI catering",
+    "baby shower venue",
+    "bridal shower venue",
+    "private event space",
+  ],
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -21,27 +43,24 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
-    title: "The Gathering Hub | Event Venue in Ithaca, MI",
-    description: "Private venue rental in downtown Ithaca with in-house homemade food, custom cakes, cookies, and event hosting help.",
-    url: "https://thegatheringhub.biz",
+    title: siteTitle,
+    description: siteDescription,
+    url: "/",
     siteName: "The Gathering Hub",
-    images: [
-      {
-        url: "/images/hero-main.jpg",
-        width: 1200,
-        height: 630,
-        alt: "The Gathering Hub storefront in downtown Ithaca",
-      },
-    ],
+    images: [socialImage],
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Gathering Hub | Event Venue in Ithaca, MI",
-    description: "Private venue rental in downtown Ithaca with in-house homemade food, custom cakes, cookies, and event hosting help.",
-    images: ["/images/hero-main.jpg"],
+    title: siteTitle,
+    description: siteDescription,
+    images: [socialImage.url],
   },
 };
 
