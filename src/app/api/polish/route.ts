@@ -262,6 +262,54 @@ function fallbackVoiceProfile(business: ReturnType<typeof getBusinessProfile>) {
   };
 }
 
+function sentenceCase(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
+function localPolishText(value: string, instructions?: string) {
+  const raw = value.replace(/\r\n/g, "\n").trim();
+  if (!raw) return raw;
+  const paragraphs = raw
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  const polished = paragraphs.map((paragraph) => {
+    let next = paragraph
+      .replace(/\binfo\b/gi, "details")
+      .replace(/\bbook now\b/gi, "reach out to book")
+      .replace(/\bASAP\b/g, "as soon as you can")
+      .replace(/\s+([,.!?])/g, "$1");
+    next = sentenceCase(next);
+    if (!/[.!?]$/.test(next)) next += ".";
+    return next;
+  });
+
+  const joined = polished.join("\n\n");
+  const wantsShort = instructions?.toLowerCase().includes("short") || instructions?.toLowerCase().includes("flyer");
+  if (wantsShort && joined.length > 260) {
+    return `${joined.slice(0, 257).replace(/\s+\S*$/, "")}.`;
+  }
+  return joined;
+}
+
+function localSeoTitle(title: string | undefined, business: ReturnType<typeof getBusinessProfile>) {
+  const base = title?.trim() || business.siteName;
+  if (base.toLowerCase().includes("the gathering hub")) return base;
+  return `${base} | ${business.siteName}`;
+}
+
+function localSeoDescription(content: string, business: ReturnType<typeof getBusinessProfile>) {
+  const cleaned = content.replace(/\s+/g, " ").trim();
+  const base = cleaned || `Learn more about planning your next gathering with ${business.siteName}.`;
+  const withLocation = base.toLowerCase().includes("ithaca")
+    ? base
+    : `${base} Contact ${business.siteName} in Ithaca, MI.`;
+  return withLocation.slice(0, 158).replace(/\s+\S*$/, "");
+}
+
 export async function POST(req: NextRequest) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -521,16 +569,27 @@ Return ONLY a JSON object with these exact fields:
   "seoDescription": "Meta description for SEO, 150-160 characters"
 }`;
 
-    const data = await generateJson(prompt, 700, 0.6);
-    const raw_text = data.choices?.[0]?.message?.content || "";
-
-    // Parse JSON from response
-    const jsonMatch = raw_text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: "Could not parse AI response", raw: raw_text }, { status: 500 });
+    let parsed: {
+      polishedContent?: string;
+      seoTitle?: string;
+      seoDescription?: string;
+    };
+    let source = "ai";
+    try {
+      const data = await generateJson(prompt, 700, 0.6);
+      const raw_text = data.choices?.[0]?.message?.content || "";
+      const jsonMatch = raw_text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not parse AI response");
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch {
+      const polishedContent = localPolishText(String(content || ""), instructions);
+      parsed = {
+        polishedContent,
+        seoTitle: localSeoTitle(title, business),
+        seoDescription: localSeoDescription(polishedContent, business),
+      };
+      source = "fallback";
     }
-
-    const parsed = JSON.parse(jsonMatch[0]);
 
     // Deduct tokens from budget and save to KV
     tokenBudget.used += tokenCost;
@@ -542,6 +601,7 @@ Return ONLY a JSON object with these exact fields:
       seoTitle: parsed.seoTitle || title,
       seoDescription: parsed.seoDescription || "",
       tokensUsed: tokenCost,
+      source,
     });
 
   } catch (err) {
