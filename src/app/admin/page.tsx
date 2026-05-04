@@ -464,7 +464,7 @@ function AdminPageInner() {
       });
       if (res.ok) {
         setContent(updated);
-        setSaveMsg("Draft saved. Preview it before posting live.");
+        setSaveMsg("Changes saved. Post live when ready.");
       } else {
         setSaveMsg("❌ Save failed. Please try again.");
       }
@@ -477,7 +477,7 @@ function AdminPageInner() {
 
   async function publishContent() {
     if (publishing) return;
-    const confirmed = window.confirm("Post these draft changes live to the website?");
+    const confirmed = window.confirm("Post these saved changes live to the website?");
     if (!confirmed) return;
 
     setPublishing(true);
@@ -492,10 +492,10 @@ function AdminPageInner() {
       if (res.ok) {
         setPublishMsg("Posted live. Guests will see the updated site now.");
       } else {
-        setPublishMsg(data.error || "Publish failed. Draft is still saved.");
+        setPublishMsg(data.error || "Publish failed. Saved changes are still here.");
       }
     } catch {
-      setPublishMsg("Publish failed. Draft is still saved.");
+      setPublishMsg("Publish failed. Saved changes are still here.");
     }
     setPublishing(false);
     setTimeout(() => setPublishMsg(""), 6000);
@@ -710,10 +710,10 @@ function AdminPageInner() {
         setPostSuggestMsg("");
       } else {
         const message = data.aiError || data.source === "fallback"
-          ? "AI blog writing is not connected right now, so I did not create a template draft."
+          ? "AI blog writing is not connected right now, so I did not create template copy."
           : `Suggestion failed: ${data.error || "Unknown error"}`;
         setPostSuggestMsg(`❌ ${message}`);
-        showAiIssue("Blog writer", message, data.reason || data.error || "No real AI blog draft returned.");
+        showAiIssue("Blog writer", message, data.reason || data.error || "No real AI blog post returned.");
       }
     } catch (err) {
       const message = "Blog writing failed. Check your connection.";
@@ -1531,10 +1531,6 @@ function AdminPageInner() {
 
   const tokenBudget = content.tokenBudget;
   const tokenRemaining = tokenBudget.monthlyLimit - tokenBudget.used;
-  const tokenPct = Math.round((tokenRemaining / tokenBudget.monthlyLimit) * 100);
-  const monthlyAiActions = Math.max(1, Math.floor(tokenBudget.monthlyLimit / TOKENS_PER_REWRITE));
-  const aiActionsUsed = Math.min(monthlyAiActions, Math.ceil(tokenBudget.used / TOKENS_PER_REWRITE));
-  const aiActionsRemaining = Math.max(0, monthlyAiActions - aiActionsUsed);
   const flyerBudget = content.flyerBudget ?? { monthlyLimit: 5, used: 0, resetMonth: new Date().toISOString().slice(0, 7), extraRequested: false, requestNote: "" };
   const flyerActionsRemaining = Math.max(0, flyerBudget.monthlyLimit - flyerBudget.used);
   const sortedUpcomingItems = sortUpcomingItems(content.upcomingItems ?? []);
@@ -1558,7 +1554,7 @@ function AdminPageInner() {
     { id: "amenities", label: "Amenities" },
     { id: "upcoming", label: "Upcoming" },
     { id: "announcements", label: "Quick Updates" },
-    { id: "menu", label: "Menu" },
+    { id: "menu", label: "Catering" },
     { id: "life", label: "Life at the Hub" },
     { id: "reviews", label: "Reviews" },
     { id: "overview", label: "Help & Stats" },
@@ -1763,24 +1759,6 @@ function AdminPageInner() {
         <div className="admin-topbar-actions" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {saveMsg && <span style={{ fontSize: 13 }}>{saveMsg}</span>}
           {publishMsg && <span style={{ fontSize: 13, color: publishMsg.includes("Posted") ? "#4ade80" : "#f87171" }}>{publishMsg}</span>}
-          <span style={{
-            background: tokenPct > 30 ? "rgba(201,168,76,0.12)" : "rgba(248,113,113,0.12)",
-            color: tokenPct > 30 ? "#f3d57b" : "#f87171",
-            border: `1px solid ${tokenPct > 30 ? "rgba(201,168,76,0.3)" : "rgba(248,113,113,0.3)"}`,
-            borderRadius: 20,
-            padding: "4px 12px",
-            fontSize: 12,
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-          }}>
-            AI helps left: {aiActionsRemaining} / {monthlyAiActions}
-          </span>
-          <button
-            onClick={() => openPublicPath("/preview")}
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", color: "#f3d57b", borderRadius: 6, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}
-          >
-            Preview Draft
-          </button>
           <button
             onClick={publishContent}
             disabled={publishing || saving}
@@ -1986,16 +1964,11 @@ function AdminPageInner() {
           <div>
             {renderSectionIntro(
               "Help & Stats",
-              "Save as much as you want here first. When the draft looks right, preview it, then post it live with one confirmation.",
+              "Use the tools below to update the site. Save changes as you go, then post live when you are ready.",
               <>
-                <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Draft</button>
                 <button onClick={publishContent} style={btnStyle} disabled={publishing || saving}>{publishing ? "Posting..." : "Post Live"}</button>
               </>,
               <>
-                <div style={usageCard}>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Monthly AI help</div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
-                </div>
                 <div style={usageCard}>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Blog posts this month</div>
                   <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} / {monthlyBlogDraftLimit}</div>
@@ -2022,7 +1995,7 @@ function AdminPageInner() {
                 <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 800 }}>Post Update</span>
                 <span>
                   <strong style={{ display: "block", fontSize: 22, color: "#fff", marginBottom: 8 }}>Write something new</strong>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Create a post, polish it, add a photo, and save it as a draft.</p>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Create a post, polish it, add a photo, and save it for the site.</p>
                 </span>
               </button>
               <button
@@ -2072,14 +2045,6 @@ function AdminPageInner() {
             </div>
 
             <div className="overview-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
-              <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(29,37,64,0.96) 65%)" }}>
-                <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{aiActionsRemaining}</div>
-                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>AI Helps Left This Month</div>
-                <div style={{ marginTop: 10, background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 6 }}>
-                  <div style={{ width: `${tokenPct}%`, height: "100%", background: tokenPct > 30 ? "#c9a84c" : "#f87171", borderRadius: 4 }} />
-                </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>Resets monthly with your plan</div>
-              </div>
               <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(73,124,214,0.12) 0%, rgba(25,32,54,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{blogPostsThisMonth}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>Posts Published This Month</div>
@@ -2117,8 +2082,8 @@ function AdminPageInner() {
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Generate or upload a flyer</span>
                 </button>
                 <button onClick={() => setTab("menu")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Menu</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Manage menu items</span>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Catering</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Manage catering highlights</span>
                 </button>
                 <button onClick={() => setTab("life")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Life at the Hub</span>
@@ -2127,10 +2092,6 @@ function AdminPageInner() {
                 <button onClick={() => document.getElementById("site-settings")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Settings</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Site details and writing notes</span>
-                </button>
-                <button onClick={() => openPublicPath("/preview")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
-                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Preview Draft</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Check before guests see it</span>
                 </button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginBottom: 18 }}>
@@ -2331,7 +2292,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Quote Inquiries",
               "Requests submitted from the website form show up here, newest first, so leads are not trapped in an email compose flow.",
-                <button onClick={() => openPublicPath("/preview#contact")} style={ghostBtn}>Preview Draft Form</button>,
+                <button onClick={() => openPublicPath("/#contact")} style={ghostBtn}>View Live Form</button>,
               <>
                 <div style={usageCard}>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Total inquiries</div>
@@ -2393,7 +2354,7 @@ function AdminPageInner() {
                 >
                   +
                 </button>
-                <button onClick={() => openPublicPath("/preview/blog")} style={ghostBtn}>Preview Draft Blog</button>
+                <button onClick={() => openPublicPath("/blog")} style={ghostBtn}>View Live Blog</button>
               </>,
             )}
 
@@ -2405,7 +2366,7 @@ function AdminPageInner() {
                     {editingPost ? "Edit Post" : "New Blog Post"}
                   </h3>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.56)", margin: 0, lineHeight: 1.55 }}>
-                    One step at a time. Pick how you want to start, then review before saving the draft.
+                    One step at a time. Pick how you want to start, then save the post when it feels ready.
                   </p>
                 </div>
                 <button
@@ -2431,10 +2392,10 @@ function AdminPageInner() {
                     style={{ ...ghostBtn, minHeight: 118, alignItems: "flex-start", flexDirection: "column", textAlign: "left", padding: 18, gap: 8 }}
                   >
                     <span style={{ fontSize: 12, color: "#f3d57b", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>AI Help Me Write It</span>
-                    <strong style={{ fontSize: 20, color: "#fff" }}>Get a guided draft</strong>
+                    <strong style={{ fontSize: 20, color: "#fff" }}>Get a guided post</strong>
                     <span style={{ color: "rgba(255,255,255,0.58)", lineHeight: 1.5 }}>Use a topic you have, or let AI suggest a locally relevant one.</span>
                     <span style={{ marginTop: "auto", fontSize: 12, color: "rgba(255,255,255,0.48)" }}>
-                      {Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} of {monthlyBlogDraftLimit} monthly AI drafts used
+                      {Math.min(blogPostsThisMonth, monthlyBlogDraftLimit)} of {monthlyBlogDraftLimit} monthly AI posts used
                     </span>
                   </button>
                   <button
@@ -2487,7 +2448,7 @@ function AdminPageInner() {
                     disabled={suggestingPost || tokenRemaining < TOKENS_PER_POST_SUGGESTION || blogAiTopicMode === "pick" || (blogAiTopicMode === "own" && !blogTopicInput.trim())}
                     style={btnStyle}
                   >
-                    {suggestingPost ? "Thinking..." : blogAiTopicMode === "own" ? "Research & Draft This Topic" : "Suggest Local Post Ideas"}
+                    {suggestingPost ? "Thinking..." : blogAiTopicMode === "own" ? "Research & Write This Topic" : "Suggest Local Post Ideas"}
                   </button>
                 </div>
               )}
@@ -2511,7 +2472,7 @@ function AdminPageInner() {
                     />
                   </div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.42)" }}>
-                    Building a draft in your brand voice and checking for SEO fit.
+                    Writing in your brand voice and checking for SEO fit.
                   </div>
                 </div>
               )}
@@ -2519,13 +2480,13 @@ function AdminPageInner() {
                 <div style={{ background: "linear-gradient(160deg, rgba(201,168,76,0.08) 0%, rgba(30,38,63,0.96) 62%)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 16, padding: "22px", marginBottom: 20, boxShadow: "0 16px 40px rgba(0,0,0,0.18)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 14 }}>
                     <div>
-                      <div style={{ fontSize: 12, color: "#f3d57b", fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Editorial Draft</div>
+                      <div style={{ fontSize: 12, color: "#f3d57b", fontWeight: 700, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Suggested Post</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", maxWidth: 420 }}>
                         A suggested post shaped around your voice, local search intent, and what feels timely for the business right now.
                       </div>
                     </div>
                     <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 999, padding: "6px 12px", fontSize: 12, color: "rgba(255,255,255,0.62)" }}>
-                      SEO-guided draft
+                      SEO-guided post
                     </div>
                   </div>
                   <label style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 4 }}>Title (editable)</label>
@@ -2691,7 +2652,7 @@ function AdminPageInner() {
 
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button onClick={saveBlogPost} style={btnStyle} disabled={saving}>
-                      {saving ? "Saving..." : editingPost ? "Save Draft Changes" : "Save Draft Post"}
+                      {saving ? "Saving..." : editingPost ? "Save Changes" : "Save Post"}
                     </button>
                     <button
                       onClick={handlePolish}
@@ -2761,12 +2722,7 @@ function AdminPageInner() {
                 >
                   {suggestingEvents ? "Gathering ideas..." : eventSuggestions.length > 0 ? "Rotate Ideas" : "Generate Event Ideas"}
                 </button>
-                <button onClick={() => openPublicPath("/preview/events")} style={ghostBtn}>Preview Draft Events</button>
               </>,
-              <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Idea refreshes left</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
-              </div>,
             )}
 
             {eventSuggestMsg && (
@@ -2810,7 +2766,7 @@ function AdminPageInner() {
               </div>
               {eventEditorMsg && <div style={{ fontSize: 12, color: eventEditorMsg.startsWith("✅") ? "#4ade80" : eventEditorMsg.startsWith("❌") ? "#f87171" : "#c9a84c", marginBottom: 12 }}>{eventEditorMsg}</div>}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addEvent} style={btnStyle}>{editingEventId ? "Save Draft Changes" : "Save Draft Event Idea"}</button>
+                <button onClick={addEvent} style={btnStyle}>{editingEventId ? "Save Changes" : "Save Event Idea"}</button>
                 {editingEventId && <button onClick={() => { setNewEvent({ title: "", emoji: "🎉", description: "" }); setEditingEventId(null); setEventEditorMsg(""); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2841,7 +2797,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Amenities",
               "Edit the included features people see on the site, like tables, chairs, AV, in-house food, and location benefits.",
-              <button onClick={() => openPublicPath("/preview/events")} style={ghostBtn}>Preview Draft Events</button>,
+              <button onClick={() => openPublicPath("/events")} style={ghostBtn}>View Live Events</button>,
             )}
 
             <div style={cardStyle}>
@@ -2857,7 +2813,7 @@ function AdminPageInner() {
                 onChange={(e) => setNewAmenity({ ...newAmenity, description: e.target.value })}
               />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addAmenity} style={btnStyle}>{editingAmenityId ? "Save Draft Changes" : "Save Draft Amenity"}</button>
+                <button onClick={addAmenity} style={btnStyle}>{editingAmenityId ? "Save Changes" : "Save Amenity"}</button>
                 {editingAmenityId && <button onClick={() => { setNewAmenity({ title: "", icon: "✨", description: "" }); setEditingAmenityId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -2891,7 +2847,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Upcoming at the Hub",
               "Use this for public happenings like bingo, karaoke, trivia, cornhole, or special nights you want people to notice right away.",
-              <button onClick={() => openPublicPath("/preview/upcoming")} style={ghostBtn}>Preview Draft Upcoming</button>,
+              <button onClick={() => openPublicPath("/upcoming")} style={ghostBtn}>View Live Upcoming</button>,
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <div style={usageCard}>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Upcoming items</div>
@@ -3041,13 +2997,13 @@ function AdminPageInner() {
                       />
                     </label>
                     {upcomingPhotoMsg && <span style={{ fontSize: 12, color: upcomingPhotoMsg.startsWith("✅") ? "#4ade80" : "#f87171" }}>{upcomingPhotoMsg}</span>}
-                    {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the draft item, preview it, then post live when ready.</span>}
+                    {newUpcoming.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the item to keep it.</span>}
                   </div>
                 </div>
               )}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {(flyerMode === "upload" || !!newUpcoming.imageUrl) && (
-                  <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Draft Changes" : "Save Draft Event"}</button>
+                  <button onClick={addUpcomingItem} style={btnStyle}>{editingUpcomingId ? "Save Changes" : "Save Event"}</button>
                 )}
                 {editingUpcomingId && <button onClick={() => { setNewUpcoming({ title: "", date: "", time: "", price: "", details: "", description: "", imageUrl: "", imageAspect: "portrait", imageCrop: DEFAULT_CROP }); setFlyerStyleNote(""); setFlyerMsg(""); setFlyerDraftUrl(""); setFlyerAdjustNote(""); setFlyerChangesUsed(0); setFlyerMode("generate"); setEditingUpcomingId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
@@ -3098,7 +3054,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Reviews",
               "Keep the best social proof on the site. Add a new review, remove outdated ones, and keep this section current.",
-              <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Draft Site</button>,
+              <button onClick={() => openPublicPath("/")} style={ghostBtn}>View Live Site</button>,
             )}
             <div style={cardStyle}>
               <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{editingReviewId ? "Edit Review" : "Add New Review"}</h3>
@@ -3117,7 +3073,7 @@ function AdminPageInner() {
               />
               <input style={inputStyle} placeholder="Author name (e.g. Facebook Reviewer)" value={newReview.author} onChange={(e) => setNewReview({ ...newReview, author: e.target.value })} />
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addReview} style={btnStyle}>{editingReviewId ? "Save Draft Changes" : "Save Draft Review"}</button>
+                <button onClick={addReview} style={btnStyle}>{editingReviewId ? "Save Changes" : "Save Review"}</button>
                 {editingReviewId && <button onClick={() => { setNewReview({ stars: 5, text: "", author: "" }); setEditingReviewId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -3154,12 +3110,7 @@ function AdminPageInner() {
                 >
                   {suggestingAnnouncements ? "Writing..." : "Generate Notice"}
                 </button>
-                <button onClick={() => openPublicPath("/preview")} style={ghostBtn}>Preview Homepage Draft</button>
               </>,
-              <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Notice refreshes left</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{aiActionsRemaining} / {monthlyAiActions}</div>
-              </div>,
             )}
 
             {annSuggestMsg && (
@@ -3205,7 +3156,7 @@ function AdminPageInner() {
                 <label htmlFor="active" style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>Active on homepage</label>
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addAnnouncement} style={btnStyle}>{editingAnnouncementId ? "Save Draft Changes" : "Save Draft Update"}</button>
+                <button onClick={addAnnouncement} style={btnStyle}>{editingAnnouncementId ? "Save Changes" : "Save Update"}</button>
                 {editingAnnouncementId && <button onClick={() => { setNewAnnouncement({ title: "", body: "", active: true }); setEditingAnnouncementId(null); setAnnouncementEditorMsg(""); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
@@ -3232,22 +3183,22 @@ function AdminPageInner() {
           </div>
         )}
 
-        {/* MENU */}
+        {/* CATERING */}
         {tab === "menu" && (
           <div>
             {renderSectionIntro(
-              "Menu",
-              "Add menu items, optional prices, and food photos. This area stays focused on what guests can eat or order.",
-              <button onClick={() => openPublicPath("/menu")} style={ghostBtn}>View Menu</button>,
+              "Catering",
+              "Add food highlights and photos that support the public catering menu page. Full catering pricing still lives on the catering menu.",
+              <button onClick={() => openPublicPath("/menu/catering")} style={ghostBtn}>View Catering Menu</button>,
               <div style={usageCard}>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Menu items</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Food highlights</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{(content.menuItems ?? []).length}</div>
               </div>,
             )}
             <div style={cardStyle}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>{editingMenuItemId ? "Edit Menu Item" : "Add Menu Item"}</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>{editingMenuItemId ? "Edit Food Highlight" : "Add Food Highlight"}</h3>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.52)", marginBottom: 16, lineHeight: 1.6 }}>
-                Keep this focused on food and drinks. AI polish can improve wording, but it should not change ingredients, facts, prices, or availability.
+                Use this for photos or featured food notes that should appear with the catering menu. AI polish can improve wording, but it should not change ingredients, facts, prices, or availability.
               </div>
               <input style={inputStyle} placeholder="Item name" value={newMenuItem.name} onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })} />
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Menu section</div>
@@ -3295,14 +3246,14 @@ function AdminPageInner() {
                   {newMenuItem.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the menu item to keep it.</span>}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addMenuItem} style={btnStyle}>{editingMenuItemId ? "Save Draft Changes" : "Save Draft Menu Item"}</button>
+                <button onClick={addMenuItem} style={btnStyle}>{editingMenuItemId ? "Save Changes" : "Save Food Highlight"}</button>
                 {editingMenuItemId && <button onClick={() => { setNewMenuItem({ name: "", description: "", category: "featured", imageUrl: "", imageAspect: "square", imageCrop: DEFAULT_CROP, price: "", availability: "" }); setEditingMenuItemId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>
 
-            <h3 style={{ fontSize: 16, fontWeight: 600, margin: "24px 0 14px" }}>Menu Items</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 600, margin: "24px 0 14px" }}>Catering Food Highlights</h3>
             {(content.menuItems ?? []).length === 0 && (
-              <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No menu items yet.</div>
+              <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No food highlights yet.</div>
             )}
             {(content.menuItems ?? []).map((item) => (
               <div key={item.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
@@ -3341,7 +3292,7 @@ function AdminPageInner() {
             {renderSectionIntro(
               "Life at the Hub",
               "Manage atmosphere photos and captions for the public gallery. This is the place for people, venue moments, and the feel of the business, not dated public events.",
-              <button onClick={() => openPublicPath("/preview/upcoming")} style={ghostBtn}>Preview Draft Upcoming & Life</button>,
+              <button onClick={() => openPublicPath("/gallery")} style={ghostBtn}>View Live Gallery</button>,
               <div style={usageCard}>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Photos live</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>{(content.lifeAtHubPhotos ?? []).length}</div>
@@ -3384,7 +3335,7 @@ function AdminPageInner() {
                 {newLifePhoto.imageUrl && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Upload complete. Save the photo to keep it in the gallery.</span>}
               </div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={addLifePhoto} style={btnStyle}>{editingLifePhotoId ? "Save Draft Changes" : "Save Draft Photo"}</button>
+                <button onClick={addLifePhoto} style={btnStyle}>{editingLifePhotoId ? "Save Changes" : "Save Photo"}</button>
                 {editingLifePhotoId && <button onClick={() => { setNewLifePhoto({ imageUrl: "", imageAspect: "landscape", imageCrop: DEFAULT_CROP, caption: "" }); setEditingLifePhotoId(null); }} style={ghostBtn}>Cancel Edit</button>}
               </div>
             </div>

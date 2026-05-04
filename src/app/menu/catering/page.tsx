@@ -1,8 +1,16 @@
 "use client";
 import Nav from "@/components/Nav";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Tab = "breakfast" | "appetizers" | "lunch" | "desserts" | "drinks";
+type FoodHighlight = {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  price?: string;
+  availability?: string;
+};
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "breakfast", label: "Breakfast" },
@@ -14,6 +22,17 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function CateringMenuPage() {
   const [activeTab, setActiveTab] = useState<Tab>("breakfast");
+  const [foodHighlights, setFoodHighlights] = useState<FoodHighlight[]>([]);
+
+  useEffect(() => {
+    fetch("/api/content?mode=published")
+      .then((res) => res.json())
+      .then((data) => {
+        const items = Array.isArray(data?.content?.menuItems) ? data.content.menuItems : [];
+        setFoodHighlights(items.filter((item: FoodHighlight) => item.name && item.description).slice(0, 6));
+      })
+      .catch(() => setFoodHighlights([]));
+  }, []);
 
   return (
     <>
@@ -96,6 +115,68 @@ export default function CateringMenuPage() {
         .tab-btn.active {
           color: #F7F5F0;
           border-bottom-color: var(--gold);
+        }
+
+        .food-highlights {
+          background: #fff;
+          border-bottom: 1px solid var(--rule);
+        }
+        .food-highlights-inner {
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 2.5rem 1.5rem 1.8rem;
+        }
+        .food-highlights h2 {
+          font-family: 'Playfair Display', serif;
+          color: var(--brand-blue);
+          font-size: clamp(1.5rem, 3vw, 2rem);
+          margin-bottom: 0.4rem;
+          text-align: center;
+        }
+        .food-highlights p.intro {
+          color: var(--muted);
+          text-align: center;
+          margin: 0 auto 1.5rem;
+          max-width: 620px;
+          line-height: 1.6;
+        }
+        .food-highlight-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        }
+        .food-highlight-card {
+          border: 1px solid var(--rule);
+          border-radius: 10px;
+          overflow: hidden;
+          background: var(--cream);
+        }
+        .food-highlight-card img {
+          width: 100%;
+          aspect-ratio: 4 / 3;
+          object-fit: cover;
+          display: block;
+          background: var(--cream-dark);
+        }
+        .food-highlight-copy {
+          padding: 1rem;
+        }
+        .food-highlight-copy h3 {
+          font-family: 'Playfair Display', serif;
+          color: var(--body-text);
+          font-size: 1.1rem;
+          margin-bottom: 0.35rem;
+        }
+        .food-highlight-copy p {
+          color: var(--muted);
+          font-size: 0.9rem;
+          line-height: 1.55;
+        }
+        .food-highlight-meta {
+          margin-top: 0.75rem;
+          color: var(--brand-blue);
+          font-size: 0.82rem;
+          font-weight: 700;
         }
 
         /* ── Menu body ── */
@@ -260,6 +341,29 @@ export default function CateringMenuPage() {
           ))}
         </div>
       </div>
+
+      {foodHighlights.length > 0 && (
+        <section className="food-highlights">
+          <div className="food-highlights-inner">
+            <h2>Food Highlights</h2>
+            <p className="intro">A few favorites and photos from The Gathering Hub kitchen, added from the customer portal.</p>
+            <div className="food-highlight-grid">
+              {foodHighlights.map((item) => (
+                <article key={item.id} className="food-highlight-card">
+                  {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
+                  <div className="food-highlight-copy">
+                    <h3>{item.name}</h3>
+                    <p>{item.description}</p>
+                    {(item.price || item.availability) && (
+                      <div className="food-highlight-meta">{[item.price, item.availability].filter(Boolean).join(" · ")}</div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── BREAKFAST ── */}
       {activeTab === "breakfast" && (

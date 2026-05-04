@@ -1,6 +1,7 @@
 import Nav from "@/components/Nav";
 import { getSiteContent } from "@/lib/content";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 type GalleryPhoto = {
   id: string;
@@ -124,18 +125,7 @@ function getGalleryCaption(photo: GalleryPhoto) {
 export default async function GalleryPage() {
   const content = await getSiteContent();
   const lifePhotos = (content.lifeAtHubPhotos?.length ? content.lifeAtHubPhotos : fallbackGalleryPhotos) as GalleryPhoto[];
-  const foodPhotos: GalleryPhoto[] = (content.menuItems ?? [])
-    .filter((item) => item.imageUrl)
-    .slice(0, 6)
-    .map((item) => ({
-      id: `food-${item.id}`,
-      title: item.name,
-      caption: item.description,
-      imageUrl: item.imageUrl,
-      imageAspect: item.imageAspect,
-      imageCrop: (item as GalleryPhoto).imageCrop,
-    }));
-  const galleryPhotos: GalleryPhoto[] = [...lifePhotos, ...foodPhotos];
+  const galleryPhotos: GalleryPhoto[] = lifePhotos;
 
   return (
     <>
@@ -274,13 +264,13 @@ export default async function GalleryPage() {
 
       <div className="page-header">
         <h1>Photo <em>Gallery</em></h1>
-        <p>A closer look at real moments from the Hub: workshops, food, desserts, venue details, and the people who make the space feel alive.</p>
+        <p>A closer look at real moments from the Hub: workshops, venue details, and the people who make the space feel alive.</p>
       </div>
 
       <section className="gallery-section">
         <h2 className="section-title">Moments From the Hub</h2>
         <p className="section-sub">
-          A growing collection of photos from community workshops, featured food, desserts, and event-day details.
+          A growing collection of photos from community workshops, venue moments, and event-day details.
         </p>
         <div className="gallery-grid">
           {galleryPhotos.map((photo) => {
@@ -316,8 +306,8 @@ export default async function GalleryPage() {
         <h2 className="section-title">Planning Food For An Event?</h2>
         <p className="section-sub">Breakfast, appetizers, lunch, dinner, desserts, and drinks are listed on the catering menu.</p>
         <div className="cta-actions">
-          <a href="/menu" className="cta-button">View Menu</a>
-          <a href="/#contact" className="cta-button secondary">Book Now</a>
+          <Link href="/menu" className="cta-button">View Menu</Link>
+          <Link href="/#contact" className="cta-button secondary">Book Now</Link>
         </div>
       </section>
 
