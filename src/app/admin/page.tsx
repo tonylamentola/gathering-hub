@@ -1244,16 +1244,37 @@ function AdminPageInner() {
     boxShadow: "0 12px 28px rgba(201,168,76,0.22)",
   };
 
-  const dangerBtn: React.CSSProperties = {
-    background: "rgba(239,68,68,0.15)",
-    color: "#f87171",
-    border: "1px solid rgba(239,68,68,0.3)",
-    borderRadius: 6,
-    padding: "6px 14px",
-    fontWeight: 600,
-    fontSize: 12,
-    cursor: "pointer",
-  };
+  function actionBadge(
+    label: "Edit" | "Remove",
+    onClick: () => void,
+  ) {
+    const isRemove = label === "Remove";
+    return (
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        onClick={onClick}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 999,
+          border: isRemove ? "1px solid rgba(248,113,113,0.34)" : "1px solid rgba(201,168,76,0.38)",
+          background: isRemove ? "rgba(248,113,113,0.12)" : "rgba(201,168,76,0.14)",
+          color: isRemove ? "#fca5a5" : "#f3d57b",
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: isRemove ? 18 : 16,
+          fontWeight: 800,
+          lineHeight: 1,
+        }}
+      >
+        {isRemove ? "×" : "✎"}
+      </button>
+    );
+  }
 
   const aiBtn: React.CSSProperties = {
     background: "linear-gradient(180deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.1) 100%)",
@@ -1712,7 +1733,7 @@ function AdminPageInner() {
             border-radius: 14px !important;
           }
           .admin-section-intro-row,
-          .client-setup-head {
+          .site-settings-head {
             flex-direction: column;
             align-items: stretch !important;
           }
@@ -1727,13 +1748,16 @@ function AdminPageInner() {
             width: 100%;
           }
           .admin-section-actions > *,
-          .client-setup-head button {
+          .site-settings-head button {
             width: 100%;
           }
           .overview-primary-grid,
           .overview-tool-grid,
           .overview-stat-grid,
-          .client-setup-grid {
+          .site-settings-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-form-grid {
             grid-template-columns: 1fr !important;
           }
           .overview-primary-card {
@@ -1745,8 +1769,35 @@ function AdminPageInner() {
           .overview-primary-card p {
             font-size: 13px !important;
           }
-          .client-setup-card {
+          .site-settings-card {
             margin-top: 18px !important;
+          }
+          .admin-item-card {
+            display: block !important;
+          }
+          .admin-item-row {
+            flex-direction: column !important;
+          }
+          .admin-item-body {
+            flex-direction: column !important;
+            width: 100%;
+          }
+          .admin-item-media {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 16 / 10;
+          }
+          .admin-item-media img {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          .admin-item-actions {
+            width: 100%;
+            justify-content: flex-end;
+            padding-top: 12px;
+          }
+          .flyer-method-grid {
+            grid-template-columns: 1fr !important;
           }
           input,
           textarea,
@@ -1825,7 +1876,7 @@ function AdminPageInner() {
               </button>
               <button
                 className="overview-primary-card"
-                onClick={() => document.getElementById("client-setup")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                onClick={() => document.getElementById("site-settings")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                 style={{
                   ...ghostBtn,
                   justifyContent: "space-between",
@@ -1842,7 +1893,7 @@ function AdminPageInner() {
                 <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#a8f0cf", fontWeight: 800 }}>Settings</span>
                 <span>
                   <strong style={{ display: "block", fontSize: 22, color: "#fff", marginBottom: 8 }}>Update site details</strong>
-                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Contact info, Facebook, onboarding, billing, and AI voice notes live here.</p>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Contact info, Facebook, address, maps, and writing notes live here.</p>
                 </span>
               </button>
             </div>
@@ -1900,9 +1951,9 @@ function AdminPageInner() {
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Life at the Hub</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Manage photos and captions</span>
                 </button>
-                <button onClick={() => document.getElementById("client-setup")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                <button onClick={() => document.getElementById("site-settings")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Settings</span>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>Client setup and AI notes</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Site details and writing notes</span>
                 </button>
                 <button onClick={() => openPublicPath("/preview")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Preview Draft</span>
@@ -1931,54 +1982,25 @@ function AdminPageInner() {
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", lineHeight: 1.65 }}>{activeUpdatesCount} active right now for things like holiday hours, specials, or booking reminders.</div>
                 </div>
               </div>
-              <div id="client-setup" className="admin-card client-setup-card" style={{ ...cardStyle, marginBottom: 18, scrollMarginTop: 170 }}>
-                <div className="client-setup-head" style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+              <div id="site-settings" className="admin-card site-settings-card" style={{ ...cardStyle, marginBottom: 18, scrollMarginTop: 170 }}>
+                <div className="site-settings-head" style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
                   <div>
-                    <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Client Setup</h3>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Site Settings</h3>
                     <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
-                      Keep billing, onboarding, Facebook, and next steps in one place so this is ready to hand over as a real monthly service.
+                      Keep the public contact details and social links current. Internal billing and onboarding notes are not shown here.
                     </p>
                   </div>
                   <button onClick={() => content && saveContent(content)} style={btnStyle} disabled={saving}>
-                    {saving ? "Saving..." : "Save Client Setup"}
+                    {saving ? "Saving..." : "Save Site Settings"}
                   </button>
                 </div>
-                <div className="client-setup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="site-settings-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <input style={inputStyle} placeholder="Business name" value={content.settings.siteName} onChange={(e) => setContent({ ...content, settings: { ...content.settings, siteName: e.target.value } })} />
                   <input style={inputStyle} placeholder="Phone" value={content.settings.phone} onChange={(e) => setContent({ ...content, settings: { ...content.settings, phone: e.target.value } })} />
                   <input style={inputStyle} placeholder="Email" value={content.settings.email} onChange={(e) => setContent({ ...content, settings: { ...content.settings, email: e.target.value } })} />
                   <input style={inputStyle} placeholder="Facebook page URL" value={content.settings.facebook ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, facebook: e.target.value } })} />
                   <input style={inputStyle} placeholder="Address" value={content.settings.address} onChange={(e) => setContent({ ...content, settings: { ...content.settings, address: e.target.value } })} />
                   <input style={inputStyle} placeholder="Maps URL" value={content.settings.mapsUrl ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, mapsUrl: e.target.value } })} />
-                  <input style={inputStyle} placeholder="Stripe billing link" value={content.settings.stripeBillingUrl ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, stripeBillingUrl: e.target.value } })} />
-                  <input style={inputStyle} placeholder="Billing plan" value={content.settings.billingPlan ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, billingPlan: e.target.value } })} />
-                  <input style={inputStyle} placeholder="Billing status" value={content.settings.billingStatus ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, billingStatus: e.target.value } })} />
-                  <input style={inputStyle} placeholder="Next step" value={content.settings.nextStep ?? ""} onChange={(e) => setContent({ ...content, settings: { ...content.settings, nextStep: e.target.value } })} />
-                </div>
-                <textarea
-                  style={{ ...inputStyle, minHeight: 90, resize: "vertical", marginBottom: 16 }}
-                  placeholder="Onboarding notes, expectations, support reminders, hosting answer, or contract notes..."
-                  value={content.settings.onboardingNotes ?? ""}
-                  onChange={(e) => setContent({ ...content, settings: { ...content.settings, onboardingNotes: e.target.value } })}
-                />
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
-                  {[
-                    ["billingLinkReady", "Billing link ready"],
-                    ["contractShared", "Contract shared"],
-                    ["hostingAnswered", "Hosting answered"],
-                    ["photosReceived", "Photos received"],
-                    ["portalWalkthroughDone", "Portal walkthrough done"],
-                    ["voiceReviewed", "Voice reviewed"],
-                  ].map(([key, label]) => (
-                    <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 14, color: "rgba(255,255,255,0.76)" }}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(content.onboarding?.[key as keyof NonNullable<ContentData["onboarding"]>])}
-                        onChange={(e) => setContent({ ...content, onboarding: { ...content.onboarding!, [key]: e.target.checked } })}
-                      />
-                      {label}
-                    </label>
-                  ))}
                 </div>
               </div>
               <div style={{ ...cardStyle, marginBottom: 18 }}>
@@ -2108,14 +2130,23 @@ function AdminPageInner() {
 
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Recent Blog Posts</h3>
             {content.blogPosts.slice(0, 3).map((post) => (
-              <div key={post.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{post.title}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{new Date(post.publishedAt).toLocaleDateString()}</div>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => editPost(post)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                  <button onClick={() => deletePost(post.id)} style={dangerBtn}>Delete</button>
+              <div key={post.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                  <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
+                    {post.imageUrl && (
+                      <div className="admin-item-media" style={{ width: 96, height: 72, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+                        <img src={post.imageUrl} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>{post.title}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{new Date(post.publishedAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editPost(post))}
+                    {actionBadge("Remove", () => deletePost(post.id))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -2406,14 +2437,23 @@ function AdminPageInner() {
             <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>All Posts</h3>
             {content.blogPosts.length === 0 && <p style={{ color: "rgba(255,255,255,0.4)" }}>No posts yet.</p>}
             {content.blogPosts.map((post) => (
-              <div key={post.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{post.title}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{new Date(post.publishedAt).toLocaleDateString()} · /blog/{post.slug}</div>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => editPost(post)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                  <button onClick={() => deletePost(post.id)} style={dangerBtn}>Delete</button>
+              <div key={post.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                  <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
+                    {post.imageUrl && (
+                      <div className="admin-item-media" style={{ width: 104, height: 78, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+                        <img src={post.imageUrl} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>{post.title}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{new Date(post.publishedAt).toLocaleDateString()} · /blog/{post.slug}</div>
+                    </div>
+                  </div>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editPost(post))}
+                    {actionBadge("Remove", () => deletePost(post.id))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -2489,18 +2529,18 @@ function AdminPageInner() {
             </div>
 
             {content.events.map((ev) => (
-              <div key={ev.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+              <div key={ev.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
                     <span style={{ fontSize: 32 }}>{ev.emoji}</span>
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{ev.title}</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{ev.description}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }}>
-                    <button onClick={() => editEvent(ev)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteEvent(ev.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editEvent(ev))}
+                    {actionBadge("Remove", () => deleteEvent(ev.id))}
                   </div>
                 </div>
               </div>
@@ -2539,18 +2579,18 @@ function AdminPageInner() {
               <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No amenities yet.</div>
             )}
             {content.amenities.map((amenity) => (
-              <div key={amenity.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+              <div key={amenity.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div style={{ display: "flex", gap: 14, alignItems: "center", minWidth: 0 }}>
                     <span style={{ fontSize: 28 }}>{amenity.icon}</span>
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{amenity.title}</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{amenity.description}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 12 }}>
-                    <button onClick={() => editAmenity(amenity)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteAmenity(amenity.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editAmenity(amenity))}
+                    {actionBadge("Remove", () => deleteAmenity(amenity.id))}
                   </div>
                 </div>
               </div>
@@ -2585,39 +2625,49 @@ function AdminPageInner() {
               <input style={inputStyle} placeholder="Title" value={newUpcoming.title} onChange={(e) => setNewUpcoming({ ...newUpcoming, title: e.target.value })} />
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Event date</div>
               <input style={{ ...inputStyle, fontSize: 16, WebkitAppearance: "none", appearance: "none" }} type="date" value={newUpcoming.date} onChange={(e) => setNewUpcoming({ ...newUpcoming, date: e.target.value })} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="admin-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <input style={inputStyle} placeholder="Optional time" value={newUpcoming.time} onChange={(e) => setNewUpcoming({ ...newUpcoming, time: e.target.value })} />
                 <input style={inputStyle} placeholder="Optional price" value={newUpcoming.price} onChange={(e) => setNewUpcoming({ ...newUpcoming, price: e.target.value })} />
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>How do you want to add the flyer?</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.68)", margin: "6px 0 10px", fontWeight: 700 }}>Flyer</div>
+              <div className="flyer-method-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                 <button
                   type="button"
                   onClick={() => setFlyerMode("generate")}
                   style={{
                     ...ghostBtn,
-                    minHeight: 36,
-                    padding: "0 14px",
+                    minHeight: 78,
+                    padding: "12px 14px",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    textAlign: "left",
+                    gap: 4,
                     background: flyerMode === "generate" ? "rgba(201,168,76,0.22)" : "#131a36",
                     color: flyerMode === "generate" ? "#f3d57b" : "rgba(226,232,240,0.82)",
                     border: flyerMode === "generate" ? "1px solid rgba(201,168,76,0.35)" : "1px solid rgba(11,17,39,0.7)",
                   }}
                 >
-                  ✨ Generate Flyer
+                  <span style={{ fontWeight: 800 }}>Use the flyer generator</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.56)", lineHeight: 1.4 }}>Choose this, then press Generate Flyer below.</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFlyerMode("upload")}
                   style={{
                     ...ghostBtn,
-                    minHeight: 36,
-                    padding: "0 14px",
+                    minHeight: 78,
+                    padding: "12px 14px",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    textAlign: "left",
+                    gap: 4,
                     background: flyerMode === "upload" ? "rgba(97,111,182,0.22)" : "#131a36",
                     color: flyerMode === "upload" ? "#d9e2ff" : "rgba(226,232,240,0.82)",
                     border: flyerMode === "upload" ? "1px solid rgba(97,111,182,0.42)" : "1px solid rgba(11,17,39,0.7)",
                   }}
                 >
-                  Upload Your Own
+                  <span style={{ fontWeight: 800 }}>Upload a flyer or photo</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.56)", lineHeight: 1.4 }}>Choose this if you already have the image.</span>
                 </button>
               </div>
               <textarea
@@ -2644,8 +2694,8 @@ function AdminPageInner() {
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Flyer shape</div>
                   {renderAspectPicker(newUpcoming.imageAspect, (next) => setNewUpcoming({ ...newUpcoming, imageAspect: next }))}
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4, marginBottom: 12 }}>
-                    <button onClick={() => generateFlyerDraft("fresh")} disabled={generatingFlyer || flyerActionsRemaining <= 0 || !newUpcoming.title.trim()} style={aiBtn}>
-                      {generatingFlyer ? "Generating..." : "Go"}
+                    <button onClick={() => generateFlyerDraft("fresh")} disabled={generatingFlyer || flyerActionsRemaining <= 0 || !newUpcoming.title.trim()} style={{ ...aiBtn, width: "100%" }}>
+                      {generatingFlyer ? "Generating Flyer..." : "Generate Flyer"}
                     </button>
                   </div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10, lineHeight: 1.6 }}>
@@ -2721,15 +2771,15 @@ function AdminPageInner() {
             {sortedUpcomingItems.map((item) => {
               const status = getUpcomingStatus(item.date);
               return (
-              <div key={item.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <div key={item.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "flex-start", minWidth: 0 }}>
                     {item.imageUrl && (
-                      <div style={{ width: 104, height: 104, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <div className="admin-item-media" style={{ width: 104, height: 104, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
                         <img src={item.imageUrl} alt={item.title} style={getCropStyle(item.imageCrop)} />
                       </div>
                     )}
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
                         <div style={{ fontWeight: 600 }}>{item.title}</div>
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: status.background, color: status.color, fontWeight: 700 }}>
@@ -2744,9 +2794,9 @@ function AdminPageInner() {
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)" }}>{item.description}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => editUpcomingItem(item)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteUpcomingItem(item.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editUpcomingItem(item))}
+                    {actionBadge("Remove", () => deleteUpcomingItem(item.id))}
                   </div>
                 </div>
               </div>
@@ -2785,15 +2835,17 @@ function AdminPageInner() {
             </div>
 
             {content.reviews.map((rv) => (
-              <div key={rv.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
+              <div key={rv.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ color: "#c9a84c", marginBottom: 6 }}>{"★".repeat(rv.stars)}</div>
                   <div style={{ fontStyle: "italic", color: "rgba(255,255,255,0.8)", marginBottom: 8, fontSize: 14 }}>&ldquo;{rv.text}&rdquo;</div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>— {rv.author}</div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>
-                  <button onClick={() => editReview(rv)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                  <button onClick={() => deleteReview(rv.id)} style={dangerBtn}>Delete</button>
+                <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  {actionBadge("Edit", () => editReview(rv))}
+                  {actionBadge("Remove", () => deleteReview(rv.id))}
+                </div>
                 </div>
               </div>
             ))}
@@ -2871,9 +2923,9 @@ function AdminPageInner() {
             </div>
 
             {content.announcements.map((ann) => (
-              <div key={ann.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
+              <div key={ann.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
                       <span style={{ fontWeight: 600 }}>{ann.title}</span>
                       <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: ann.active ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.06)", color: ann.active ? "#4ade80" : "rgba(255,255,255,0.4)" }}>
@@ -2882,9 +2934,9 @@ function AdminPageInner() {
                     </div>
                     <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{ann.body}</div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0, marginLeft: 16 }}>
-                    <button onClick={() => editAnnouncement(ann)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteAnnouncement(ann.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editAnnouncement(ann))}
+                    {actionBadge("Remove", () => deleteAnnouncement(ann.id))}
                   </div>
                 </div>
               </div>
@@ -2926,7 +2978,7 @@ function AdminPageInner() {
                   {polishingMenuId ? "Polishing..." : "✨ Polish Description"}
                 </button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="admin-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <input style={inputStyle} placeholder="Optional price" value={newMenuItem.price} onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })} />
                 <input style={inputStyle} placeholder="Optional availability" value={newMenuItem.availability} onChange={(e) => setNewMenuItem({ ...newMenuItem, availability: e.target.value })} />
               </div>
@@ -2965,15 +3017,15 @@ function AdminPageInner() {
               <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No menu items yet.</div>
             )}
             {(content.menuItems ?? []).map((item) => (
-              <div key={item.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <div key={item.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "flex-start", minWidth: 0 }}>
                     {item.imageUrl && (
-                      <div style={{ width: 88, height: 88, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <div className="admin-item-media" style={{ width: 88, height: 88, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
                         <img src={item.imageUrl} alt={item.name} style={getCropStyle(item.imageCrop)} />
                       </div>
                     )}
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "#c9a84c", marginBottom: 4 }}>
                         {getMenuCategoryLabel(inferMenuCategory(item))}
                       </div>
@@ -2985,9 +3037,9 @@ function AdminPageInner() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => editMenuItem(item)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteMenuItem(item.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editMenuItem(item))}
+                    {actionBadge("Remove", () => deleteMenuItem(item.id))}
                   </div>
                 </div>
               </div>
@@ -3054,20 +3106,20 @@ function AdminPageInner() {
               <div style={{ ...cardStyle, color: "rgba(255,255,255,0.5)" }}>No photos yet.</div>
             )}
             {(content.lifeAtHubPhotos ?? []).map((photo) => (
-              <div key={photo.id} style={{ ...cardStyle }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                    <div style={{ width: 104, height: 104, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div key={photo.id} className="admin-card admin-item-card" style={{ ...cardStyle }}>
+                <div className="admin-item-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                  <div className="admin-item-body" style={{ display: "flex", gap: 14, alignItems: "flex-start", minWidth: 0 }}>
+                    <div className="admin-item-media" style={{ width: 104, height: 104, overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
                       <img src={photo.imageUrl} alt={photo.caption || "Life at the Hub"} style={getCropStyle(photo.imageCrop)} />
                     </div>
-                    <div>
+                    <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 600, marginBottom: 6 }}>Life at the Hub</div>
                       <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)" }}>{photo.caption || "No caption added yet."}</div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => editLifePhoto(photo)} style={{ ...btnStyle, padding: "6px 14px", fontSize: 12 }}>Edit</button>
-                    <button onClick={() => deleteLifePhoto(photo.id)} style={dangerBtn}>Delete</button>
+                  <div className="admin-item-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                    {actionBadge("Edit", () => editLifePhoto(photo))}
+                    {actionBadge("Remove", () => deleteLifePhoto(photo.id))}
                   </div>
                 </div>
               </div>
