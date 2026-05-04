@@ -60,12 +60,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const body = await req.json().catch(() => ({}));
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
+    const host = req.headers.get("host") || "";
+    const auth = req.headers.get("authorization") || "";
+    if (host.includes("localhost") || host.includes("127.0.0.1")) {
+      const forwarded = await fetch("https://thegatheringhub.biz/api/ai-error", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: auth,
+        },
+        body: JSON.stringify({
+          ...body,
+          details: `${clean(body.details, 3600)}\n\nForwarded from local development because localhost has no RESEND_API_KEY.`,
+        }),
+      });
+      const forwardedBody = await forwarded.json().catch(() => ({}));
+      return NextResponse.json(forwardedBody, { status: forwarded.status });
+    }
     return NextResponse.json({ error: "Error email is not configured.", reportable: false }, { status: 503 });
   }
 
-  const body = await req.json().catch(() => ({}));
   const report = {
     area: clean(body.area, 120) || "AI tool",
     message: clean(body.message) || "AI tool failed.",
