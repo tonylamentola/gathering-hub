@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
+import { isAdminRequest } from "@/lib/admin-auth";
 
-const ADMIN_PASSWORD = "GatheringHub2026!";
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || "";
 const FLYER_MODEL = "google/gemini-3.1-flash-image-preview";
 const LOGO_PATH = path.join(process.cwd(), "public", "images", "gatheringhub-logo.jpg");
-
-function isAuthed(req: NextRequest): boolean {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return false;
-  try {
-    const decoded = Buffer.from(auth.slice(7), "base64").toString("utf8");
-    return decoded === ADMIN_PASSWORD;
-  } catch {
-    return false;
-  }
-}
 
 function stripDataUrlPrefix(dataUrl: string) {
   const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
@@ -223,7 +212,7 @@ function saveLocalFlyer(svg: string) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const ADMIN_PASSWORD = "GatheringHub2026!";
+import { isAdminPassword } from "@/lib/admin-auth";
 
 export async function POST(req: NextRequest) {
   try {
     const { password } = await req.json();
-    if (password === ADMIN_PASSWORD) {
+    if (typeof password === "string" && isAdminPassword(password)) {
       const token = Buffer.from(password).toString("base64");
       return NextResponse.json({ token, success: true });
     }

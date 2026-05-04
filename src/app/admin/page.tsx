@@ -3,8 +3,9 @@ import dynamic from "next/dynamic";
 import Cropper from "react-easy-crop";
 import "react-easy-crop/react-easy-crop.css";
 import { useState, useEffect, useRef } from "react";
+import { DEFAULT_ADMIN_PASSWORD, isAdminPassword } from "@/lib/admin-auth";
 
-const ADMIN_PASSWORD = "GatheringHub2026!";
+const ADMIN_PASSWORD = DEFAULT_ADMIN_PASSWORD;
 const TOKENS_PER_REWRITE = 1500;
 const TOKENS_PER_SUGGESTION = 1000;
 const TOKENS_PER_POST_SUGGESTION = 2000;
@@ -415,7 +416,7 @@ function AdminPageInner() {
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (pw === ADMIN_PASSWORD) {
+    if (isAdminPassword(pw)) {
       const token = btoa(pw);
       if (rememberMe) {
         localStorage.setItem("gh_auth_token", token);

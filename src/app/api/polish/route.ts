@@ -2,23 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import path from "path";
 import { kv, CONTENT_KEY } from "@/lib/kv";
+import { isAdminRequest } from "@/lib/admin-auth";
 
 const CONTENT_PATH = path.join(process.cwd(), "data", "content.json");
 const TOKENS_PER_REWRITE = 1500;
 const TOKENS_PER_SUGGESTION = 1000;
 const TOKENS_PER_POST_SUGGESTION = 2000;
-const ADMIN_PASSWORD = "GatheringHub2026!";
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || "";
 const OPENAI_KEY = process.env.OPENAI_API_KEY || "";
-
-function isAuthed(req: NextRequest): boolean {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return false;
-  try {
-    const decoded = Buffer.from(auth.slice(7), "base64").toString("utf8");
-    return decoded === ADMIN_PASSWORD;
-  } catch { return false; }
-}
 
 async function getContentData(): Promise<Record<string, unknown>> {
   try {
@@ -272,7 +263,7 @@ function fallbackVoiceProfile(business: ReturnType<typeof getBusinessProfile>) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

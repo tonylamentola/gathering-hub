@@ -2,22 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { kv, CONTENT_BACKUP_PREFIX, CONTENT_DRAFT_KEY, CONTENT_KEY, CONTENT_PUBLISHED_KEY } from "@/lib/kv";
+import { isAdminRequest } from "@/lib/admin-auth";
 
 const CONTENT_PATH = path.join(process.cwd(), "data", "content.json");
 const DRAFT_CONTENT_PATH = path.join(process.cwd(), "data", "content.draft.json");
-const ADMIN_PASSWORD = "GatheringHub2026!";
-
-function isAuthed(req: NextRequest): boolean {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return false;
-  const token = auth.slice(7);
-  try {
-    const decoded = Buffer.from(token, "base64").toString("utf8");
-    return decoded === ADMIN_PASSWORD;
-  } catch {
-    return false;
-  }
-}
 
 function readJsonFile(filePath: string) {
   return JSON.parse(readFileSync(filePath, "utf8"));
@@ -61,7 +49,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {

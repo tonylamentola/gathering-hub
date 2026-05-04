@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFileSync, mkdirSync } from "fs";
 import path from "path";
-
-const ADMIN_PASSWORD = "GatheringHub2026!";
-
-function isAuthed(req: NextRequest): boolean {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return false;
-  try {
-    const decoded = Buffer.from(auth.slice(7), "base64").toString("utf8");
-    return decoded === ADMIN_PASSWORD;
-  } catch { return false; }
-}
+import { isAdminRequest } from "@/lib/admin-auth";
 
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
