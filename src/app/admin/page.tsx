@@ -1514,7 +1514,7 @@ function AdminPageInner() {
     usage?: React.ReactNode,
   ) {
     return (
-      <div style={{ ...cardStyle, marginBottom: 24, padding: "24px 24px 22px", position: "relative", overflow: "hidden" }}>
+      <div className="admin-card admin-section-intro" style={{ ...cardStyle, marginBottom: 24, padding: "24px 24px 22px", position: "relative", overflow: "hidden" }}>
         <div style={{
           position: "absolute",
           top: -40,
@@ -1525,20 +1525,20 @@ function AdminPageInner() {
           background: "radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0) 68%)",
           pointerEvents: "none",
         }} />
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 260 }}>
+        <div className="admin-section-intro-row" style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div className="admin-section-copy" style={{ flex: 1, minWidth: 260 }}>
             <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#c9a84c", fontWeight: 700, marginBottom: 8 }}>
               Customer Portal
             </div>
             <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 8px" }}>{title}</h2>
             <p style={{ color: "rgba(255,255,255,0.58)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{description}</p>
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <div className="admin-section-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
             {actions}
           </div>
         </div>
         {usage && (
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
+          <div className="admin-usage-row" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
             {usage}
           </div>
         )}
@@ -1549,7 +1549,7 @@ function AdminPageInner() {
   return (
     <div style={adminStyle}>
       {/* Sticky top bar */}
-      <div style={{
+      <div className="admin-topbar" style={{
         position: "sticky",
         top: 0,
         zIndex: 100,
@@ -1562,11 +1562,11 @@ function AdminPageInner() {
         justifyContent: "space-between",
         boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
       }}>
-        <div>
+        <div className="admin-brand">
           <span style={{ fontFamily: "'Playfair Display', serif", color: "#d4b25b", fontSize: 19, fontWeight: 700 }}>The Gathering Hub</span>
           <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 12, letterSpacing: "0.12em", textTransform: "uppercase" }}>Customer Portal</span>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="admin-topbar-actions" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {saveMsg && <span style={{ fontSize: 13 }}>{saveMsg}</span>}
           {publishMsg && <span style={{ fontSize: 13, color: publishMsg.includes("Posted") ? "#4ade80" : "#f87171" }}>{publishMsg}</span>}
           <span style={{
@@ -1605,7 +1605,7 @@ function AdminPageInner() {
       </div>
 
       {/* Sticky scrollable Tab nav */}
-      <div style={{ position: "sticky", top: 57, zIndex: 99 }}>
+      <div className="admin-tab-shell" style={{ position: "sticky", top: 57, zIndex: 99 }}>
         <div
           ref={navRef}
           style={{
@@ -1662,9 +1662,101 @@ function AdminPageInner() {
         .admin-nav::-webkit-scrollbar { display: none; }
         .admin-nav { -ms-overflow-style: none; }
         .suggestion-card:hover { background: rgba(201,168,76,0.18) !important; }
+        @media (max-width: 760px) {
+          .admin-topbar {
+            align-items: flex-start !important;
+            gap: 12px !important;
+            padding: 12px 14px !important;
+          }
+          .admin-brand {
+            width: 100%;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+          }
+          .admin-brand span:last-child {
+            margin-left: 0 !important;
+            font-size: 10px !important;
+          }
+          .admin-topbar-actions {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px !important;
+          }
+          .admin-topbar-actions > span {
+            grid-column: 1 / -1;
+            width: 100%;
+          }
+          .admin-topbar-actions > button,
+          .admin-topbar-actions > a {
+            width: 100%;
+            min-height: 40px;
+            text-align: center;
+            justify-content: center;
+            padding: 8px 10px !important;
+            box-sizing: border-box;
+          }
+          .admin-tab-shell {
+            top: 133px !important;
+          }
+          .admin-nav {
+            padding: 8px 14px 10px !important;
+          }
+          .admin-shell {
+            padding: 24px 14px 44px !important;
+          }
+          .admin-card {
+            padding: 16px !important;
+            border-radius: 14px !important;
+          }
+          .admin-section-intro-row,
+          .client-setup-head {
+            flex-direction: column;
+            align-items: stretch !important;
+          }
+          .admin-section-copy {
+            min-width: 0 !important;
+          }
+          .admin-section-copy h2 {
+            font-size: 22px !important;
+          }
+          .admin-section-actions,
+          .admin-usage-row {
+            width: 100%;
+          }
+          .admin-section-actions > *,
+          .client-setup-head button {
+            width: 100%;
+          }
+          .overview-primary-grid,
+          .overview-tool-grid,
+          .overview-stat-grid,
+          .client-setup-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .overview-primary-card {
+            min-height: 138px !important;
+          }
+          .overview-primary-card strong {
+            font-size: 20px !important;
+          }
+          .overview-primary-card p {
+            font-size: 13px !important;
+          }
+          .client-setup-card {
+            margin-top: 18px !important;
+          }
+          input,
+          textarea,
+          select {
+            font-size: 16px !important;
+          }
+        }
       `}</style>
 
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 56px" }}>
+      <div className="admin-shell" style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px 56px" }}>
 
         {tab === "overview" && (
           <div>
@@ -1686,7 +1778,76 @@ function AdminPageInner() {
                 </div>
               </>,
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
+            <div className="overview-primary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 16, marginBottom: 24 }}>
+              <button
+                className="overview-primary-card"
+                onClick={() => setTab("blog")}
+                style={{
+                  ...ghostBtn,
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  minHeight: 168,
+                  padding: 20,
+                  borderRadius: 18,
+                  background: "linear-gradient(160deg, rgba(201,168,76,0.2) 0%, rgba(25,32,54,0.96) 72%)",
+                  border: "1px solid rgba(201,168,76,0.22)",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 800 }}>Post Update</span>
+                <span>
+                  <strong style={{ display: "block", fontSize: 22, color: "#fff", marginBottom: 8 }}>Write something new</strong>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Create a post, polish it, add a photo, and save it as a draft.</p>
+                </span>
+              </button>
+              <button
+                className="overview-primary-card"
+                onClick={() => setTab("upcoming")}
+                style={{
+                  ...ghostBtn,
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  minHeight: 168,
+                  padding: 20,
+                  borderRadius: 18,
+                  background: "linear-gradient(160deg, rgba(89,137,255,0.18) 0%, rgba(25,32,54,0.96) 72%)",
+                  border: "1px solid rgba(104,132,220,0.24)",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d9e2ff", fontWeight: 800 }}>Event Or Poster</span>
+                <span>
+                  <strong style={{ display: "block", fontSize: 22, color: "#fff", marginBottom: 8 }}>Add what is coming up</strong>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Add the date, time, price, details, and generate or upload a flyer.</p>
+                </span>
+              </button>
+              <button
+                className="overview-primary-card"
+                onClick={() => document.getElementById("client-setup")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                style={{
+                  ...ghostBtn,
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexDirection: "column",
+                  minHeight: 168,
+                  padding: 20,
+                  borderRadius: 18,
+                  background: "linear-gradient(160deg, rgba(101,201,160,0.16) 0%, rgba(25,32,54,0.96) 72%)",
+                  border: "1px solid rgba(101,201,160,0.22)",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#a8f0cf", fontWeight: 800 }}>Settings</span>
+                <span>
+                  <strong style={{ display: "block", fontSize: 22, color: "#fff", marginBottom: 8 }}>Update site details</strong>
+                  <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}>Contact info, Facebook, onboarding, billing, and AI voice notes live here.</p>
+                </span>
+              </button>
+            </div>
+
+            <div className="overview-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
               <div style={{ ...cardStyle, background: "linear-gradient(160deg, rgba(201,168,76,0.16) 0%, rgba(29,37,64,0.96) 65%)" }}>
                 <div style={{ color: "#c9a84c", fontSize: 28, fontWeight: 700 }}>{aiActionsRemaining}</div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 4 }}>AI Helps Left This Month</div>
@@ -1709,8 +1870,12 @@ function AdminPageInner() {
               </div>
             </div>
 
-            <div style={cardStyle}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 18 }}>
+            <div className="admin-card" style={cardStyle}>
+              <div style={{ marginBottom: 14 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>All Portal Tools</h3>
+                <p style={{ color: "rgba(255,255,255,0.52)", fontSize: 13, lineHeight: 1.55, margin: 0 }}>The three buttons above cover the common work. Everything else is still here when you need the full controls.</p>
+              </div>
+              <div className="overview-tool-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 18 }}>
                 <button onClick={() => setTab("blog")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Post Update</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Write or generate site news</span>
@@ -1734,6 +1899,10 @@ function AdminPageInner() {
                 <button onClick={() => setTab("life")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Life at the Hub</span>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>Manage photos and captions</span>
+                </button>
+                <button onClick={() => document.getElementById("client-setup")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+                  <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Settings</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>Client setup and AI notes</span>
                 </button>
                 <button onClick={() => openPublicPath("/preview")} style={{ ...ghostBtn, justifyContent: "flex-start", padding: "14px 16px", minHeight: 72, flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
                   <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: "#f3d57b", fontWeight: 700 }}>Preview Draft</span>
@@ -1762,8 +1931,8 @@ function AdminPageInner() {
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.58)", lineHeight: 1.65 }}>{activeUpdatesCount} active right now for things like holiday hours, specials, or booking reminders.</div>
                 </div>
               </div>
-              <div style={{ ...cardStyle, marginBottom: 18 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
+              <div id="client-setup" className="admin-card client-setup-card" style={{ ...cardStyle, marginBottom: 18, scrollMarginTop: 170 }}>
+                <div className="client-setup-head" style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
                   <div>
                     <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 6px" }}>Client Setup</h3>
                     <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>
@@ -1774,7 +1943,7 @@ function AdminPageInner() {
                     {saving ? "Saving..." : "Save Client Setup"}
                   </button>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="client-setup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <input style={inputStyle} placeholder="Business name" value={content.settings.siteName} onChange={(e) => setContent({ ...content, settings: { ...content.settings, siteName: e.target.value } })} />
                   <input style={inputStyle} placeholder="Phone" value={content.settings.phone} onChange={(e) => setContent({ ...content, settings: { ...content.settings, phone: e.target.value } })} />
                   <input style={inputStyle} placeholder="Email" value={content.settings.email} onChange={(e) => setContent({ ...content, settings: { ...content.settings, email: e.target.value } })} />
