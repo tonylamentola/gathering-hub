@@ -1,8 +1,8 @@
 import Nav from "@/components/Nav";
-import { getSiteContent } from "@/lib/content";
+import { getSiteContent, type UpcomingItem } from "@/lib/content";
 import type { Metadata } from "next";
 
-const fallbackUpcoming = [
+const fallbackUpcoming: UpcomingItem[] = [
   {
     id: "fallback-upcoming-1",
     title: "Bingo Night",
@@ -69,6 +69,7 @@ function getEventStatus(date?: string) {
 function formatEventDate(date?: string) {
   if (!date) return "";
   return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -216,7 +217,9 @@ export default async function UpcomingPage() {
                     {[item.time, item.price].filter(Boolean).join(" · ")}
                   </div>
                 )}
-                <div className="upcoming-copy">{item.description}</div>
+                <div className="upcoming-copy" style={{ whiteSpace: "pre-line" }}>{item.description}</div>
+                {item.location && <p style={{ marginTop: 16, fontSize: 13, color: "#64748b" }}>{item.location}</p>}
+                {item.ticketUrl && <a href={item.ticketUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", marginTop: 16, padding: "12px 20px", background: "#243175", color: "white", borderRadius: 8, fontWeight: 700 }}>Get Tickets →</a>}
               </div>
             </div>
           ))}
