@@ -53,6 +53,8 @@ export type LifeAtHubPhoto = {
 };
 
 export type UpcomingItem = {
+  location?: string;
+  ticketUrl?: string;
   id: string;
   title: string;
   date?: string;
